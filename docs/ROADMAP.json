@@ -16,23 +16,33 @@
     "language": "TypeScript",
     "runtime": "Node.js (LTS)",
     "framework": "Next.js (App Router)",
-    "backend": "Next.js Route Handlers (app/api/*)",
+    "api_style": "REST через Next.js Route Handlers (app/api/*)",
     "db": "PostgreSQL",
     "orm": "Prisma",
     "frontend": "Next.js + React (Server + Client Components)",
-    "ui_lib": "TBD — рассматривается Tailwind CSS + shadcn/ui",
-    "dnd": "TBD — рассматривается dnd-kit",
-    "state_management": "TBD — React Query / Zustand на клиенте",
-    "validation": "TBD — Zod",
-    "auth": "TBD — multi-user ready, на старте 1 пользователь",
-    "deployment": "TBD",
-    "testing": "TBD — Vitest + Playwright"
+    "ui_lib": "Tailwind CSS + shadcn/ui",
+    "dnd": "dnd-kit",
+    "state_management": "TanStack Query (server) + Zustand (client)",
+    "forms": "React Hook Form + Zod",
+    "validation": "Zod",
+    "telegram_bot": "grammY (TypeScript-friendly)",
+    "llm": "Anthropic Claude API (@anthropic-ai/sdk) — для агента и поиска рецептов",
+    "caldav": "Apple Reminders push через CalDAV + App-Specific Password (см. arc.md секция A)",
+    "auth": "Deferred. План: Auth.js v5 — Telegram login или email/password. Multi-user-ready FK с самого старта.",
+    "deployment": "Self-host VPS + Docker (docker-compose)",
+    "containers": ["app (Next.js)", "worker (cron + долгие задачи)", "postgres"],
+    "background_jobs": "node-cron в worker-контейнере",
+    "storage": "Docker volume на VPS (PDFs анализов, картинки рецептов)",
+    "testing": "Vitest (unit) + Playwright (e2e)",
+    "locale": "RU only"
   },
 
   "data_migration": {
-    "source": "App/data/*.json + App/plans/*.json (текущий main)",
-    "target": "PostgreSQL (нормализованные таблицы)",
-    "note": "Каталог ingredients_spb.json (5794 PLU Пятёрочки), custom_ingredients.json, dishes_library.json, user_profile.json, nutrition_norms.json — всё переезжает в БД с правильными связями."
+    "policy": "Clean slate — новая БД с нуля, без импорта из старой версии",
+    "old_data_role": "Reference only — структуру и значения из App/data/*.json и App/plans/*.json смотреть для понимания, но не импортировать автоматически",
+    "ingredients_seeding": "Парсеры (scr-parse-5ka, scr-parse-tseh, scr-parse-ll, scr-parse-vv) при первом запуске парсят данные заново. Старый ingredients_spb.json не используем.",
+    "parser_schedule": "Минимум 1 раз/неделю. Рекомендуется Сб (за сутки до заказа на следующую неделю).",
+    "user_data_seeding": "Профиль / health records / правила питания / расписание — заполняет сам пользователь через web UI или Telegram-агента."
   },
 
   "modules": {
@@ -40,7 +50,7 @@
     "Поиск": "Загрузка/парсинг сырых данных из источников (магазины, рецепты, здоровье) и поиск рецептов",
     "Валидация": "Проверка рецептов, правил и данных перед использованием в плане",
     "Расчёт": "Расчёт норм, плана недели, остатков, корзины, заказа",
-    "Сопровождение": "Дневник, коррекции плана, уведомления, мониторинг отклонений"
+    "Сопровождение": "Дневник, коррекции плана, нотификации (Apple Reminders), Telegram-агент, мониторинг отклонений"
   },
 
   "status_vocabulary": {
@@ -147,7 +157,7 @@
     {
       "id": "ent-source-5ka",
       "name": "Выгрузка 5К",
-      "description": "Сырые данные выгрузки из Пятёрочки: список покупок, цены, веса, штрих-категории.",
+      "description": "Сырые данные последней выгрузки из Пятёрочки: список товаров, цены, веса, штрих-категории.",
       "kind": "entity",
       "module": "Поиск",
       "phase": null,
@@ -160,12 +170,12 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Хранить как raw blob/jsonb до парсинга. Сейчас источник — App/data/ingredients_spb.json (5794 PLU)."
+      "notes": "Хранит сырые данные ПОСЛЕДНЕГО парсинга. Обновляется еженедельно (рек. Сб) скриптом scr-parse-5ka. Не используем старый App/data/ingredients_spb.json."
     },
     {
       "id": "ent-source-tseh",
       "name": "Выгрузка Цех",
-      "description": "Сырые данные выгрузки из Цех 85 (булочная).",
+      "description": "Сырые данные последней выгрузки из Цех 85 (булочная).",
       "kind": "entity",
       "module": "Поиск",
       "phase": null,
@@ -178,12 +188,12 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Сейчас в App/data/custom_ingredients.json (часть с Цех 85)."
+      "notes": "Хранит сырые данные ПОСЛЕДНЕГО парсинга. Обновляется еженедельно скриптом scr-parse-tseh."
     },
     {
       "id": "ent-source-ll",
       "name": "Выгрузка ЛЛ",
-      "description": "Сырые данные выгрузки из «Люди Любят» (ЛЛ).",
+      "description": "Сырые данные последней выгрузки из «Люди Любят» (ЛЛ).",
       "kind": "entity",
       "module": "Поиск",
       "phase": null,
@@ -196,12 +206,12 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Сейчас в App/data/custom_ingredients.json (часть с ЛЛ десертами)."
+      "notes": "Хранит сырые данные ПОСЛЕДНЕГО парсинга. Обновляется еженедельно скриптом scr-parse-ll."
     },
     {
       "id": "ent-source-vv",
       "name": "Выгрузка ВкусВилл",
-      "description": "Сырые данные выгрузки из ВкусВилл (ВВ).",
+      "description": "Сырые данные последней выгрузки из ВкусВилл (ВВ).",
       "kind": "entity",
       "module": "Поиск",
       "phase": null,
@@ -214,7 +224,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Нового источника в текущем App нет — нужен с нуля."
+      "notes": "Хранит сырые данные ПОСЛЕДНЕГО парсинга. Обновляется еженедельно скриптом scr-parse-vv. Формат выгрузки ВкусВилл нужно исследовать (нет в старой версии)."
     },
     {
       "id": "ent-ingredients",
@@ -268,7 +278,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Подумать: rules как jsonb или нормализованная таблица. Сейчас источник — App/data/nutrition_norms.json + menu_rules.md."
+      "notes": "Подумать: rules как jsonb или нормализованная таблица. Сейчас для reference — App/data/nutrition_norms.json + menu_rules.md, но в БД зальём через UI/агента."
     },
     {
       "id": "ent-stock",
@@ -286,7 +296,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Сейчас секция stock_at_home в plans/week_*.json."
+      "notes": "Аналог секции stock_at_home из старого plans/week_*.json."
     },
     {
       "id": "ent-cart",
@@ -322,7 +332,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Структура: week_plans → days → meals → meal_items. Сейчас источник — App/plans/week_*.json."
+      "notes": "Структура: week_plans → days → meals → meal_items. Аналог plans/week_*.json в reference."
     },
     {
       "id": "ent-order-history",
@@ -340,7 +350,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Аналог actual_orders[] в текущих plans/week_*.json."
+      "notes": "Аналог actual_orders[] в старых plans/week_*.json."
     },
     {
       "id": "ent-food-diary",
@@ -358,12 +368,12 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Запись может быть полу-автоматической: предзаполнена планом, пользователь правит факт."
+      "notes": "Запись может быть полу-автоматической: предзаполнена планом, пользователь правит факт (через web UI или Telegram-агента)."
     },
     {
       "id": "ent-notification-schedule",
       "name": "Расписание уведомлений",
-      "description": "Когда отправлять напоминания: приёмы пищи, тренировки, окно без кофе/чая ±1-2ч от железа, разморозка батч-блюд.",
+      "description": "Когда отправлять напоминания: приёмы пищи, тренировки, окно без кофе/чая ±1-2ч от железа, разморозка батч-блюд. Каждое правило → запись в Apple Reminders через CalDAV.",
       "kind": "entity",
       "module": "Сопровождение",
       "phase": null,
@@ -376,7 +386,43 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Поля: trigger_type (time | event | meal), schedule (cron|datetime), channel (push|email|tg), template."
+      "notes": "Поля: trigger_type (time | event | meal_relative), schedule (cron|datetime|relative), reminder_list (Daily/...), template (текст для Reminders)."
+    },
+    {
+      "id": "ent-telegram-account",
+      "name": "Telegram-аккаунт пользователя",
+      "description": "Связь user ↔ telegram_chat_id, поля username, first_name, is_active. Нужно для отправки сообщений и идентификации входящих сообщений в боте.",
+      "kind": "entity",
+      "module": "Сопровождение",
+      "phase": null,
+      "status": "planned",
+      "priority": null,
+      "needed_now": false,
+      "stack": ["postgres", "prisma"],
+      "dependencies": ["ent-users"],
+      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "acceptance_criteria": [],
+      "estimated_complexity": "low",
+      "touch_existing": false,
+      "notes": "Линковка через /start <token> или другой механизм authenticated linking при первом запуске бота."
+    },
+    {
+      "id": "ent-agent-conversations",
+      "name": "История чатов с агентом",
+      "description": "Сохранённые сообщения user ↔ agent в Telegram: messages, timestamps, intent (распознанный агентом), action_taken (что сделал в БД), success flag. Используется агентом для контекста (короткая память).",
+      "kind": "entity",
+      "module": "Сопровождение",
+      "phase": null,
+      "status": "planned",
+      "priority": null,
+      "needed_now": false,
+      "stack": ["postgres", "prisma"],
+      "dependencies": ["ent-users", "ent-telegram-account"],
+      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "acceptance_criteria": [],
+      "estimated_complexity": "low",
+      "touch_existing": false,
+      "notes": "Контекст агента = последние N сообщений (N = 10-20). Старые остаются в БД для аналитики/дебага, но не подгружаются в каждом запросе."
     },
 
     {
@@ -400,97 +446,97 @@
     {
       "id": "scr-parse-5ka",
       "name": "Парсинг 5К",
-      "description": "Парсит сырую выгрузку из Пятёрочки и наполняет/обновляет Каталог ингредиентов.",
+      "description": "Парсит данные напрямую с источника Пятёрочки (5ka.ru или агрегатор) и обновляет ent-source-5ka + Каталог ингредиентов.",
       "kind": "script",
       "module": "Поиск",
       "phase": null,
       "status": "planned",
       "priority": null,
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
+      "stack": ["nextjs", "typescript", "prisma", "scraping-lib"],
       "dependencies": ["ent-source-5ka", "ent-ingredients"],
       "implementation": {"steps": [], "tech": null, "test_strategy": null},
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Стартовый seed из App/data/ingredients_spb.json (5794 PLU)."
+      "notes": "Cron минимум 1×/неделю, рекомендуется Сб. Источник: 5ka.ru API или скрейпинг (TBD). Не использует App/data/ingredients_spb.json."
     },
     {
       "id": "scr-parse-tseh",
       "name": "Парсинг Цех",
-      "description": "Парсит выгрузку из Цех 85 и наполняет Каталог ингредиентов.",
+      "description": "Парсит данные с источника Цех 85 и обновляет ent-source-tseh + Каталог.",
       "kind": "script",
       "module": "Поиск",
       "phase": null,
       "status": "planned",
       "priority": null,
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
+      "stack": ["nextjs", "typescript", "prisma", "scraping-lib"],
       "dependencies": ["ent-source-tseh", "ent-ingredients"],
       "implementation": {"steps": [], "tech": null, "test_strategy": null},
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": null
+      "notes": "Cron минимум 1×/неделю. Источник: цех85.рф / API / скрейпинг (TBD)."
     },
     {
       "id": "scr-parse-ll",
       "name": "Парсинг ЛЛ",
-      "description": "Парсит выгрузку из «Люди Любят» и наполняет Каталог ингредиентов.",
+      "description": "Парсит данные с источника «Люди Любят» и обновляет ent-source-ll + Каталог.",
       "kind": "script",
       "module": "Поиск",
       "phase": null,
       "status": "planned",
       "priority": null,
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
+      "stack": ["nextjs", "typescript", "prisma", "scraping-lib"],
       "dependencies": ["ent-source-ll", "ent-ingredients"],
       "implementation": {"steps": [], "tech": null, "test_strategy": null},
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": null
+      "notes": "Cron минимум 1×/неделю. Источник: люди-любят.рф / API / скрейпинг (TBD)."
     },
     {
       "id": "scr-parse-vv",
       "name": "Парсинг ВкусВилл",
-      "description": "Парсит выгрузку из ВкусВилл и наполняет Каталог ингредиентов.",
+      "description": "Парсит данные с источника ВкусВилл и обновляет ent-source-vv + Каталог.",
       "kind": "script",
       "module": "Поиск",
       "phase": null,
       "status": "planned",
       "priority": null,
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
+      "stack": ["nextjs", "typescript", "prisma", "scraping-lib"],
       "dependencies": ["ent-source-vv", "ent-ingredients"],
       "implementation": {"steps": [], "tech": null, "test_strategy": null},
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Формат выгрузки ВкусВилл нужно ещё исследовать."
+      "notes": "Cron минимум 1×/неделю. Источник: vkusvill.ru / API / скрейпинг (TBD)."
     },
     {
       "id": "scr-search-recipes",
       "name": "Поиск рецептов",
-      "description": "Поиск новых рецептов (LLM / правила / внешний источник) с фильтрацией по профилю и правилам. Создаёт записи в Рецептах с is_relevant=true.",
+      "description": "Поиск новых рецептов через Claude API (LLM генерит варианты под профиль + правила) или с внешних источников. Создаёт записи в Рецептах с is_relevant=true.",
       "kind": "script",
       "module": "Поиск",
       "phase": null,
       "status": "planned",
       "priority": null,
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma", "llm-api"],
+      "stack": ["nextjs", "typescript", "prisma", "anthropic-sdk"],
       "dependencies": ["ent-recipes", "ent-profile", "ent-nutrition-rules"],
       "implementation": {"steps": [], "tech": null, "test_strategy": null},
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
-      "notes": "Решить: LLM (Claude API), скрейпинг сайтов рецептов, или ручной ввод. Скорее всего гибрид."
+      "notes": "Основной канал — Claude API с подсказкой по профилю. Скрейпинг сайтов рецептов — возможно потом как дополнение."
     },
     {
       "id": "scr-normalize-recipe",
       "name": "Нормализация рецепта",
-      "description": "Приводит рецепт к каноничной форме: маппит ингредиенты на Каталог (resolve), нормализует количества (qty_g), считает КБЖУ. Устанавливает is_normalized=true.",
+      "description": "Приводит рецепт к каноничной форме: маппит ингредиенты на Каталог (resolve по name fuzzy match), нормализует количества (qty_g), считает КБЖУ. Устанавливает is_normalized=true.",
       "kind": "script",
       "module": "Поиск",
       "phase": null,
@@ -503,7 +549,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Аналог текущей resolver.py в Python-версии."
+      "notes": "Аналог resolver.py в старой Python-версии. Fuzzy matching по name через pg_trgm или внешнюю lib."
     },
     {
       "id": "scr-validate-recipes",
@@ -562,20 +608,30 @@
     {
       "id": "scr-calc-week-plan",
       "name": "Расчёт плана на неделю",
-      "description": "Генерация плана: подбор блюд под нормы КБЖУ + правила + бюджет + остатки + расписание дней. Использует одобренные рецепты.",
+      "description": "Генерация плана: hybrid algorithm. Сначала Claude API генерирует черновик плана (рецепт на каждый слот) → правила-валидатор проверяет → при провалах локально replace отдельных позиций (greedy под КБЖУ/бюджет/остатки).",
       "kind": "script",
       "module": "Расчёт",
       "phase": null,
       "status": "planned",
       "priority": null,
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
+      "stack": ["nextjs", "typescript", "prisma", "anthropic-sdk"],
       "dependencies": ["ent-week-plan", "ent-recipes", "ent-nutrition-rules", "ent-stock", "ent-profile"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "implementation": {
+        "steps": [
+          "Подготовить контекст: профиль + правила + одобренные рецепты + остатки",
+          "Вызов Claude API с инструкцией сгенерировать план в JSON (структура week_plans→days→meals→items)",
+          "Прогон через scr-validate-recipes для каждого выбранного рецепта",
+          "Если валидация падает — заменить позиции через greedy fallback (взять следующий best match из ent-recipes)",
+          "Сохранить итоговый план в ent-week-plan"
+        ],
+        "tech": "Hybrid: LLM (Claude API) + greedy fallback",
+        "test_strategy": "Юнит на greedy fallback с фикстурами; интеграция на мини-наборе рецептов; e2e на реальных правилах"
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
-      "notes": "Самая сложная фича. Алгоритм: greedy / LP / LLM-assisted? Нужно решение."
+      "notes": "Самая сложная фича. Стоимость токенов Claude API — учесть в стоимости эксплуатации."
     },
     {
       "id": "scr-order-products",
@@ -611,7 +667,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": null
+      "notes": "Канал ввода: web UI или Telegram-агент."
     },
     {
       "id": "scr-import-health",
@@ -629,7 +685,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Источники: ручной ввод, импорт PDF анализов, в перспективе — Apple Health / Google Fit."
+      "notes": "Источники: ручной ввод формы, импорт PDF анализов (OCR — позже). Apple Health / Google Fit интеграция — phase 2-3."
     },
     {
       "id": "scr-correct-plan",
@@ -647,25 +703,38 @@
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
-      "notes": "Может переиспользовать scr-calc-week-plan с дополнительными констрейнтами."
+      "notes": "Может переиспользовать scr-calc-week-plan с дополнительными констрейнтами (зафиксированные приёмы из дневника)."
     },
     {
       "id": "scr-notifications",
-      "name": "Уведомления",
-      "description": "Отправка напоминаний по расписанию: push/email/Telegram (приёмы пищи, тренировки, iron-окно, разморозка).",
+      "name": "Push Apple Reminders (CalDAV)",
+      "description": "Создаёт/обновляет задачи в Apple Reminders через CalDAV API. Использует App-Specific Password (см. arc.md секция A). Шаблоны: «пора <приём>», «тренировка через X», «iron-окно: без кофе», «разморозить <блюдо>».",
       "kind": "script",
       "module": "Сопровождение",
       "phase": null,
       "status": "planned",
       "priority": null,
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma", "cron"],
+      "stack": ["nodejs", "caldav", "cron", "prisma"],
       "dependencies": ["ent-notification-schedule", "ent-week-plan"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
-      "acceptance_criteria": [],
+      "implementation": {
+        "steps": [
+          "Конфиг: APPLE_ID + APPLE_APP_PASSWORD в env",
+          "node-cron в worker-контейнере: ежедневно генерит задачи на след. сутки из ent-notification-schedule + текущего week_plan",
+          "Через caldav-lib пишет в список Reminders (например, 'Daily')",
+          "Дедупликация по uid задачи, чтобы не дублировать при повторных запусках"
+        ],
+        "tech": "caldav npm package + node-cron",
+        "test_strategy": "Юнит на генерацию задач из schedule + week_plan; интеграция с реальным test-Apple-ID"
+      },
+      "acceptance_criteria": [
+        "Утром на iPhone в списке Reminders/Daily появляются задачи на день",
+        "Повторный запуск не дублирует задачи",
+        "Снятие задачи в Reminders не ломает следующий запуск"
+      ],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Решить канал: Telegram bot (проще всего для России) / Web Push / Email. Вероятно Telegram."
+      "notes": "Альтернативный канал — Telegram-агент может проактивно писать (но это вторично). Основной канал нотификаций = Apple Reminders."
     },
     {
       "id": "scr-edit-rules",
@@ -683,12 +752,12 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "По сути UI-форма + API-route. Не «скрипт» в стиле парсеров, но включён по требованию."
+      "notes": "По сути UI-форма + REST endpoint. Доступно из web UI и из Telegram-агента (через tool-use)."
     },
     {
       "id": "scr-edit-schedule",
       "name": "Редактирование расписания",
-      "description": "CRUD-форма и API для управления Расписанием уведомлений: добавить/удалить триггер, поменять время, канал, шаблон.",
+      "description": "CRUD-форма и API для управления Расписанием уведомлений: добавить/удалить триггер, поменять время, шаблон.",
       "kind": "script",
       "module": "Сопровождение",
       "phase": null,
@@ -701,7 +770,60 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Аналогично scr-edit-rules — UI + API."
+      "notes": "Аналогично scr-edit-rules — UI + API + доступно агенту."
+    },
+    {
+      "id": "scr-telegram-agent",
+      "name": "Telegram-агент (LLM)",
+      "description": "Бидирекциональный Telegram-бот: принимает natural-language сообщения от пользователя → Claude API с tool-use → определяет intent → вызывает любой из скриптов системы → отвечает результатом. Имеет полный доступ к функциональности web UI.",
+      "kind": "script",
+      "module": "Сопровождение",
+      "phase": null,
+      "status": "planned",
+      "priority": null,
+      "needed_now": false,
+      "stack": ["nextjs", "typescript", "grammy", "anthropic-sdk", "prisma"],
+      "dependencies": [
+        "ent-telegram-account",
+        "ent-agent-conversations",
+        "ent-users",
+        "scr-calc-norms",
+        "scr-search-recipes",
+        "scr-normalize-recipe",
+        "scr-validate-recipes",
+        "scr-calc-stock",
+        "scr-assemble-cart",
+        "scr-calc-week-plan",
+        "scr-order-products",
+        "scr-write-diary",
+        "scr-import-health",
+        "scr-correct-plan",
+        "scr-edit-rules",
+        "scr-edit-schedule"
+      ],
+      "implementation": {
+        "steps": [
+          "Поднять Telegram-бота на grammY с webhook (или polling на старте)",
+          "Определить tool-definitions для каждого скрипта (название, описание, input schema через Zod)",
+          "На каждое входящее сообщение: подгрузить последние N сообщений из ent-agent-conversations",
+          "Вызвать Claude API с system prompt + history + tools",
+          "Если Claude вернул tool_call — выполнить соответствующий скрипт, сохранить result",
+          "Сформировать человекочитаемый ответ → отправить в Telegram",
+          "Записать (user_message, agent_response, intent, action_taken) в ent-agent-conversations"
+        ],
+        "tech": "grammY для Telegram, @anthropic-ai/sdk для Claude с tool-use, Zod для tool schemas, Prisma для БД",
+        "test_strategy": "Юнит-тесты на маппинг intent → tool с mock Claude API + e2e через тестовый Telegram-аккаунт на dev-боте"
+      },
+      "acceptance_criteria": [
+        "Пользователь пишет 'покажи план на сегодня' → агент возвращает текстовый план",
+        "Пользователь пишет 'замени ужин на main_b' → агент меняет в плане и подтверждает изменение",
+        "Пользователь пишет 'я съел snickers вместо плана' → агент пишет в дневник и предлагает скорректировать остаток дня",
+        "Агент сохраняет историю последних N сообщений в БД и использует её для контекста",
+        "Авторизация: входящее сообщение → проверка telegram_chat_id в ent-telegram-account → доступ только своим действиям"
+      ],
+      "estimated_complexity": "high",
+      "touch_existing": false,
+      "notes": "Архитектурно: webhook endpoint в Next.js Route Handler. Авторизация юзера — по telegram_chat_id, FK на ent-telegram-account → ent-users. Linking бота к юзеру при первом /start через одноразовый токен."
     }
   ]
 }

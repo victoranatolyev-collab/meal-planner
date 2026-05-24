@@ -1,0 +1,22 @@
+@use './reset';
+@use './variables' as v;
+
+body {
+  font-family: v.$font-sans;
+  background-color: v.$color-bg;
+  color: v.$color-text;
+}
+
+a {
+  color: v.$color-primary;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+code,
+pre {
+  font-family: v.$font-mono;
+}

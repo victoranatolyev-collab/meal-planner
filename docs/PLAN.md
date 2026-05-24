@@ -37,11 +37,12 @@
 **Не-feature задачи (инфраструктура):**
 - [x] Monorepo: корневой `package.json` + npm workspaces, `.nvmrc`
 - [x] Backend: `package.json` (Next.js 15, pino, zod), `tsconfig.json` (strict), `next.config.ts`, ESLint 9 flat config + Prettier
-- [ ] Frontend: `package.json` (Vite, React 19, TypeScript), `tsconfig.json`, `vite.config.ts`, базовые SCSS variables/mixins
+- [x] Frontend: `package.json` (Vite 6, React 19, react-router 7), `tsconfig.json` (project references), `vite.config.ts` (с dev-proxy /api→:3000), SCSS modules + design tokens, ESLint 9 + Prettier
 - [ ] Worker: `package.json` (node-cron, Prisma), `tsconfig.json`, точка входа `src/index.ts`
 - [ ] Prisma: `schema.prisma` с моделями `User`, `Profile`, первая миграция (закрывает `ent-users` + `ent-profile`)
 - [x] `backend/.env.example` (DATABASE_URL, ANTHROPIC_API_KEY, TELEGRAM_*, APPLE_*, LOG_LEVEL)
-- [ ] `.env.example` для frontend и worker
+- [x] `frontend/.env.example` (VITE_API_BASE_URL); worker .env.example — пока пусто
+- [ ] `worker/.env.example`
 - [x] `.gitignore` (`docs/.iteration-plan.md`, `node_modules/`, `.env`, `dist/`, `.next/`, `*.tsbuildinfo`)
 - [x] Backend healthcheck endpoint (`GET /api/health`)
 - [ ] Frontend и worker healthcheck-аналоги

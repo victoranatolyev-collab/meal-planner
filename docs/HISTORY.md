@@ -22,6 +22,17 @@
 
 ---
 
+## 2026-05-24 — Phase 0 / шаг 2: Frontend (Vite + React) скелет
+
+- **Сделано:** создал `frontend/` workspace: Vite 6 + React 19 + TypeScript strict + SCSS modules + React Router v7. Структура: `package.json`, project-references `tsconfig.json` (`.app.json` для src, `.node.json` для vite.config), `vite.config.ts` с dev-proxy `/api → :3000`, `index.html`, `src/main.tsx` (createBrowserRouter + RouterProvider), `src/App.tsx` со ссылкой на `App.module.scss`, design tokens в `src/styles/variables.scss` (цвета, отступы, типографика, breakpoints), `reset.scss` (минимальный modern reset), `global.scss` (применение токенов к body). ESLint 9 flat config с react-hooks + react-refresh плагинами.
+- **Решение:** Vite 6 (не 5) — текущий stable. Project references в tsconfig (`-b` build) — стандартный паттерн create-vite. Минимум зависимостей: только react / react-dom / react-router. TanStack Query, Zustand, RHF — добавятся, когда понадобится первый API-вызов / state / форма (Phase 2+).
+- **Проверки:** `npm install` (319 пакетов в frontend, lockfile обновлён), `npx tsc --noEmit` (clean), `npx vite build` (39 modules, 541ms, dist/index.html + CSS + JS bundle), `npx eslint .` (clean).
+- **Файлы:** `frontend/package.json`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `vite.config.ts`, `index.html`, `src/main.tsx`, `src/App.tsx`, `src/App.module.scss`, `src/styles/{variables,reset,global}.scss`, `eslint.config.mjs`, `.prettierrc.json`, `.env.example`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — Phase 0 / шаг 1: Backend (Next.js) скелет
 
 - **Сделано:** создал monorepo-структуру (npm workspaces в корне `package.json`, `.nvmrc=22`) и `backend/` с Next.js 15 App Router. Backend содержит: `package.json` (next@15, react@19, pino, zod), `tsconfig.json` (strict + noUncheckedIndexedAccess + noImplicitOverride), `next.config.ts`, ESLint 9 flat config (`eslint.config.mjs` с typescript-eslint), Prettier, `.env.example` со всеми будущими секретами (DATABASE_URL, ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN, APPLE_ID, и т.д.), минимальный `app/layout.tsx` (требование App Router), `app/api/health/route.ts` (GET → {status, time, version}).

@@ -5,7 +5,7 @@
 > История уже завершённых фаз — в конце документа в разделе «История фаз».
 
 **Текущая ветка:** `rework/nextjs-postgres`
-**Статус:** фазы 0–6 назначены. Активная фаза: **Phase 0 (Foundation)**.
+**Статус:** Phase 0 ✅ DONE (2026-05-24). Активная фаза: **Phase 1 (Catalog)**.
 
 ---
 
@@ -26,42 +26,9 @@
 
 ---
 
-## Phase 0 — Foundation
+## Phase 0 — Foundation ✅ DONE 2026-05-24
 
-**Цель:** Поднять скелет проекта: docker-compose с 4 контейнерами, Prisma + первая миграция (users + profile), пустые рабочие endpoints backend и точка входа frontend. После фазы — `docker compose up` запускает Postgres + backend + frontend + worker, миграции применяются, `GET /api/health` возвращает 200.
-
-**Включает (feature):**
-- [~] `ent-users` — Пользователи (P0) — schema + migration написаны, applied — после Postgres up
-- [~] `ent-profile` — Профиль (P0) — schema + migration написаны, applied — после Postgres up
-
-**Не-feature задачи (инфраструктура):**
-- [x] Monorepo: корневой `package.json` + npm workspaces, `.nvmrc`
-- [x] Backend: `package.json` (Next.js 15, pino, zod), `tsconfig.json` (strict), `next.config.ts`, ESLint 9 flat config + Prettier
-- [x] Frontend: `package.json` (Vite 6, React 19, react-router 7), `tsconfig.json` (project references), `vite.config.ts` (с dev-proxy /api→:3000), SCSS modules + design tokens, ESLint 9 + Prettier
-- [x] Worker: `package.json` (node-cron, pino, tsx, typescript), `tsconfig.json` (NodeNext ESM strict), `src/index.ts` (heartbeat + graceful shutdown). Prisma подключим вместе с миграцией.
-- [x] Prisma: `schema.prisma` с моделями `User`, `Profile` (1:1 FK Cascade), миграция `init` SQL сгенерирована, `lib/db.ts` singleton. Применение к живому Postgres — после docker-compose.
-- [x] `backend/.env.example` (DATABASE_URL, ANTHROPIC_API_KEY, TELEGRAM_*, APPLE_*, LOG_LEVEL)
-- [x] `frontend/.env.example` (VITE_API_BASE_URL); worker .env.example — пока пусто
-- [x] `worker/.env.example` (DATABASE_URL, ANTHROPIC_API_KEY, APPLE_*, LOG_LEVEL)
-- [x] `.gitignore` (`docs/.iteration-plan.md`, `node_modules/`, `.env`, `dist/`, `.next/`, `*.tsbuildinfo`)
-- [x] Backend healthcheck endpoint (`GET /api/health`)
-- [x] Worker heartbeat (cron + лог) — фактически self-healthcheck (контейнер живой при наличии heartbeat-лога)
-- [ ] Frontend healthcheck — позже, в Phase 1 (страница `/` уже отдаётся nginx)
-- [ ] `docker-compose.yml`: 4 сервиса (postgres, backend, worker, frontend) с volume для postgres
-
-**Зависимости:** нет.
-
-**Acceptance criteria:**
-- `docker compose up` поднимает все 4 контейнера без ошибок
-- `psql` показывает миграции применены, таблицы `users` и `profiles` существуют
-- `curl http://localhost:3000/api/health` → `200 OK`
-- `curl http://localhost:5173/` отдаёт страницу-заглушку frontend
-- worker контейнер пишет в лог "worker started" и не падает
-- ESLint + TypeScript-typecheck проходят в backend, frontend, worker
-
-**Открытые вопросы:**
-- Бэкапы Postgres — отложено до Phase 5
-- Auth — отложено (Auth.js v5 появится с 2-м пользователем)
+См. подробности в разделе [«История фаз»](#история-фаз).
 
 ---
 
@@ -233,8 +200,8 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 0 — Foundation.
-**Следующая итерация:** заложить скелет — `docker-compose.yml`, `package.json`-ы, `tsconfig.json`-ы, базовая структура каталогов.
+**Фаза:** Phase 1 — Catalog.
+**Следующая итерация:** добавить миграции для 4 `ent-source-*` + `ent-ingredients`. После — реализовать `scr-parse-5ka` (метод парсинга — TBD при реализации, см. ARCHITECTURE.md §8.4).
 
 ---
 
@@ -242,4 +209,27 @@
 
 Когда фаза завершается — переносим её сюда с пометкой `✅ DONE` + датой.
 
-(пусто)
+### Phase 0 — Foundation ✅ DONE 2026-05-24
+
+**Цель:** Поднять скелет проекта: docker-compose с 4 контейнерами, Prisma + первая миграция (users + profile), пустые рабочие endpoints, точка входа frontend.
+
+**Закрытые фичи:** `ent-users`, `ent-profile` (status=done).
+
+**Инфраструктура (всё ✅):**
+- Monorepo на npm workspaces (root `package.json` + `.nvmrc=22`)
+- Backend: Next.js 15 App Router + TS strict + ESLint 9 flat + Prettier + pino + zod + `GET /api/health`
+- Frontend: Vite 6 + React 19 + TS strict + SCSS modules + React Router v7 + design tokens
+- Worker: Node 22 + node-cron + pino + tsx (dev) + tsc (build) + graceful SIGTERM
+- Prisma: schema (User+Profile 1:1 FK Cascade) + миграция `init` + `lib/db.ts` singleton
+- Docker: 3 multi-stage Dockerfile (alpine), nginx.conf с /api proxy, docker-compose.yml с 4 сервисами (postgres healthcheck → depends_on), volume `postgres_data`, `.env.example` в корне
+
+**Acceptance проверены:**
+- ✅ `docker compose up -d` — 4 контейнера healthy
+- ✅ Миграция применяется (`prisma migrate deploy`); `\dt` показывает users, profiles, _prisma_migrations
+- ✅ `curl localhost:3000/api/health` → 200
+- ✅ `curl localhost:8080/api/health` (через nginx-proxy) → 200 — full-stack integration работает
+- ✅ Worker логирует `worker started`
+- ✅ ESLint + typecheck + build — зелёные во всех 3 workspace
+- ✅ `docker compose down` — чистое завершение
+
+**Коммиты:** c7cfc5a, e5034a2, 0ab2c09, 8d1baba, c314a11, (текущий — закрытие фазы).

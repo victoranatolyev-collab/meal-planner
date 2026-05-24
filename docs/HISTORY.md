@@ -22,6 +22,20 @@
 
 ---
 
+## 2026-05-24 — ✅ Phase 0 закрыта: Docker compose + migrate deploy
+
+- **Сделано:** написал 3 multi-stage Dockerfile (backend node:22-alpine, frontend node→nginx:1.27-alpine, worker node→alpine с tini), `nginx.conf` с SPA fallback + `/api/` proxy на backend:3000, корневой `docker-compose.yml` с 4 сервисами (postgres:16-alpine, backend, worker, frontend) + healthcheck на postgres + depends_on с service_healthy + volume `postgres_data`. `.dockerignore` в каждом workspace. Корневой `.env.example` + локальный `.env`.
+- **Проверка end-to-end:** Поднял Colima (был не запущен), установил docker-compose plugin v5.1.4 через brew, прописал `cliPluginsExtraDirs` в `~/.docker/config.json`. `docker compose up -d postgres` → healthy. `npx prisma migrate deploy` с DATABASE_URL=localhost:5432 → миграция `20260524192718_init` применилась. `\dt` показал `users`, `profiles`, `_prisma_migrations`. `\d users` → PK, unique email, FK references из profiles. `docker compose up -d` (вся четвёрка) → все Up. `curl localhost:3000/api/health` → 200 `{status:ok}`. `curl localhost:8080/api/health` (через frontend nginx-proxy) → 200 — **full-stack integration works**. Worker логи: `worker started`. `docker compose down` — clean.
+- **Столкнулся:** (1) Docker daemon (Colima) был остановлен — пользователь запустил Colima самостоятельно по AskUserQuestion-ответу. (2) `docker compose` plugin отсутствовал — поставил через `brew install docker-compose` + добавил `cliPluginsExtraDirs`. (3) Первая попытка build падала на `COPY --from=deps /repo/backend/node_modules` — npm workspaces hoist'ит все deps в корневой `node_modules/`, workspace-папок node_modules вообще не существует. Убрал лишние COPY. (4) Frontend build падал на `error TS2307: Cannot find module './App.module.scss'` — не было `src/vite-env.d.ts` (стандартный файл из create-vite с `/// <reference types="vite/client" />`). Добавил.
+- **Решение:** Базовые образы — alpine (минимальный размер). В worker — `tini` как PID 1 для корректного SIGTERM (без него Node не получает сигнал). Frontend production = nginx serving static + reverse-proxy на backend. Postgres expose:5432 на хост для удобства миграций/psql с хоста.
+- **Закрыто как done:** `ent-users`, `ent-profile` (миграция применена, таблицы существуют, FK работает).
+- **Проверки:** docker compose config, build × 3 image, up -d, healthcheck postgres, prisma migrate deploy, psql \dt + \d users, curl × 3 endpoints (backend, frontend, proxy), worker logs, docker compose down — все зелёные.
+- **Файлы:** `backend/Dockerfile`, `backend/.dockerignore`, `frontend/Dockerfile`, `frontend/.dockerignore`, `frontend/nginx.conf`, `frontend/src/vite-env.d.ts`, `worker/Dockerfile`, `worker/.dockerignore`, `docker-compose.yml`, `.env.example`, `docs/ROADMAP.json` (ent-users + ent-profile → done).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — Phase 0 / шаг 4: Prisma + первая миграция (ent-users + ent-profile)
 
 - **Сделано:** подключил Prisma 6 в backend (`prisma` dev + `@prisma/client` dep + 4 npm-скрипта prisma:*). Создал `backend/prisma/schema.prisma` с моделями `User` (id uuid, email unique, timestamps) и `Profile` (1:1 с User через `user_id` unique FK + onDelete: Cascade; поля: firstName, lastName, locale='ru', timestamps). Snake_case колонки через `@map`, snake_case таблицы через `@@map("users"/"profiles")`. Сгенерировал миграцию `20260524192718_init/migration.sql` через `prisma migrate diff --from-empty` — не требует живого Postgres. `backend/lib/db.ts` — singleton PrismaClient (защита от множественных коннектов в dev hot-reload).

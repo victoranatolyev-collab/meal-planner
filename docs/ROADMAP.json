@@ -107,7 +107,7 @@
       "kind": "entity",
       "module": null,
       "phase": 0,
-      "status": "in_progress",
+      "status": "done",
       "priority": "P0",
       "needed_now": true,
       "stack": [
@@ -132,7 +132,7 @@
       "kind": "entity",
       "module": null,
       "phase": 0,
-      "status": "in_progress",
+      "status": "done",
       "priority": "P0",
       "needed_now": true,
       "stack": [

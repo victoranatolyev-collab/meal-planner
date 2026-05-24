@@ -38,14 +38,15 @@
 - [x] Monorepo: корневой `package.json` + npm workspaces, `.nvmrc`
 - [x] Backend: `package.json` (Next.js 15, pino, zod), `tsconfig.json` (strict), `next.config.ts`, ESLint 9 flat config + Prettier
 - [x] Frontend: `package.json` (Vite 6, React 19, react-router 7), `tsconfig.json` (project references), `vite.config.ts` (с dev-proxy /api→:3000), SCSS modules + design tokens, ESLint 9 + Prettier
-- [ ] Worker: `package.json` (node-cron, Prisma), `tsconfig.json`, точка входа `src/index.ts`
+- [x] Worker: `package.json` (node-cron, pino, tsx, typescript), `tsconfig.json` (NodeNext ESM strict), `src/index.ts` (heartbeat + graceful shutdown). Prisma подключим вместе с миграцией.
 - [ ] Prisma: `schema.prisma` с моделями `User`, `Profile`, первая миграция (закрывает `ent-users` + `ent-profile`)
 - [x] `backend/.env.example` (DATABASE_URL, ANTHROPIC_API_KEY, TELEGRAM_*, APPLE_*, LOG_LEVEL)
 - [x] `frontend/.env.example` (VITE_API_BASE_URL); worker .env.example — пока пусто
-- [ ] `worker/.env.example`
+- [x] `worker/.env.example` (DATABASE_URL, ANTHROPIC_API_KEY, APPLE_*, LOG_LEVEL)
 - [x] `.gitignore` (`docs/.iteration-plan.md`, `node_modules/`, `.env`, `dist/`, `.next/`, `*.tsbuildinfo`)
 - [x] Backend healthcheck endpoint (`GET /api/health`)
-- [ ] Frontend и worker healthcheck-аналоги
+- [x] Worker heartbeat (cron + лог) — фактически self-healthcheck (контейнер живой при наличии heartbeat-лога)
+- [ ] Frontend healthcheck — позже, в Phase 1 (страница `/` уже отдаётся nginx)
 - [ ] `docker-compose.yml`: 4 сервиса (postgres, backend, worker, frontend) с volume для postgres
 
 **Зависимости:** нет.

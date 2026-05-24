@@ -22,6 +22,17 @@
 
 ---
 
+## 2026-05-24 — Phase 0 / шаг 3: Worker (node-cron) скелет
+
+- **Сделано:** создал `worker/` workspace: чистый Node.js + TypeScript (NodeNext ESM) + node-cron + pino. `src/index.ts` стартует процесс, логирует pid+node version, регистрирует minute-heartbeat cron (debug-уровень), обрабатывает SIGTERM/SIGINT с graceful shutdown (stop cron → 500ms grace → exit 0). Билд: tsc → `dist/index.js`. Dev-режим: `tsx watch`.
+- **Решение:** worker = отдельный workspace без Next.js / React / Prisma пока. Prisma подключим вместе с первой миграцией (следующая итерация). Логи — pino JSON в stdout (Docker сам подхватит в `journalctl`).
+- **Проверки:** `npm install` OK, `npx tsc --noEmit` clean, `npx tsc` (build) → `dist/index.js`, `node dist/index.js` запустился и при SIGTERM показал лог-цепочку `worker started → shutdown requested → worker stopped`. ESLint clean.
+- **Файлы:** `worker/package.json`, `worker/tsconfig.json`, `worker/src/index.ts`, `worker/eslint.config.mjs`, `worker/.prettierrc.json`, `worker/.env.example`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — Phase 0 / шаг 2: Frontend (Vite + React) скелет
 
 - **Сделано:** создал `frontend/` workspace: Vite 6 + React 19 + TypeScript strict + SCSS modules + React Router v7. Структура: `package.json`, project-references `tsconfig.json` (`.app.json` для src, `.node.json` для vite.config), `vite.config.ts` с dev-proxy `/api → :3000`, `index.html`, `src/main.tsx` (createBrowserRouter + RouterProvider), `src/App.tsx` со ссылкой на `App.module.scss`, design tokens в `src/styles/variables.scss` (цвета, отступы, типографика, breakpoints), `reset.scss` (минимальный modern reset), `global.scss` (применение токенов к body). ESLint 9 flat config с react-hooks + react-refresh плагинами.

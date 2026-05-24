@@ -22,6 +22,18 @@
 
 ---
 
+## 2026-05-24 — Phase 0 / шаг 1: Backend (Next.js) скелет
+
+- **Сделано:** создал monorepo-структуру (npm workspaces в корне `package.json`, `.nvmrc=22`) и `backend/` с Next.js 15 App Router. Backend содержит: `package.json` (next@15, react@19, pino, zod), `tsconfig.json` (strict + noUncheckedIndexedAccess + noImplicitOverride), `next.config.ts`, ESLint 9 flat config (`eslint.config.mjs` с typescript-eslint), Prettier, `.env.example` со всеми будущими секретами (DATABASE_URL, ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN, APPLE_ID, и т.д.), минимальный `app/layout.tsx` (требование App Router), `app/api/health/route.ts` (GET → {status, time, version}).
+- **Решение:** **npm + npm workspaces** вместо pnpm — на машине пользователя нет pnpm/corepack, npm 11 уже установлен, для текущего масштаба workspace-функциональности npm хватает. Можно мигрировать на pnpm позже без боли. Node `.nvmrc=22` (LTS, целевой Docker base image), хотя локально у пользователя 26.
+- **Столкнулся:** (1) Next.js при первом build авто-дописал `allowJs: true` в tsconfig.json — оставил как есть (intentional). (2) ESLint ругался на `next-env.d.ts` (auto-generated) — добавил в ignores eslint config.
+- **Проверки:** `npm install` (321 пакет, OK), `npx tsc --noEmit` (no errors), `npx next build` (Compiled successfully, /api/health зарегистрирован как dynamic route), `npx eslint .` (clean).
+- **Файлы:** `package.json`, `package-lock.json`, `.nvmrc`, `backend/package.json`, `backend/tsconfig.json`, `backend/next.config.ts`, `backend/eslint.config.mjs`, `backend/.prettierrc.json`, `backend/.env.example`, `backend/app/layout.tsx`, `backend/app/api/health/route.ts`, `backend/next-env.d.ts`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — Назначены фазы 0–6 и приоритеты всех 37 фичей
 
 - **Сделано:** заполнил `docs/PLAN.md` конкретными фазами 0–6 со списками `feature_id`, целями, acceptance-criteria и открытыми вопросами. Проставил `phase`/`priority`/`needed_now` для всех 37 фичей в `docs/ROADMAP.json`. Распределение: Phase 0=2, 1=9, 2=6, 3=7, 4=4, 5=6, 6=3. По приоритету: P0=20, P1=7, P2=10. `needed_now=true` — только у Phase 0 (старт). Добавил `.gitignore` правила для node/env/iteration-scratch.

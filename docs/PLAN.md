@@ -35,14 +35,16 @@
 - [ ] `ent-profile` — Профиль (P0)
 
 **Не-feature задачи (инфраструктура):**
-- [ ] Создать структуру: `backend/`, `frontend/`, `worker/`, корневой `docker-compose.yml`
-- [ ] Backend: `package.json` (Next.js, Prisma, Zod, pino), `tsconfig.json` (strict), `next.config.ts`, ESLint + Prettier
+- [x] Monorepo: корневой `package.json` + npm workspaces, `.nvmrc`
+- [x] Backend: `package.json` (Next.js 15, pino, zod), `tsconfig.json` (strict), `next.config.ts`, ESLint 9 flat config + Prettier
 - [ ] Frontend: `package.json` (Vite, React 19, TypeScript), `tsconfig.json`, `vite.config.ts`, базовые SCSS variables/mixins
 - [ ] Worker: `package.json` (node-cron, Prisma), `tsconfig.json`, точка входа `src/index.ts`
-- [ ] Prisma: `schema.prisma` с моделями `User`, `Profile`, первая миграция
-- [ ] `.env.example` для всех контейнеров
-- [ ] `.gitignore` (включая `docs/.iteration-plan.md`, `node_modules/`, `.env`, `dist/`, `.next/`)
-- [ ] Каждый сервис: пустой healthcheck endpoint
+- [ ] Prisma: `schema.prisma` с моделями `User`, `Profile`, первая миграция (закрывает `ent-users` + `ent-profile`)
+- [x] `backend/.env.example` (DATABASE_URL, ANTHROPIC_API_KEY, TELEGRAM_*, APPLE_*, LOG_LEVEL)
+- [ ] `.env.example` для frontend и worker
+- [x] `.gitignore` (`docs/.iteration-plan.md`, `node_modules/`, `.env`, `dist/`, `.next/`, `*.tsbuildinfo`)
+- [x] Backend healthcheck endpoint (`GET /api/health`)
+- [ ] Frontend и worker healthcheck-аналоги
 - [ ] `docker-compose.yml`: 4 сервиса (postgres, backend, worker, frontend) с volume для postgres
 
 **Зависимости:** нет.

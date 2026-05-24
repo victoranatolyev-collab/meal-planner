@@ -22,6 +22,22 @@
 
 ---
 
+## 2026-05-24 — Phase 1 / шаг 3: GET /api/ingredients с пагинацией
+
+- **Сделано:** layered endpoint:
+  - `backend/lib/ingredients/schemas.ts` — Zod-схема query params (limit 1..200 default 50, offset ≥0 default 0, source enum, q text search). Coerce строковых query → числа.
+  - `backend/lib/ingredients/service.ts` — `listIngredients({limit, offset, source, q})` через `prisma.ingredient.findMany` + `count`, фильтр по source и `name contains` (mode: insensitive), сортировка name ASC, возвращает {items, total, limit, offset}.
+  - `backend/app/api/ingredients/route.ts` — thin GET handler: парсит query → Zod → service → JSON. 400 при невалидных params с `details: ZodError.flatten()`.
+- **Тесты:** 7 юнит-тестов на Zod-схему (дефолты, coerce, валидные/невалидные source, границы limit/offset, trim+min-length q). Suite passing 11/11 (4 mapper + 7 schemas).
+- **Smoke против live Postgres:** docker compose up postgres, next start, curl `/api/ingredients?limit=10` → 200 `{items:[], total:0, limit:10, offset:0}`. curl `?source=OZON` → 400 с Zod-details (`Invalid enum value... received 'OZON'`). docker compose down — clean.
+- **Решение:** Layered подход (schema + service + route) — те же service-функции переиспользуются в Telegram-агенте через tool-use (см. ARCHITECTURE.md §9.2: «Tool definitions для агента — генерируются из тех же Zod-схем»).
+- **Проверки:** vitest (11/11), tsc, next build, eslint, smoke curl — все зелёные.
+- **Файлы:** `backend/lib/ingredients/{schemas,service,schemas.test}.ts`, `backend/app/api/ingredients/route.ts`, `docs/HISTORY.md`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — Phase 1 / шаг 2: парсер 5К каркас + Vitest
 
 - **Сделано:** написал каркас парсера 5К в `backend/lib/parsers/five-ka/`: `types.ts` (FiveKaProduct shape per `data/ingredients_spb.json` из main), `parser.ts` (interface + env-фабрика stub/api), `stub-parser.ts` (читает фикстуру), `api-parser.ts` (skeleton с JSDoc-инструкцией, как пользователь должен достать endpoints/cookies из DevTools), `mapper.ts` (FiveKaProduct → `Prisma.IngredientCreateInput`, считает price_per_100g, Decimal), `importer.ts` (INSERT в source_5ka + idempotent UPSERT в ingredients по unique key (name, source, pack_size)). Поднял Vitest в backend, 4 юнит-теста маппера зелёные.

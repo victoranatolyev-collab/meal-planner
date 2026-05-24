@@ -1,0 +1,287 @@
+{
+  "$schema": "user_profile_v1",
+  "metadata": {
+    "created_at": "2026-05-13",
+    "language": "ru",
+    "location": "Санкт-Петербург, РФ",
+    "assessment_framework": "ABCDEFG (Anthropometric, Biochemical, Clinical, Dietary, Ecological/microbiome, Functional, Genomic) + поведенческие/психологические/логистические факторы"
+  },
+
+  "anthropometric": {
+    "sex": "male",
+    "age_years": 24,
+    "height_cm": 190,
+    "weight_kg": 86,
+    "body_fat_percent_estimated": 11,
+    "body_fat_percent_range": "10-12",
+    "lean_body_mass_kg_estimated": 76.5,
+    "fat_mass_kg_estimated": 9.5,
+    "bmi": 23.8,
+    "bmi_classification": "normal_weight_lean_muscular",
+    "ffmi_estimated": 21.2,
+    "ffmi_classification": "high_muscle_mass_(intermediate-advanced_natural_athlete)",
+    "waist_circumference_cm": "not_measured (рекомендую измерить)",
+    "weight_correction_note": "Изначально пользователь указал 96 кг, затем уточнил — реальный вес 86 кг. Все макро/калории пересчитаны на 86 кг."
+  },
+
+  "biochemical": {
+    "recent_labs": {
+      "glucose_mmol_l": 4.6,
+      "glucose_status": "normal",
+      "hemoglobin_g_l": 110,
+      "hemoglobin_status": "BELOW_NORMAL_FOR_MALE",
+      "hemoglobin_male_reference_range": "130-170 g/L",
+      "anemia_flag": true,
+      "clinical_priority": "HIGH — рекомендовать пересдачу с расширенной панелью (ферритин, B12, фолат, СОЭ) и врачебную консультацию; в плане питания усилить железо + ко-факторы"
+    },
+    "labs_recommended_to_take": [
+      "ферритин",
+      "сывороточное железо + ОЖСС",
+      "трансферрин и насыщение трансферрина",
+      "витамин D (25-OH)",
+      "витамин B12",
+      "фолиевая кислота",
+      "ТТГ",
+      "липидограмма",
+      "общий белок и альбумин",
+      "креатинин (на фоне креатина)"
+    ]
+  },
+
+  "clinical": {
+    "chronic_conditions": [],
+    "digestive_complaints": "none",
+    "allergies": [],
+    "intolerances": [
+      {
+        "substance": "лактоза",
+        "severity": "лёгкая",
+        "threshold": ">1 л обычного молока вызывает дискомфорт",
+        "strategy": "ограничить обычное молоко; ОК: твёрдые сыры, греческий йогурт, творог, лактозосвободное молоко (подтверждено — переносится без проблем)",
+        "lactose_free_milk_ok": true
+      },
+      {
+        "substance": "бобовые в больших количествах",
+        "severity": "лёгкая",
+        "threshold": "большие порции вызывают вздутие",
+        "strategy": "вводить дозированно, замачивать; нут/чечевица маленькими порциями"
+      }
+    ],
+    "medications": [],
+    "supplements_current": [
+      {"name": "креатин моногидрат", "dose": "5 г/день"}
+    ],
+    "supplements_planned": [
+      {"name": "калия цитрат", "note": "уточнить дозу — обычно 1000-2000 мг калия с пищей"},
+      {"name": "магний хелат (бисглицинат)", "note": "200-400 мг элементарного Mg вечером"},
+      {"name": "омега-3 (EPA+DHA)", "note": "2-3 г суммарно EPA+DHA/день, с едой"}
+    ]
+  },
+
+  "dietary": {
+    "diet_type": "omnivore",
+    "dislikes": ["гречка", "печень (если можно избежать)"],
+    "loves": [
+      "куриная грудка",
+      "картофель",
+      "греческий йогурт",
+      "салаты и овощи",
+      "сыр",
+      "мороженое",
+      "шоколад",
+      "чизкейки и слойки из 'Люди Любят' (со скидкой 10% после 21:00)",
+      "рисовая бумага с начинкой (хочет попробовать — добавить в блюда)"
+    ],
+    "cuisine_preferences": "без предпочтений",
+    "monotony_tolerance": "высокая — готов к строгому набору блюд по расписанию",
+    "fruit_for_dessert": false,
+    "fruits_accepted": ["ягоды"],
+    "vegetables_accepted_all": ["свежие салатные", "крестоцветные", "корнеплоды/паслёновые", "зелёные листовые"],
+    "carb_sources_accepted": ["картофель", "рис", "макароны", "овсянка/хлеб"],
+    "protein_sources_strategy": {
+      "chicken_breast": "ежедневно (любимое)",
+      "beef": "1 раз/неделя",
+      "chicken_liver": "1 раз/неделя (вынужденно, для железа — но просит минимум)",
+      "fish_fresh_or_airfryer": "1 раз/неделя",
+      "eggs": "несколько раз в неделю",
+      "greek_yogurt": "ежедневно",
+      "no_whey_protein": "не использует, только цельная еда"
+    },
+    "current_typical_day_in_deficit": {
+      "calories_estimated_kcal": "~2300",
+      "items": [
+        "Овсяная каша 220 г готовой (~250 ккал, 115 ккал/100 г) + топинг 30 г",
+        "Сочень покупной 80 г (~350 ккал)",
+        "3 батончика Milky Way по 117 ккал (~350 ккал)",
+        "Макароны 90 г сухого × 360 ккал/100 = ~325 ккал",
+        "Куриная грудка сырая 600 г × 110 ккал/100 = ~660 ккал (готовая ~150 г потерь)",
+        "Греческий йогурт 125 г (~75-90 ккал)",
+        "Помидоры/огурцы (~30-50 ккал)",
+        "Молоко для кофе 200 г (~100-120 ккал)"
+      ],
+      "issues_in_current_diet": [
+        "Низкое разнообразие микроэлементов (нет железа из мяса)",
+        "Слишком сладкого мусора (Milky Way × 3 — пустые калории)",
+        "Нет рыбы/омега-3",
+        "Нет красного мяса/печени (критично при Hb 110)",
+        "Нет жира помимо мяса/йогурта (нужно EVOO/орехи)"
+      ]
+    },
+    "evening_sweet_craving": {
+      "exists": true,
+      "preferred_items_specific": ["чизкейк из 'Люди Любят'", "слойка из 'Люди Любят'", "мороженое", "шоколад"],
+      "strategy_in_plan": "встроить 'десертный бюджет' 200-350 ккал/вечер — реальные сладости (чизкейк/слойка вечером после 21 с 10% скидкой), не суррогаты"
+    }
+  },
+
+  "behavioral_psychological": {
+    "emotional_eating": "almost_never",
+    "binge_frequency": "rare",
+    "eating_speed": "fast",
+    "eating_speed_recommendation": "тренироваться есть медленнее (20+ мин/приём) для лучшего насыщения",
+    "taste_preferences": "all",
+    "discipline_self_assessment": "высокая (3 месяца сушки выдержаны)"
+  },
+
+  "lifestyle": {
+    "activity_level": "moderately_active",
+    "activity_multiplier_for_TDEE": 1.5,
+    "training": {
+      "type": "силовые",
+      "frequency_per_week": 2,
+      "days": ["понедельник", "четверг"],
+      "session_duration_min": 90,
+      "current_time_of_day": "TBD",
+      "planned_time_of_day": "12:00-13:00 или раньше (в процессе принятия решения)"
+    },
+    "work_schedule": "5/2 (5 рабочих дней + 2 выходных)",
+    "sedentary_hours_per_day": "7-10",
+    "daily_steps_estimate": "8000-9000",
+    "work_pattern": "гибрид: 3 дня офис, 2 дня дом",
+    "sleep": {
+      "weekday_bedtime": "00:00-01:00",
+      "weekday_wake": "08:00",
+      "weekday_duration_h": "7-8",
+      "weekend_bedtime": "01:00-02:00",
+      "weekend_wake": "10:00",
+      "weekend_duration_h": "8-9",
+      "quality": "хорошее",
+      "note": "лёгкий социальный джетлаг (2ч сдвиг в выходные)"
+    },
+    "stress_level": "средний (повышенный из-за 20% дефицита, после окончания сушки нормализуется)",
+    "hydration": {
+      "water_l_per_day": 2,
+      "plus_tea_coffee": true,
+      "recommended_l_per_day_for_profile": "3.0-3.5 (учитывая массу 86 кг и тренировки)"
+    },
+    "alcohol": {
+      "frequency": "1 раз/неделю (выходные)",
+      "note": "учесть в калораже выходного дня"
+    },
+    "smoking": false,
+    "caffeine": "присутствует"
+  },
+
+  "logistics": {
+    "city": "Санкт-Петербург",
+    "currency": "RUB",
+    "food_budget_per_week_rub": "4000-5000",
+    "preferred_grocery_store": "Пятёрочка (СПб)",
+    "price_check_required": true,
+    "cooking_equipment": ["микроволновка", "аэрогриль", "кухонные весы", "контейнеры/лотки", "морозильник"],
+    "cooking_time_budget": {
+      "weekday_minutes_per_day": "15-20",
+      "saturday_minutes": "20-30",
+      "sunday_meal_prep": true,
+      "sunday_meal_prep_minutes": "по запросу — обычно meal prep на неделю"
+    },
+    "meal_prep_strategy": "готовка впрок (батч-кукинг) в выходные + минимальное приготовление в будни",
+    "ready_food_purchases": "только завтрак 5 раз/неделя (сочень + каша)",
+    "eating_out_frequency_clarified": "только утренняя покупка завтрака 5×/нед; обед/ужин дома"
+  },
+
+  "tracking_preference": {
+    "tracking_approach": "calculate_once_then_eat_by_plan",
+    "rationale": "Пользователь предпочитает зафиксировать план один раз и питаться по нему, а не считать каждый день",
+    "implication_for_plan": "Нужен максимально точный фиксированный план с граммами и расписанием. Никаких 'примерно' и 'на глаз'.",
+    "blood_retest_planned": false,
+    "blood_retest_risk": "Без анализов невозможно точно подтвердить причину низкого Hb (железодефицит vs B12-дефицит vs другое). План будет работать как 'общая страховка' через гемовое железо + ко-факторы, но если через 2 месяца Hb не вырастет — потребуется обследование."
+  },
+
+  "goal": {
+    "primary_goal": "reverse_diet_after_cut_then_lean_recomp_or_lean_gain",
+    "context": "Завершил 3 месяца сушки. Сейчас 86 кг при ~11% жира. Хочет сохранить и улучшить форму.",
+    "phase_recommended": "reverse_diet (4-8 недель) → maintenance/lean_gain",
+    "calorie_strategy": {
+      "current_intake_estimate_kcal": "~2200-2400 (20% дефицит)",
+      "tdee_calculation": {
+        "bmr_mifflin_st_jeor": 2032.5,
+        "tdee_estimated_kcal": 2947,
+        "tdee_post_cut_adjusted_kcal": "2600-2800 (учёт адаптивного термогенеза после сушки)"
+      },
+      "reverse_diet_protocol": "+50-100 ккал/неделю к текущему интейку до достижения maintenance ~2800-3000 ккал",
+      "target_after_reverse": {
+        "maintenance_kcal": "2800-3000",
+        "lean_gain_kcal": "3000-3200 (+200-300 над maintenance)"
+      }
+    },
+    "weight_change_target": "+0.25-0.5 кг/месяц после reverse (lean gain) или 0 кг (maintenance)"
+  },
+
+  "meal_pattern": {
+    "meals_per_day": 4,
+    "structure": [
+      {"meal": "завтрак", "approx_time": "08:30-09:30", "size": "плотный"},
+      {"meal": "обед", "approx_time": "13:00-14:00", "size": "средний"},
+      {"meal": "ужин", "approx_time": "18:30-19:30", "size": "средний"},
+      {"meal": "перекус-десерт", "approx_time": "21:00-22:00", "size": "лёгкий, сладкое"}
+    ],
+    "pre_workout_meal": "за 1.5-2 ч до тренировки 12-13:00 → обед в 10:30-11:30",
+    "post_workout_meal": "белок+углеводы в течение 1-2 ч после"
+  },
+
+  "red_flags_and_priorities": [
+    {
+      "priority": 1,
+      "issue": "Гемоглобин 110 г/л (ниже нормы)",
+      "action": "Срочно: пересдать с ферритином, B12, фолатом. В плане — продукты, богатые гемовым железом (красное мясо, печень, желтки) + витамин C для абсорбции. Возможна добавка железа после уточнения диагноза врачом."
+    },
+    {
+      "priority": 2,
+      "issue": "Низкое потребление воды (2 л при 86 кг + тренировки)",
+      "action": "Увеличить до 3.0-3.5 л/день"
+    },
+    {
+      "priority": 3,
+      "issue": "После долгого дефицита риск 'overshoot' — быстрого набора жира при резком выходе",
+      "action": "Постепенный reverse diet, +50-100 ккал/нед"
+    },
+    {
+      "priority": 4,
+      "issue": "Тяга к сладкому вечером",
+      "action": "Запланированный 'десертный калораж' в макросах (не запрещать)"
+    }
+  ],
+
+  "data_gaps_remaining": [
+    "точная окружность талии (не измерял — можно сделать позже)",
+    "конкретное время тренировок (12-13 или раньше — TBD)"
+  ],
+
+  "next_step_per_user_request": "Пользователь не хочет, чтобы я сразу строил план. Сначала вместе строим шаблон недели (структуру), потом определяем конкретные блюда и их состав.",
+
+
+  "data_gaps_resolved_in_this_session": [
+    "шаги: 8000-9000/день",
+    "24h recall: получен подробный список текущего рациона ~2300 ккал в дефиците",
+    "рабочий контекст: гибрид 3 офис + 2 дом",
+    "готовая еда: только завтрак 5×/нед",
+    "конкретное сладкое: чизкейки/слойки из 'Люди Любят' (скидка 10% после 21:00)",
+    "анализы: пересдача не планируется — план будет работать через диетическое железо",
+    "источники белка: курица ежедневно, говядина 1×/нед, печень 1×/нед (вынужденно), рыба 1×/нед, яйца несколько раз/нед, без whey",
+    "источники углеводов: всё подходит (картофель/рис/паста/овсянка)",
+    "овощи: все 4 категории ок",
+    "фрукты: только ягоды",
+    "инфраструктура: контейнеры, весы, морозилка есть"
+  ]
+}

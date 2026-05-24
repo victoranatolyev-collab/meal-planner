@@ -1,0 +1,291 @@
+{
+  "$schema": "nutrition_norms_v2",
+  "metadata": {
+    "created_at": "2026-05-13",
+    "updated_at": "2026-05-13",
+    "version_note": "v2: пересчёт под скорректированный вес 86 кг (было ошибочно 96)",
+    "personalized_for": "user_profile.json",
+    "user_summary": "Мужчина, 24 г, 190 см, 86 кг, ~11% жира (FFMI 21.2), силовой тренинг 2×/нед (пн/чт), после 3-мес сушки, гемоглобин 110 г/л, шаги 8-9k",
+    "frameworks": ["ISSN (sports nutrition)", "IOM/NAM DRI", "ACSM hydration", "AHA fats"],
+    "sources": [
+      "https://pmc.ncbi.nlm.nih.gov/articles/PMC5477153/ — ISSN protein position",
+      "https://ods.od.nih.gov/HealthInformation/nutrientrecommendations.aspx — NIH ODS",
+      "https://www.ncbi.nlm.nih.gov/books/NBK222881/ — DRI Summary Tables",
+      "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/ — Iron",
+      "https://www.gssiweb.org/sports-science-exchange — sports nutrition",
+      "https://pmc.ncbi.nlm.nih.gov/articles/PMC3725481/ — Vitamin D in athletes",
+      "https://pmc.ncbi.nlm.nih.gov/articles/PMC12381988/ — reverse dieting"
+    ]
+  },
+
+  "energy": {
+    "source": "doctorushakov.com/calculator — авторитетный источник по решению пользователя",
+    "user_inputs_on_calculator": {
+      "sex": "male",
+      "age": 24,
+      "height_cm": 190,
+      "weight_kg": 86,
+      "steps_per_day": 7000,
+      "strength_minutes_per_week": 180,
+      "cardio_minutes_per_week": 0,
+      "goal": "maintenance (после сушки)"
+    },
+    "authoritative_targets": {
+      "daily_kcal": 2455,
+      "protein_g": 161,
+      "fat_g": 90,
+      "carbs_g": 250,
+      "effective_weight_at_10_percent_bf_kg": 90,
+      "bmi": 23.8,
+      "precision_note": "Пользователь указал точно 2455 ккал. Макросы рассчитаны пропорционально от калькулятора (P 26% / F 33% / C 41%)."
+    },
+    "macro_proportions_check": {
+      "protein_kcal": 644,
+      "fat_kcal": 810,
+      "carb_kcal": 1000,
+      "total_kcal": 2454,
+      "protein_percent": 26,
+      "fat_percent": 33,
+      "carb_percent": 41
+    },
+    "comparison_with_my_estimate": {
+      "doctorushakov_kcal": 2455,
+      "my_initial_estimate_kcal": 2600,
+      "difference": "doctorushakov более консервативен (мультипликатор ~1.27 vs мой 1.5). После сушки разумно — меньше риск overshoot. Лучше начать с этого, потом наращивать по динамике."
+    },
+    "phases": {
+      "phase_1_start": {
+        "kcal": 2455,
+        "protein_g": 161,
+        "fat_g": 90,
+        "carbs_g": 250,
+        "duration_weeks": "4-6",
+        "weight_change_acceptable": "стабильно или +0.1-0.2 кг/нед",
+        "if_weight_drops_action": "+100 ккал (+25 г углеводов)",
+        "if_weight_grows_fast_action": "−100 ккал"
+      },
+      "phase_2_lean_gain_optional": {
+        "kcal": "2650-2750",
+        "surplus_kcal": "+200-300 над текущим maintenance",
+        "weight_change_target": "+0.2-0.3 кг/месяц",
+        "macro_increase": "+50 г углеводов, белок/жир тот же"
+      }
+    }
+  },
+
+  "macronutrients": {
+    "source": "doctorushakov.com/calculator",
+    "protein": {
+      "amount_g_per_day": 161,
+      "amount_g_per_kg_bw": 1.87,
+      "kcal_per_g": 4,
+      "kcal_total": 644,
+      "percent_of_calories": 26,
+      "distribution_per_meal_g": "~40 (4 приёма по 40)",
+      "leucine_per_meal_g": "~3 (для максимальной MPS)",
+      "best_sources_for_user_practical": [
+        "куриная грудка ежедневно — 200-250 г готовой",
+        "греческий йогурт 5%/2% — 125-200 г ежедневно",
+        "яйца — несколько раз/нед (по 2-3 шт)",
+        "говядина — 1×/нед (~200 г)",
+        "печень куриная — 1×/нед (~150 г) для железа",
+        "рыба — 1×/нед (~180 г лосось/скумбрия)",
+        "сыр твёрдый/полутвёрдый — 30-40 г/день",
+        "творог 5% — 150-200 г когда нужно",
+        "БЕЗ whey-протеина (по запросу пользователя)"
+      ]
+    },
+    "fat": {
+      "amount_g_per_day": 90,
+      "amount_g_per_kg_bw": 1.05,
+      "kcal_per_g": 9,
+      "kcal_total": 810,
+      "percent_of_calories": 33,
+      "saturated_fat_max_percent": 10,
+      "saturated_fat_max_g_per_day": 27,
+      "trans_fat": "минимизировать",
+      "omega_6_omega_3_ratio_target": "≤4:1",
+      "best_sources_for_user": [
+        "оливковое масло extra virgin — 15-20 г/день",
+        "орехи (миндаль/грецкие) — 25-30 г/день",
+        "семена льна молотые — 10 г/день",
+        "жирная рыба — 1×/нед",
+        "яйца целиком",
+        "сыр (1 порция 30-40 г)",
+        "авокадо опционально"
+      ]
+    },
+    "carbohydrates": {
+      "amount_g_per_day": 250,
+      "amount_g_per_kg_bw": 2.91,
+      "kcal_per_g": 4,
+      "kcal_total": 1000,
+      "percent_of_calories": 41,
+      "training_day_carb_g": "250 (можно +20-30 в обед, -20-30 в десерт)",
+      "rest_day_carb_g": "250",
+      "fiber_g_per_day_target": 30,
+      "fiber_g_per_1000_kcal": 14,
+      "sugar_added_max_percent": 10,
+      "sugar_added_max_g_per_day": "~50 (бюджет для чизкейка/слойки/мороженого)",
+      "best_sources_for_user": [
+        "картофель — основной (любимый, удобно в аэрогриле)",
+        "рис белый — post-workout",
+        "макароны твёрдых сортов",
+        "овсянка — на завтрак",
+        "хлеб цельнозерновой — опционально",
+        "ягоды — 100-150 г/день (углеводы + витамин C для железа)",
+        "овощи салатные/крестоцветные/зелёные — без ограничений",
+        "БЕЗ гречки (не нравится)",
+        "бобовые — макс 50 г сухого веса 1-2×/нед (вздутие)"
+      ]
+    }
+  },
+
+  "water_hydration": {
+    "ml_per_kg_bw_athlete": "35-40",
+    "target_l_per_day_baseline": "3.0-3.4",
+    "training_day_extra_l": "+0.5-1.0",
+    "current_intake_l": 2,
+    "gap_l": "+1.0-1.4",
+    "additional_fluids_counted": ["чай без сахара", "кофе (≤4 чашки)"],
+    "alcohol_weekly_calorie_budget_kcal": "200-400 (учесть в выходной)"
+  },
+
+  "vitamins": {
+    "fat_soluble": {
+      "vitamin_A_mcg_RAE": {"RDA": 900, "UL": 3000, "best_sources": ["печень куриная 1×/нед", "морковь", "сладкий перец", "яйца"]},
+      "vitamin_D_IU": {"RDA": 600, "AI_athlete": "2000-4000", "target_25OHD_ng_ml": ">40", "UL": 4000, "user_recommendation": "ДОБАВКА 2000 МЕ/день круглый год (СПб широта)", "best_sources": ["жирная рыба", "яйца", "обогащённые продукты"]},
+      "vitamin_E_mg": {"RDA": 15, "UL": 1000, "best_sources": ["орехи", "семена", "EVOO"]},
+      "vitamin_K_mcg": {"AI": 120, "best_sources": ["зелень (шпинат, кейл)", "брокколи"]}
+    },
+    "water_soluble": {
+      "vitamin_C_mg": {"RDA": 90, "athlete_target": "150-200", "UL": 2000, "rationale_for_user": "Усилить для абсорбции железа (Hb 110)", "best_sources": ["перец сладкий 1 шт ~150 мг", "ягоды", "цитрусовые", "брокколи"]},
+      "thiamin_B1_mg": {"RDA": 1.2, "best_sources": ["цельные злаки", "свинина", "семечки"]},
+      "riboflavin_B2_mg": {"RDA": 1.3, "best_sources": ["молочка", "яйца", "мясо"]},
+      "niacin_B3_mg_NE": {"RDA": 16, "UL": 35, "best_sources": ["курица", "рыба"]},
+      "vitamin_B6_mg": {"RDA": 1.3, "UL": 100, "best_sources": ["курица", "картофель", "бананы"]},
+      "folate_B9_mcg_DFE": {"RDA": 400, "UL": 1000, "user_priority": "ВЫСОКИЙ — кофактор кроветворения", "best_sources": ["зелень", "печень куриная", "яйца"]},
+      "vitamin_B12_mcg": {"RDA": 2.4, "user_priority": "ВЫСОКИЙ — кофактор кроветворения", "best_sources": ["мясо", "рыба", "яйца", "молочка"]},
+      "pantothenic_B5_mg": {"AI": 5},
+      "biotin_B7_mcg": {"AI": 30},
+      "choline_mg": {"AI": 550, "best_sources": ["яйца (1 шт ~150 мг — 3-4 яйца покрывают)", "курица", "печень"]}
+    }
+  },
+
+  "minerals": {
+    "macro_minerals": {
+      "calcium_mg": {"RDA": 1000, "UL": 2500, "best_sources_for_user": ["твёрдый сыр", "греческий йогурт", "лактозосвободное молоко", "сардины с костями", "зелень"]},
+      "magnesium_mg": {"RDA": 400, "athlete_target": "400-500", "UL_supplement": 350, "best_sources": ["орехи", "семена", "тёмный шоколад", "шпинат"], "user_supplement": "Mg бисглицинат 200-400 мг элементарного, вечером"},
+      "phosphorus_mg": {"RDA": 700},
+      "potassium_mg": {"AI": 3400, "athlete_target": "4000-4700", "best_sources": ["картофель 300 г ~900 мг", "бананы", "шпинат", "йогурт"], "user_supplement": "K-цитрат опционально"},
+      "sodium_mg": {"AI": 1500, "CDRR_upper": 2300, "athlete_consideration": "при потливых тренировках до 3000+; не ограничивать жёстко"},
+      "chloride_mg": {"AI": 2300}
+    },
+    "trace_minerals": {
+      "iron_mg": {
+        "RDA_adult_male": 8,
+        "user_target_dietary": "18-25",
+        "user_priority": "КРИТИЧЕСКИЙ — Hb 110 г/л + пользователь НЕ планирует пересдачу анализов",
+        "rationale": "Без расширенной диагностики нельзя точно определить тип дефицита — действуем 'страховочно' через гемовое железо + B12 + фолат + витамин C",
+        "heme_absorption_percent": "25-30",
+        "non_heme_absorption_percent": "3-5",
+        "weekly_iron_strategy": [
+          "Говядина 1×/нед — ~6 мг гемового железа в 200 г",
+          "Печень куриная 1×/нед — ~12-15 мг в 150 г (мощный источник + витамин A + B12 + фолат)",
+          "Куриная грудка ежедневно — ~1.3 мг/100г негемового",
+          "Яйца (желтки) — ~1 мг/яйцо",
+          "Шпинат варёный — ~3.5 мг/180 г",
+          "Тыквенные семечки — 30 г ~2.5 мг"
+        ],
+        "absorption_enhancers": ["витамин C ≥50 мг с приёмом (перец сладкий/ягоды/цитрус)", "лимонный сок в салат", "мясо в одном приёме с растительным железом"],
+        "absorption_inhibitors": [
+          "Чай/кофе — не пить за 1 ч ДО и 2 ч ПОСЛЕ железосодержащего приёма",
+          "Кальций в больших дозах одновременно (сыр/йогурт в железный приём — снизит абсорбцию)",
+          "Отруби в больших дозах"
+        ],
+        "monitoring": "Без анализов: ориентир — субъективная энергия, переносимость тренировок, цвет лица. Через 8-12 нед рекомендуем повторный Hb минимум."
+      },
+      "zinc_mg": {"RDA": 11, "athlete_target": "15-20", "UL": 40, "best_sources": ["говядина", "тыквенные семечки", "сыр", "яйца"]},
+      "copper_mcg": {"RDA": 900, "UL": 10000, "best_sources": ["печень", "орехи", "семена"]},
+      "iodine_mcg": {"RDA": 150, "UL": 1100, "best_sources": ["йодированная соль (приоритет)", "рыба", "молочка"]},
+      "selenium_mcg": {"RDA": 55, "UL": 400, "best_sources": ["бразильский орех 1-2 шт = норма", "рыба", "яйца"]},
+      "manganese_mg": {"AI": 2.3, "UL": 11},
+      "chromium_mcg": {"AI": 35},
+      "molybdenum_mcg": {"RDA": 45},
+      "fluoride_mg": {"AI": 4}
+    }
+  },
+
+  "essential_fatty_acids": {
+    "omega_3_EPA_DHA_g": {
+      "general_AI": "0.25-0.5",
+      "athlete_target": "2-3",
+      "user_supplement": "Омега-3 2-3 г EPA+DHA/день с едой",
+      "dietary_sources": ["лосось 150 г 1×/нед", "скумбрия", "сардины (консервы) — удобно"]
+    },
+    "omega_3_ALA_g": {"AI": 1.6, "sources": ["семена льна молотые 10 г", "чиа", "грецкий орех"]},
+    "omega_6_linoleic_g": {"AI": 17, "percent_of_calories": "5-10"}
+  },
+
+  "phytochemicals_and_other": {
+    "polyphenols": {"target": "ежедневно с ягодами/чаем/тёмным шоколадом"},
+    "creatine_g": {"current_dose": 5, "recommendation": "Продолжать 5 г/день — оптимально"},
+    "caffeine_mg": {"AI": "≤400/день", "user_dose_at_86kg_ergogenic": "260-520 мг (3-6 мг/кг) за 30-60 мин до тренировки если нужно"},
+    "salt_iodized": "приоритет"
+  },
+
+  "meal_timing_and_distribution": {
+    "meals_per_day": 4,
+    "daily_targets": {"kcal": 2455, "protein_g": 161, "fat_g": 90, "carbs_g": 250},
+    "redistribution_note": "По правилам menu_rules.md завтрак — самый калорийный приём дня (свертки из рисовой бумаги в аэрогриле). Старое распределение 600/740/740/375 заменено на 880/580/620/375.",
+    "structure": [
+      {"meal": "завтрак (рисовая бумага в аэрогриле)", "time": "08:30-09:30", "kcal": 880, "protein_g": 55, "fat_g": 30, "carbs_g": 90, "note": "Самый калорийный приём. Свертки в аэрогриле — 5 мин активно + 10-12 пассивно."},
+      {"meal": "обед / pre-workout (пн, чт)", "time": "11:30-13:00", "kcal": 580, "protein_g": 40, "fat_g": 22, "carbs_g": 55},
+      {"meal": "ужин / post-workout (пн, чт)", "time": "18:30-19:30", "kcal": 620, "protein_g": 45, "fat_g": 22, "carbs_g": 60},
+      {"meal": "вечерний десерт", "time": "21:00-22:00", "kcal": 375, "protein_g": 21, "fat_g": 16, "carbs_g": 45, "note": "Бюджет на 'Люди Любят' со скидкой 10% после 21 (2×/нед) + домашние (5×/нед)"}
+    ],
+    "daily_sums_check": {"kcal": 2455, "protein_g": 161, "fat_g": 90, "carbs_g": 250},
+    "training_day_modifications": {
+      "training_days": ["понедельник", "четверг"],
+      "training_time": "TBD (планируется 12-13)",
+      "pre_workout_meal_timing": "за 1.5-2 ч до — углеводный акцент",
+      "post_workout_meal_timing": "30 г белка + 60-100 г углеводов в течение 1-2 ч"
+    }
+  },
+
+  "user_specific_strategy": {
+    "critical_priorities": [
+      "1. Reverse diet от 2400 ккал, +75-100/нед",
+      "2. Усилить гемовое железо (говядина 1×/нед + печень 1×/нед даже если не любит)",
+      "3. Витамин C с каждым железным приёмом (перец/ягоды/лимон)",
+      "4. Гидратация до 3.0-3.4 л/день",
+      "5. Витамин D добавка 2000 МЕ круглый год (СПб)",
+      "6. Запланированный десертный бюджет — чизкейк/слойка вечером",
+      "7. Mg хелат вечером, Омега-3 с едой, креатин 5 г (продолжать)",
+      "8. БЕЗ кофе/чая за 1 ч до и 2 ч после железосодержащих приёмов"
+    ],
+    "avoid": [
+      "Резкое возвращение к maintenance после долгого дефицита",
+      "Запрет на сладкое — приведёт к срывам",
+      "Обычное молоко >1 л/день (использовать лактозосвободное)",
+      "Большие порции бобовых (>50 г сухого)",
+      "Гречка"
+    ],
+    "leverage": [
+      "Готовность к строгому фиксированному плану — упрощает meal prep",
+      "Высокая дисциплина (3 мес сушки выдержаны)",
+      "Хороший сон",
+      "Аэрогриль + микроволновка + контейнеры + весы + морозилка — полный набор",
+      "Лактозосвободное молоко переносится — расширяет варианты протеина",
+      "Скидка 10% в 'Люди Любят' после 21 — встроить в график"
+    ]
+  },
+
+  "validation_thresholds": {
+    "weight_change_per_week_reverse": "≤+0.3 кг (TDEE найден)",
+    "energy_levels_subjective": "должны улучшаться по мере reverse",
+    "training_performance": "должна расти",
+    "hemoglobin_recheck_weeks": "8-12 — рекомендация (даже если только Hb)",
+    "body_fat_recheck_weeks": "8 после начала reverse"
+  }
+}

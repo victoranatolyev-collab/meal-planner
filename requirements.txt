@@ -1,0 +1,6 @@
+pydantic>=2.0,<3
+click>=8.0,<9
+jinja2>=3.0,<4
+rich>=13.0,<16
+questionary>=2.0,<3
+pytest>=7.0,<10

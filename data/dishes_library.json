@@ -1,0 +1,447 @@
+{
+  "schema_version": "dishes_library_v1",
+  "dishes": {
+    "main_a": {
+      "id": "main_a",
+      "name": "Main A курица в корейском маринаде",
+      "ingredients": [
+        {"ref": "local:chicken_petelinka_cubes", "qty_g": 100, "note": "готовой из батча"},
+        {"ref": "plu:4345356", "qty_g": 50, "note": "рис сухой → 150г варёного, свежий ежедневно", "fresh_addon": true},
+        {"ref": "plu:4412137", "qty_g": 50, "note": "морковь по-корейски"},
+        {"ref": "plu:4412142", "qty_g": 30, "note": "кимчи"},
+        {"ref": "plu:3333628", "qty_g": 40, "note": "огурец свежий", "fresh_addon": true},
+        {"ref": "plu:43347", "qty_g": 30, "note": "перец красный сладкий свежий", "fresh_addon": true},
+        {"ref": "plu:3437316", "qty_g": 5, "note": "масло Слобода"},
+        {"ref": "plu:4392692", "qty_g": 7, "note": "соевый Домшим"},
+        {"ref": "local:teriyaki_home", "qty_g": 4, "note": "терияки из дома"},
+        {"ref": "plu:4178301", "qty_g": 4, "note": "Sen Soy Sriracha"}
+      ],
+      "prep": "batch_cook_sunday",
+      "method": "Куриные кубики в корейском маринаде (соевый+терияки+Sriracha+гочуджан опц.) 30+ мин → аэрогриль 180°C × 18 мин. Все 1.35кг сразу = ~1кг готовой → 8 порций × 100г + 2 порции × 100г для шаурм.",
+      "tags": ["batch_cook", "post_workout_ok", "korean_marinade"]
+    },
+    "main_b": {
+      "id": "main_b",
+      "name": "Main B скумбрия копчёная + рис + овощи",
+      "ingredients": [
+        {"ref": "local:mackerel_smoked", "qty_g": 75, "note": "из 1 уп 300г = 4 порции"},
+        {"ref": "plu:4345356", "qty_g": 50, "note": "рис сухой → 150г варёного", "fresh_addon": true},
+        {"ref": "plu:4412137", "qty_g": 50, "note": "морковь по-корейски"},
+        {"ref": "plu:4412142", "qty_g": 30, "note": "кимчи"},
+        {"ref": "plu:43347", "qty_g": 30, "note": "перец красный сладкий свежий", "fresh_addon": true}
+      ],
+      "prep": "ready_to_eat",
+      "method": "Скумбрия копчёная не требует готовки. Нарезать вилкой, смешать с рисом и овощами. ⚠️ +500мл воды (соль).",
+      "tags": ["fish", "omega3", "salt_heavy"]
+    },
+    "main_c": {
+      "id": "main_c",
+      "name": "Main C печень + пюре + перец + морковь жареная",
+      "ingredients": [
+        {"ref": "local:liver_severnaya", "qty_g": 130, "note": "готовой, из всей пачки 650г сырой → 4 порции 130г"},
+        {"ref": "plu:3953590", "qty_g": 175, "note": "картофель отварной для пюре", "fresh_addon": true},
+        {"ref": "plu:43347", "qty_g": 125, "note": "перец красный сладкий жареный", "fresh_addon": true},
+        {"ref": "plu:14374", "qty_g": 75, "note": "морковь мытая жареная", "fresh_addon": true},
+        {"ref": "plu:3697856", "qty_g": 20, "note": "йогурт Teos вместо сметаны"},
+        {"ref": "local:onion_loose", "qty_g": 50, "note": "лук репчатый"},
+        {"ref": "plu:3437316", "qty_g": 5, "note": "масло Слобода"}
+      ],
+      "prep": "sunday_fresh",
+      "method": "Печень всю 650г сырой с луком и маслом → аэрогриль 200°C × 15 мин → ~520г готовой → 4 порции × 130г. 2 на Вс (обед+ужин), 2 в морозилку на след. Вс. Картофель сварить 25 мин → пюре с йогуртом. Морковь нарезать → аэрогриль 180°C × 10 мин.",
+      "tags": ["iron_meal", "no_dairy_main", "anemia_priority"]
+    },
+    "spring_shawarma": {
+      "id": "spring_shawarma",
+      "name": "Спринг-шаурма йогурт-шрирача",
+      "ingredients": [
+        {"ref": "local:rice_paper", "qty_g": 60, "note": "2-3 листа на шаурму"},
+        {"ref": "local:chicken_petelinka_cubes", "qty_g": 100, "note": "из батча Main A корейский маринад"},
+        {"ref": "plu:3333628", "qty_g": 100, "note": "огурец длинный или 1 короткоплодный"},
+        {"ref": "local:tomatoes_loose", "qty_g": 75},
+        {"ref": "plu:43347", "qty_g": 40, "note": "перец красный сладкий"},
+        {"ref": "plu:3697856", "qty_g": 30, "note": "йогурт Teos для соуса"},
+        {"ref": "plu:4178301", "qty_g": 5, "note": "Sen Soy Sriracha для соуса"},
+        {"ref": "plu:3437316", "qty_g": 4, "note": "масло Слобода"}
+      ],
+      "prep": "frozen_thaw",
+      "method": "Собрать после батч-кука Вс → рисовая бумага размочить 10 сек → курица + овощи + соус → завернуть как буррито → пищевая плёнка → морозилка. Пн/Чт 7:45 достать → аэрогриль 180°C × 5-7 мин → 8:15 готово.",
+      "tags": ["frozen", "breakfast", "training_day"]
+    },
+    "shawarma_bowl_sat": {
+      "id": "shawarma_bowl_sat",
+      "name": "Шаурма-боул Сб (домашний завтрак)",
+      "ingredients": [
+        {"ref": "local:lavash_rizhsky", "qty_g": 80},
+        {"ref": "local:chicken_petelinka_cubes", "qty_g": 100, "note": "из батча Main A"},
+        {"ref": "local:tomatoes_loose", "qty_g": 100, "fresh_addon": true},
+        {"ref": "plu:3333628", "qty_g": 100, "note": "огурец", "fresh_addon": true},
+        {"ref": "plu:3697856", "qty_g": 30, "note": "йогурт Teos для соуса"},
+        {"ref": "plu:4178301", "qty_g": 5, "note": "Sen Soy Sriracha для соуса"},
+        {"ref": "plu:3437316", "qty_g": 10, "note": "масло Слобода (компенсация Tamaki)"},
+        {"ref": "plu:3934852", "qty_g": 50, "note": "1 яйцо варёное или жареное"}
+      ],
+      "prep": "fresh",
+      "method": "Соус Tamaki НЕ куплен — заменён на йогурт-шрирача + EVOO. Курица из батча в микро 1 мин → собрать в боул на лаваше или нарезать в миску. Полить соусом и маслом.",
+      "tags": ["fresh", "breakfast_weekend"]
+    },
+    "quesadilla_sun": {
+      "id": "quesadilla_sun",
+      "name": "Кесадилья Вс (домашний завтрак)",
+      "ingredients": [
+        {"ref": "local:lavash_rizhsky", "qty_g": 80},
+        {"ref": "plu:3934852", "qty_g": 150, "note": "3 яйца взбитые"},
+        {"ref": "local:tomatoes_loose", "qty_g": 100, "fresh_addon": true},
+        {"ref": "local:spices_home", "qty_g": 1}
+      ],
+      "prep": "fresh",
+      "method": "Лаваш → взбитые яйца со специями → помидор внутрь → завернуть как кесадилью → аэрогриль 180°C × 5 мин.",
+      "tags": ["fresh", "breakfast_weekend"]
+    },
+    "coffee_with_milk": {
+      "id": "coffee_with_milk",
+      "name": "Кофе с молоком безлактозн.",
+      "ingredients": [
+        {"ref": "local:instant_coffee", "qty_g": 2},
+        {"ref": "plu:4438490", "qty_g": 30, "note": "молоко Сарафаново безлактозное"}
+      ],
+      "prep": "fresh",
+      "tags": ["drink"]
+    },
+    "office_coffee": {
+      "id": "office_coffee",
+      "name": "Кофе из офисной кофемашины",
+      "ingredients": [
+        {"ref": "local:office_coffee", "qty_g": 2}
+      ],
+      "prep": "fresh",
+      "tags": ["drink", "office_only"]
+    },
+    "snickers_50": {
+      "id": "snickers_50",
+      "name": "Snickers стандарт 50.5г",
+      "ingredients": [
+        {"ref": "plu:3398823", "qty_g": 51}
+      ],
+      "tags": ["sweet", "tail_candidate"]
+    },
+    "twix_55": {
+      "id": "twix_55",
+      "name": "Twix 55г",
+      "ingredients": [
+        {"ref": "plu:7650", "qty_g": 55}
+      ],
+      "tags": ["sweet", "tail_candidate"]
+    },
+    "milky_way_mini": {
+      "id": "milky_way_mini",
+      "name": "Milky Way mini",
+      "ingredients": [
+        {"ref": "local:mw_mini", "qty_g": 26}
+      ],
+      "tags": ["sweet", "tail_candidate", "from_home_stock"]
+    },
+    "marmalade_30g": {
+      "id": "marmalade_30g",
+      "name": "Мармелад Haribo 30г",
+      "ingredients": [
+        {"ref": "plu:4343494", "qty_g": 30}
+      ],
+      "tags": ["sweet", "tail_candidate"]
+    },
+    "marmalade_50g": {
+      "id": "marmalade_50g",
+      "name": "Мармелад Haribo 50г (2-й хвост Ср)",
+      "ingredients": [
+        {"ref": "plu:4343494", "qty_g": 50}
+      ],
+      "tags": ["sweet", "tail_candidate"]
+    },
+    "syrok_chudo_kokos": {
+      "id": "syrok_chudo_kokos",
+      "name": "Сырок Чудо Кокос 40г",
+      "ingredients": [
+        {"ref": "plu:3472063", "qty_g": 40}
+      ],
+      "tags": ["sweet", "tail_candidate"]
+    },
+    "half_snickers": {
+      "id": "half_snickers",
+      "name": "½ Snickers",
+      "ingredients": [
+        {"ref": "plu:3398823", "qty_g": 25}
+      ],
+      "tags": ["sweet", "tail_candidate"]
+    },
+    "chocolate_dark_15g": {
+      "id": "chocolate_dark_15g",
+      "name": "Шоколад тёмный 15г",
+      "ingredients": [
+        {"ref": "plu:4371954", "qty_g": 15}
+      ],
+      "tags": ["sweet", "tail_candidate"]
+    },
+    "chocolate_dark_20g": {
+      "id": "chocolate_dark_20g",
+      "name": "Шоколад/конфеты 20г (любой)",
+      "ingredients": [
+        {"ref": "local:candies_tsarskoe", "qty_g": 20}
+      ],
+      "tags": ["sweet", "tail_candidate", "no_iron_meal"]
+    },
+    "chocolate_dark_30g": {
+      "id": "chocolate_dark_30g",
+      "name": "Шоколад Аленка 30г (Чт десерт)",
+      "ingredients": [
+        {"ref": "plu:4371954", "qty_g": 30}
+      ],
+      "tags": ["sweet"]
+    },
+    "chocolate_no_dairy_20g": {
+      "id": "chocolate_no_dairy_20g",
+      "name": "Шоколад Россия тёмный 20г (БЕЗ молочки)",
+      "ingredients": [
+        {"ref": "local:chocolate_rossiya_dark_75", "qty_g": 20}
+      ],
+      "tags": ["sweet", "tail_candidate", "iron_meal_safe", "no_dairy"]
+    },
+    "dessert_curd_banana_choc": {
+      "id": "dessert_curd_banana_choc",
+      "name": "Десерт Вт: Творог 150г + банан + 20г шок",
+      "ingredients": [
+        {"ref": "plu:4206940", "qty_g": 150, "note": "творог Вкуснотеево"},
+        {"ref": "local:banana_global", "qty_g": 120, "note": "1 банан"},
+        {"ref": "plu:4371954", "qty_g": 20, "note": "Аленка молочный"}
+      ],
+      "tags": ["dessert", "evening", "high_protein"]
+    },
+    "dessert_yogurt_choc_strawberry": {
+      "id": "dessert_yogurt_choc_strawberry",
+      "name": "Десерт Чт: Йогурт Teos 250г + 30г шок + клубника",
+      "ingredients": [
+        {"ref": "plu:3697856", "qty_g": 250, "note": "йогурт Teos греческий"},
+        {"ref": "plu:4371954", "qty_g": 30, "note": "Аленка молочный"},
+        {"ref": "plu:3254313", "qty_g": 50, "note": "клубника Россия"}
+      ],
+      "tags": ["dessert", "evening", "high_protein"]
+    },
+    "dessert_curd_banana_choc_large": {
+      "id": "dessert_curd_banana_choc_large",
+      "name": "Десерт Сб: Творог 200г + банан + 15г шок",
+      "ingredients": [
+        {"ref": "plu:4206940", "qty_g": 200, "note": "творог Вкуснотеево"},
+        {"ref": "local:banana_global", "qty_g": 120, "note": "1 банан"},
+        {"ref": "plu:4371954", "qty_g": 15, "note": "Аленка молочный"}
+      ],
+      "tags": ["dessert", "evening", "high_protein"]
+    },
+    "ts_15_carry_sandwich": {
+      "id": "ts_15_carry_sandwich",
+      "name": "TS-15 Ржаной сэндвич с цыплёнком карри",
+      "ingredients": [
+        {"ref": "local:ts_15_carry_sandwich", "qty_g": 180}
+      ],
+      "tags": ["breakfast_office", "tseh85"]
+    },
+    "ts_14_cinnamon_roll": {
+      "id": "ts_14_cinnamon_roll",
+      "name": "TS-14 Булочка с корицей",
+      "ingredients": [
+        {"ref": "local:ts_14_cinnamon_roll", "qty_g": 80}
+      ],
+      "tags": ["breakfast_office", "tseh85", "sweet"]
+    },
+    "ts_09_salted_caramel_croissant": {
+      "id": "ts_09_salted_caramel_croissant",
+      "name": "TS-09 Круассан Солёная карамель",
+      "ingredients": [
+        {"ref": "local:ts_09_salted_caramel_croissant", "qty_g": 100}
+      ],
+      "tags": ["breakfast_office", "tseh85", "sweet", "sweet_breakfast"]
+    },
+    "ts_13_vatrushka": {
+      "id": "ts_13_vatrushka",
+      "name": "TS-13 Ватрушка персик-брусника",
+      "ingredients": [
+        {"ref": "local:ts_13_vatrushka", "qty_g": 120}
+      ],
+      "tags": ["breakfast_office", "tseh85", "sweet", "sweet_breakfast"]
+    },
+    "ts_16_salami_chipotle": {
+      "id": "ts_16_salami_chipotle",
+      "name": "TS-16 ½ Сэндвич салями+чипотле",
+      "ingredients": [
+        {"ref": "local:ts_16_salami_chipotle", "qty_g": 110}
+      ],
+      "tags": ["breakfast_office", "tseh85", "iron_source_beef"]
+    },
+    "ts_03_strawberry_shu": {
+      "id": "ts_03_strawberry_shu",
+      "name": "TS-03 Клубничная булочка Шу",
+      "ingredients": [
+        {"ref": "local:ts_03_strawberry_shu", "qty_g": 65}
+      ],
+      "tags": ["breakfast_office", "tseh85", "sweet"]
+    },
+    "ds_04_tiramisu_ll": {
+      "id": "ds_04_tiramisu_ll",
+      "name": "DS-04 Тирамису Клубничный ЛЛ 130г",
+      "ingredients": [
+        {"ref": "local:ds_04_tiramisu_ll", "qty_g": 130}
+      ],
+      "tags": ["dessert", "ll", "evening"]
+    },
+    "ds_08_salted_caramel_ll_strawberry": {
+      "id": "ds_08_salted_caramel_ll_strawberry",
+      "name": "DS-08 Пирожное Сол.карамель ЛЛ + клубника",
+      "ingredients": [
+        {"ref": "local:ds_08_salted_caramel_ll", "qty_g": 95},
+        {"ref": "plu:3254313", "qty_g": 50, "note": "клубника"}
+      ],
+      "tags": ["dessert", "ll", "evening"]
+    },
+    "ds_02_san_sebastian_ll": {
+      "id": "ds_02_san_sebastian_ll",
+      "name": "DS-02 Чизкейк Сан-Себастьян ЛЛ 125г",
+      "ingredients": [
+        {"ref": "local:ds_02_san_sebastian_ll", "qty_g": 125}
+      ],
+      "tags": ["dessert", "ll", "evening"]
+    },
+    "ds_01_sochen_ll_strawberry": {
+      "id": "ds_01_sochen_ll_strawberry",
+      "name": "DS-01 Сочень с творогом ЛЛ + клубника",
+      "ingredients": [
+        {"ref": "local:ds_01_sochen_ll", "qty_g": 100},
+        {"ref": "plu:3254313", "qty_g": 30, "note": "клубника"}
+      ],
+      "tags": ["dessert", "ll", "evening"]
+    },
+    "adrenaline_zero": {
+      "id": "adrenaline_zero",
+      "name": "Adrenaline Zero (1 банка)",
+      "ingredients": [
+        {"ref": "local:adrenaline_zero", "qty_units": 1, "qty_g": 449}
+      ],
+      "tags": ["drink", "office_only", "energy"]
+    },
+    "water_250": {
+      "id": "water_250",
+      "name": "Вода 250мл",
+      "ingredients": [
+        {"ref": "local:water", "qty_g": 250}
+      ],
+      "tags": ["drink"]
+    },
+    "main_b_100g": {
+      "id": "main_b_100g",
+      "name": "Main B скумбрия 100г + рис + овощи (Пт обед — увеличенная)",
+      "ingredients": [
+        {"ref": "local:mackerel_smoked", "qty_g": 100, "note": "перенос порции из Сб (выпала из-за ДР)"},
+        {"ref": "plu:4345356", "qty_g": 50, "note": "рис сухой → 150г варёного", "fresh_addon": true},
+        {"ref": "plu:4412137", "qty_g": 50, "note": "морковь по-корейски"},
+        {"ref": "plu:4412142", "qty_g": 30, "note": "кимчи"},
+        {"ref": "plu:43347", "qty_g": 30, "note": "перец красный сладкий свежий", "fresh_addon": true}
+      ],
+      "prep": "ready_to_eat",
+      "method": "Скумбрия копчёная не требует готовки. ⚠️ +500мл воды (соль высокая, особенно в этот день — 100+150г за день).",
+      "tags": ["fish", "omega3", "salt_heavy", "reallocated_from_sat"]
+    },
+    "main_b_150g": {
+      "id": "main_b_150g",
+      "name": "Main B скумбрия 150г + рис + овощи (Пт ужин — двойная)",
+      "ingredients": [
+        {"ref": "local:mackerel_smoked", "qty_g": 150, "note": "перенос Сб ужина (ДР)"},
+        {"ref": "plu:4345356", "qty_g": 50, "note": "рис сухой → 150г варёного", "fresh_addon": true},
+        {"ref": "plu:4412137", "qty_g": 50, "note": "морковь по-корейски"},
+        {"ref": "plu:4412142", "qty_g": 30, "note": "кимчи"},
+        {"ref": "plu:43347", "qty_g": 30, "note": "перец красный сладкий свежий", "fresh_addon": true}
+      ],
+      "prep": "ready_to_eat",
+      "method": "Скумбрия копчёная не требует готовки. ⚠️ Большая порция = много соли — пей минимум 700мл воды в течение вечера.",
+      "tags": ["fish", "omega3", "salt_heavy", "reallocated_from_sat"]
+    },
+    "bk_grill_lunch": {
+      "id": "bk_grill_lunch",
+      "name": "Обед в дороге: БК Grill Chicken / Ростикс гриль-сэндвич",
+      "ingredients": [
+        {"ref": "local:bk_grill_chicken_sandwich", "qty_g": 230}
+      ],
+      "prep": "fast_food",
+      "method": "В дороге Сб (12-13:00). Альтернативы: Ростикс гриль-сэндвич Rocco, Цех 85 ts-15 куриный сэндвич. ❌ НЕ Хлебник (мало белка). Выбирай куриное гриль, не жареное во фритюре.",
+      "tags": ["road", "lunch", "high_protein"]
+    },
+    "dodo_party": {
+      "id": "dodo_party",
+      "name": "ДР: 4 куска пиццы Додо + кусок торта + бокал вина",
+      "ingredients": [
+        {"ref": "local:pizza_dodo_slice", "qty_g": 500, "note": "4 куска средней пиццы 30см"},
+        {"ref": "local:birthday_cake_slice", "qty_g": 100, "note": "1 кусок бисквита со сливочным кремом"},
+        {"ref": "local:wine_red_150ml", "qty_g": 150, "note": "1 бокал красного сухого"}
+      ],
+      "prep": "social_event",
+      "method": "Стратегия: ешь сначала овощи/нарезку → потом пиццу медленно с водой → торт под чай в конце → 1 бокал на ВЕСЬ вечер, тяни. Воды между кусками пиццы ~500мл (соль).",
+      "tags": ["social", "dinner", "alcohol_window", "high_carb"]
+    },
+    "dessert_curd_80g_optional": {
+      "id": "dessert_curd_80g_optional",
+      "name": "Опциональный десерт Сб: Творог 80г (если голоден после ДР)",
+      "ingredients": [
+        {"ref": "plu:4206940", "qty_g": 80, "note": "только если ещё голоден после пиццы"}
+      ],
+      "method": "ОПЦИОНАЛЬНО. После пиццы скорее всего сыт — пропусти. Если в 21:30 чувствуешь голод — творог даёт медленный белок на ночь, помогает закрыть дневной дефицит белка.",
+      "tags": ["dessert", "evening", "optional", "casein_slow_protein"]
+    },
+    "main_b_pt_lunch_actual": {
+      "id": "main_b_pt_lunch_actual",
+      "name": "Main B Пт обед ФАКТ: скумбрия 130г + рис 50г + огурец 70г",
+      "ingredients": [
+        {"ref": "local:mackerel_smoked", "qty_g": 130, "note": "факт — съел больше плановых 100г"},
+        {"ref": "plu:4345356", "qty_g": 50, "note": "рис сухой → 150г варёного"},
+        {"ref": "plu:3333628", "qty_g": 70, "note": "огурец свежий — заменил отсутствующие морковь+кимчи"}
+      ],
+      "prep": "ready_to_eat",
+      "method": "ФАКТ Пт обед: морковь по-корейски и кимчи закончились → заменил огурцом 70г. Скумбрия 130г.",
+      "tags": ["fish", "omega3", "salt_heavy", "actual_eaten"]
+    },
+    "chocolate_tail_12g": {
+      "id": "chocolate_tail_12g",
+      "name": "Конфеты Лакомство 12г (последние, упаковка закончилась)",
+      "ingredients": [
+        {"ref": "local:candies_tsarskoe", "qty_g": 12, "note": "последние 12г из пачки — пачка закончилась"}
+      ],
+      "tags": ["sweet", "tail_candidate", "stock_depleted"]
+    },
+    "kinder_bueno_snack": {
+      "id": "kinder_bueno_snack",
+      "name": "Перекус Kinder Bueno 43г (внеплановый)",
+      "ingredients": [
+        {"ref": "local:kinder_bueno_43g", "qty_g": 43}
+      ],
+      "tags": ["sweet", "unplanned", "office_snack"]
+    },
+    "dessert_kinder_country_cola": {
+      "id": "dessert_kinder_country_cola",
+      "name": "Десерт Пт: 3× Kinder Country 23.5г + Cola Zero 0.33л (замена DS-02)",
+      "ingredients": [
+        {"ref": "local:kinder_country_23_5", "qty_g": 70.5, "note": "3 батончика × 23.5г"},
+        {"ref": "local:cola_zero_330", "qty_g": 330, "note": "1 банка"}
+      ],
+      "method": "Замена чизкейка DS-02 (382 ккал) → 3× Kinder Chocolate Country со злаками 23.5г (395 ккал — близко) + Cola Zero (0 ккал). Бюджет: 180+75=255₽ vs DS-02 150₽.",
+      "tags": ["dessert", "evening", "kinder"]
+    },
+    "main_b_pt_dinner_remaining": {
+      "id": "main_b_pt_dinner_remaining",
+      "name": "Main B Пт ужин ОСТАТКИ: скумбрия 170г + рис 50г + огурец 100г + перец 50г",
+      "ingredients": [
+        {"ref": "local:mackerel_smoked", "qty_g": 170, "note": "весь остаток пачки 300г − 130г Пт обед = 170г"},
+        {"ref": "plu:4345356", "qty_g": 50, "note": "рис сухой → 150г варёного"},
+        {"ref": "plu:3333628", "qty_g": 100, "note": "огурец свежий — основа вместо моркови+кимчи"},
+        {"ref": "plu:43347", "qty_g": 50, "note": "перец красный сладкий свежий (остаток)"}
+      ],
+      "prep": "ready_to_eat",
+      "method": "Пт ужин ПЛАН: морковь+кимчи закончились, перец остался ~50г. Скумбрия — весь остаток (170г, ~57% пачки). ⚠️ Это очень много соли за один приём — пей минимум 800мл воды. Если тяжело — оставь 50-70г на Чт-будущей-недели как зам.",
+      "tags": ["fish", "omega3", "salt_heavy", "remaining_stock"]
+    }
+  },
+  "notes": "Library of reusable dish templates. Referenced by id from weekly plans."
+}

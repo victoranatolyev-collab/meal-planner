@@ -816,7 +816,7 @@
       "kind": "script",
       "module": "Валидация",
       "phase": 2,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -836,7 +836,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Аналог validate.py в текущем коде. Поле в Рецептах: rejection_reasons[]."
+      "notes": "Аналог validate.py в текущем коде. Поле в Рецептах: rejection_reasons[]. [2026-05-25: pure-функция evaluateRules + DB-wrapper validateRecipe. 10 юнит-тестов сценариев. Применяет §7.3 ARCHITECTURE.]"
     },
     {
       "id": "scr-calc-stock",

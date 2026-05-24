@@ -18,3 +18,12 @@ export { importVv } from './parsers/vv/importer.js';
 export { listIngredients } from './ingredients/service.js';
 export { listIngredientsQuerySchema } from './ingredients/schemas.js';
 export type { ListIngredientsQuery } from './ingredients/schemas.js';
+
+// Validation (rule engine)
+export { evaluateRules, validateRecipe } from './validation/index.js';
+export type {
+  IngredientView,
+  RuleSnapshot,
+  ValidationInput,
+  ValidationResult,
+} from './validation/index.js';

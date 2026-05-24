@@ -22,6 +22,23 @@
 
 ---
 
+## 2026-05-25 — Phase 2 / шаг 2: scr-validate-recipes (tag-based rule engine)
+
+- **Сделано:** реализовал валидатор рецептов по контракту из ARCHITECTURE §7.3.
+  - `core/src/validation/types.ts` — ValidationInput/Result, RuleSnapshot, IngredientView. Не зависит от Prisma model'ей — это контракт ядра.
+  - `core/src/validation/evaluate-rules.ts` — **pure function** evaluateRules({ingredients, recipeMealTags, rules}). Switch по ruleKind: BAN_TAG / BAN_TAG_IN_MEAL / REQUIRE_TAG_IN_MEAL. MIN/MAX_PER_WEEK игнорируются на recipe-level (week-only). Exception_tag bypass работает. Собирает rejection_reasons с прикреплённым ингредиентом и `rule.reason`.
+  - `core/src/validation/recipe-validator.ts` — DB-wrapper validateRecipe(recipeId): fetch recipe+ingredients+tags+user's TagRule[] → evaluateRules → UPDATE recipe (is_approved, is_normalized=true, rejection_reasons[]). Лог через pino с recipeId+rulesEvaluated+rejectionCount.
+  - `core/src/validation/index.ts` — barrel. core/src/index.ts — re-export.
+- **Тесты (10):** пустой+0 rules / BAN_TAG hit / BAN_TAG miss / BAN_TAG_IN_MEAL match / BAN_TAG_IN_MEAL miss / REQUIRE met / REQUIRE missing / exception_tag bypass / MIN/MAX_PER_WEEK ignored / multi-violation accumulation. Pure-функция → без mock Prisma, всё детерминированно.
+- **Решение:** Pure-function core + thin DB-wrapper. Это даёт (1) лёгкие тесты, (2) переиспользование evaluateRules для week-plan calc-у (в Phase 3 можно проверить рецепты пачкой без N round-trip-ов в БД).
+- **Закрыто как done:** `scr-validate-recipes`. 14/37 фичей.
+- **Проверки:** vitest 33/33 (10 новых + 23 предыдущих), tsc clean в core/backend/worker, eslint clean.
+- **Файлы:** `core/src/validation/{types,evaluate-rules,recipe-validator,index,evaluate-rules.test}.ts` (5 новых), `core/src/index.ts` (re-export).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-25 — Архитектурный апдейт: 6 drift-фиксов + 4 новые концепции
 
 - **Сделано:** ARCHITECTURE.md приведён в соответствие с кодом + явно зафиксированы концепции, которые накопились в коде но не были в контракте.

@@ -47,7 +47,7 @@
 - [x] `ent-recipes` — Рецепты (P0) ✅ 2026-05-25 (recipes + recipe_ingredients + recipe_tags + ingredients.tags GIN)
 - [ ] `scr-search-recipes` — Поиск рецептов (P0, через Claude API)
 - [ ] `scr-normalize-recipe` — Нормализация рецепта (P0)
-- [ ] `scr-validate-recipes` — Валидация рецептов (P0)
+- [x] `scr-validate-recipes` — Валидация рецептов (P0) ✅ 2026-05-25 (tag-based rule engine, §7.3 ARCHITECTURE)
 - [ ] `scr-edit-rules` — Редактирование правил (P1, UI)
 
 **Зависимости:** Phase 1 (нужен каталог ингредиентов для маппинга).

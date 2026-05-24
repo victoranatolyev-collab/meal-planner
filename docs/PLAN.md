@@ -5,7 +5,7 @@
 > История уже завершённых фаз — в конце документа в разделе «История фаз».
 
 **Текущая ветка:** `rework/nextjs-postgres`
-**Статус:** Phase 0 ✅ DONE (2026-05-24). Активная фаза: **Phase 1 (Catalog)**.
+**Статус:** Phase 0 ✅ DONE, Phase 1 ✅ DONE (обе 2026-05-24). Активная фаза: **Phase 2 (Recipes)**.
 
 ---
 
@@ -32,36 +32,9 @@
 
 ---
 
-## Phase 1 — Catalog
+## Phase 1 — Catalog ✅ DONE 2026-05-24
 
-**Цель:** Наполнить БД ингредиентами Пятёрочки через парсер. Заложить структуру источников (4 ent-source-*) и центральный каталог.
-
-**Включает (feature):**
-- [x] `ent-source-5ka` — Выгрузка 5К (P0) ✅ 2026-05-24
-- [x] `ent-ingredients` — Каталог ингредиентов (P0) ✅ 2026-05-24
-- [x] `scr-parse-5ka` — Парсинг 5К (P0) ✅ 2026-05-24 (stub-pipeline + worker cron; реальный 5ka.ru API — improvement)
-- [x] `ent-source-tseh` — Выгрузка Цех (P2) ✅ 2026-05-24
-- [x] `ent-source-ll` — Выгрузка ЛЛ (P2) ✅ 2026-05-24
-- [x] `ent-source-vv` — Выгрузка ВкусВилл (P2) ✅ 2026-05-24
-- [ ] `scr-parse-tseh` — Парсинг Цех (P2)
-- [ ] `scr-parse-ll` — Парсинг ЛЛ (P2)
-- [ ] `scr-parse-vv` — Парсинг ВкусВилл (P2)
-
-**Зависимости:** Phase 0.
-
-**Acceptance criteria (фаза закрыта, когда):**
-- Миграция добавляет таблицы 4 `source_*` + `ingredients`
-- `scr-parse-5ka` запускается из CLI (`pnpm worker:parse:5ka`) и:
-  - подключается к источнику Пятёрочки (метод TBD на момент реализации — записать решение в HISTORY.md)
-  - обновляет `source_5ka` и `ingredients` (idempotent: повторный запуск не дублирует записи)
-  - логирует через pino количество обработанных позиций
-- ✅ Backend endpoint `GET /api/ingredients` возвращает список из БД (с пагинацией) — реализовано 2026-05-24
-- P2-парсеры (Цех/ЛЛ/ВВ) — таблицы и пустые функции-обёртки; реальный парсинг как backlog внутри фазы
-- ✅ Worker cron триггерит `scr-parse-5ka` по расписанию `0 3 * * 6` (Сб 03:00) — зарегистрирован 2026-05-24
-
-**Открытые вопросы:**
-- Метод парсинга 5K: API / scraping / iframe / OCR — выбрать при реализации и зафиксировать в HISTORY.md (`docs/ARCHITECTURE.md §8.4`)
-- Хранилище сырого ответа источника (raw HTML/JSON) — в БД (jsonb) или в файлах volume?
+См. подробности в разделе [«История фаз»](#история-фаз).
 
 ---
 
@@ -200,14 +173,42 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 1 — Catalog.
-**Следующая итерация:** добавить миграции для 4 `ent-source-*` + `ent-ingredients`. После — реализовать `scr-parse-5ka` (метод парсинга — TBD при реализации, см. ARCHITECTURE.md §8.4).
+**Фаза:** Phase 2 — Recipes.
+**Следующая итерация:** миграция для `ent-nutrition-rules` и `ent-recipes` (+ junction-таблица `recipe_ingredients`).
 
 ---
 
 ## История фаз
 
 Когда фаза завершается — переносим её сюда с пометкой `✅ DONE` + датой.
+
+### Phase 1 — Catalog ✅ DONE 2026-05-24
+
+**Цель:** Наполнить БД ингредиентами 4 источников через идемпотентный парсер; expose через REST.
+
+**Закрытые фичи (9):** ent-source-5ka, ent-source-tseh, ent-source-ll, ent-source-vv, ent-ingredients, scr-parse-5ka, scr-parse-tseh, scr-parse-ll, scr-parse-vv.
+
+**Реализовано:**
+- Prisma миграция `catalog`: 4 таблицы `source_*` (append-only снимки с raw+summary jsonb, индекс parsed_at DESC) + `ingredients` (Decimal КБЖУ/цены, enum source, unique (name, source, pack_size))
+- Парсер 5К с полной структурой: types/parser/stub-parser/api-parser/mapper/importer + 5-позиционный fixture; идемпотентный UPSERT в ingredients + INSERT в source_5ka
+- 3 P2 парсера (Цех/ЛЛ/ВВ) по cookie-cutter pattern из 5К, каждый со своим fixture и mapper
+- `GET /api/ingredients` endpoint с пагинацией (limit/offset/source/q text-search), Zod validation, 400 с error details
+- Worker cron: 4 задачи в одну субботу (5K 03:00, Цех 03:15, ЛЛ 03:30, ВВ 03:45)
+- Manual CLI seed-* для smoke-тестов всех 4 источников
+- Vitest setup в core, 23 юнит-теста (mapper × 4 источника + schemas) — зелёные
+
+**End-to-end проверка:**
+- ✅ Все 4 stub-seeders отрабатывают (5 ingredients per source = 20 total)
+- ✅ Idempotency: повторные запуски не дублируют ingredients (UPSERT по unique key)
+- ✅ Append-only sources: повторные запуски создают новые snapshot rows
+- ✅ `GET /api/ingredients?limit=20` возвращает массив 20 items с полным КБЖУ + price/100g
+
+**Backlog (не блокирует):**
+- Реальные API endpoints 5ka.ru/Цех/ЛЛ/ВВ (требуют reverse-engineering из DevTools пользователя)
+
+**Коммиты:** 932893f, e8c6f43, cbd3847, caa6c95, c541221, 7f7a204, (текущий).
+
+---
 
 ### Phase 0 — Foundation ✅ DONE 2026-05-24
 

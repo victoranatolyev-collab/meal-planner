@@ -1,0 +1,71 @@
+{
+  "meta": {
+    "storeSap": "LL-STUB",
+    "storeAddress": "Люди Любят (stub)",
+    "parsedAt": "2026-05-24T20:00:00Z",
+    "productCount": 5,
+    "withKbjuCount": 4
+  },
+  "products": [
+    {
+      "plu": 4210936,
+      "name": "Чипсы картофельные Lay's Краб 140г",
+      "uom": "шт",
+      "weight": { "label": "140 г", "grams": 140.0 },
+      "prices": { "regular": 179.99, "discount": null },
+      "categories": ["Снеки и чипсы / Чипсы, сухарики"],
+      "is_available": true,
+      "kbju": { "kcal": 520.0, "protein": 6.0, "fat": 32.0, "carbs": 53.0 },
+      "brand": "Lay's",
+      "country": "Россия"
+    },
+    {
+      "plu": 4260436,
+      "name": "Каша пшенная на молоке Пятёрочка Кафе, 200г",
+      "uom": "шт",
+      "weight": { "label": "200 г", "grams": 200.0 },
+      "prices": { "regular": 99.99, "discount": null },
+      "categories": ["Готовая еда / Завтраки"],
+      "is_available": true,
+      "kbju": { "kcal": 95.0, "protein": 3.0, "fat": 3.0, "carbs": 13.0 },
+      "brand": "Пятёрочка Кафе",
+      "country": "Россия"
+    },
+    {
+      "plu": 3000123,
+      "name": "Куриное филе охлаждённое",
+      "uom": "кг",
+      "weight": { "label": "1 кг", "grams": 1000.0 },
+      "prices": { "regular": 389.0, "discount": null },
+      "categories": ["Мясо и птица / Курица"],
+      "is_available": true,
+      "kbju": { "kcal": 110.0, "protein": 23.0, "fat": 1.2, "carbs": 0.0 },
+      "brand": null,
+      "country": "Россия"
+    },
+    {
+      "plu": 2000456,
+      "name": "Молоко лактозо-свободное 1.5%",
+      "uom": "шт",
+      "weight": { "label": "950 мл", "grams": 950.0 },
+      "prices": { "regular": 129.99, "discount": null },
+      "categories": ["Молочные продукты / Молоко"],
+      "is_available": true,
+      "kbju": { "kcal": 44.0, "protein": 3.0, "fat": 1.5, "carbs": 4.7 },
+      "brand": "Parmalat",
+      "country": "Россия"
+    },
+    {
+      "plu": 9000999,
+      "name": "Хлеб без названия (без КБЖУ для теста)",
+      "uom": "шт",
+      "weight": { "label": "400 г", "grams": 400.0 },
+      "prices": { "regular": 49.0, "discount": null },
+      "categories": ["Хлеб и выпечка"],
+      "is_available": true,
+      "kbju": { "kcal": null, "protein": null, "fat": null, "carbs": null },
+      "brand": null,
+      "country": "Россия"
+    }
+  ]
+}

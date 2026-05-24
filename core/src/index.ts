@@ -7,9 +7,12 @@
 export { prisma } from './db.js';
 export type { IngredientSource } from '@prisma/client';
 
-// Parsers
+// Parsers (stubs of 4 sources; реальные API endpoints — backlog)
 export { importFiveKa } from './parsers/five-ka/importer.js';
 export type { FiveKaProduct, FiveKaParseResult } from './parsers/five-ka/types.js';
+export { importTseh } from './parsers/tseh/importer.js';
+export { importLl } from './parsers/ll/importer.js';
+export { importVv } from './parsers/vv/importer.js';
 
 // Ingredients
 export { listIngredients } from './ingredients/service.js';

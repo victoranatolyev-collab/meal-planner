@@ -666,7 +666,7 @@
       "kind": "script",
       "module": "Поиск",
       "phase": 1,
-      "status": "planned",
+      "status": "done",
       "priority": "P2",
       "needed_now": false,
       "stack": [
@@ -687,7 +687,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Cron минимум 1×/неделю. Источник: цех85.рф / API / скрейпинг (TBD)."
+      "notes": "Cron минимум 1×/неделю. Источник: цех85.рф / API / скрейпинг (TBD). [2026-05-24: stub-pipeline (cookie-cutter из 5K). Реальный API — backlog.]"
     },
     {
       "id": "scr-parse-ll",
@@ -696,7 +696,7 @@
       "kind": "script",
       "module": "Поиск",
       "phase": 1,
-      "status": "planned",
+      "status": "done",
       "priority": "P2",
       "needed_now": false,
       "stack": [
@@ -717,7 +717,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Cron минимум 1×/неделю. Источник: люди-любят.рф / API / скрейпинг (TBD)."
+      "notes": "Cron минимум 1×/неделю. Источник: люди-любят.рф / API / скрейпинг (TBD). [2026-05-24: stub-pipeline (cookie-cutter из 5K). Реальный API — backlog.]"
     },
     {
       "id": "scr-parse-vv",
@@ -726,7 +726,7 @@
       "kind": "script",
       "module": "Поиск",
       "phase": 1,
-      "status": "planned",
+      "status": "done",
       "priority": "P2",
       "needed_now": false,
       "stack": [
@@ -747,7 +747,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Cron минимум 1×/неделю. Источник: vkusvill.ru / API / скрейпинг (TBD)."
+      "notes": "Cron минимум 1×/неделю. Источник: vkusvill.ru / API / скрейпинг (TBD). [2026-05-24: stub-pipeline (cookie-cutter из 5K). Реальный API — backlog.]"
     },
     {
       "id": "scr-search-recipes",

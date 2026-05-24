@@ -7,6 +7,9 @@
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
     "seed:5ka": "tsx src/cli/seed-5ka.ts",
+    "seed:tseh": "tsx src/cli/seed-tseh.ts",
+    "seed:ll": "tsx src/cli/seed-ll.ts",
+    "seed:vv": "tsx src/cli/seed-vv.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },

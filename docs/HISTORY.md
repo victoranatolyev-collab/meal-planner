@@ -22,6 +22,24 @@
 
 ---
 
+## 2026-05-24 — ✅ Phase 1 закрыта: 3 P2-парсера + полный pipeline 4 источников
+
+- **Сделано:** cookie-cutter копии five-ka каталога в `core/src/parsers/{tseh,ll,vv}/` (8 файлов в каждом). Python-скрипт с sed-replace: имена классов, IngredientSource enum (FIVEKA→TSEH/LL/VV), prisma model refs (source5ka→sourceTseh/sourceLl/sourceVv), env vars, fixture metadata. Дополнил `core/src/index.ts` экспортами `importTseh, importLl, importVv`. Создал в worker 3 jobs (`parse-tseh.ts`, `parse-ll.ts`, `parse-vv.ts`) и 3 CLI seed-* через шаблон. Зарегистрировал 3 cron-задачи (15/30/45 субботы — каждая 15 мин после 5K). Добавил scripts в worker/package.json.
+- **End-to-end smoke (полный pipeline):**
+  - docker compose up postgres → migrate deploy → ✓
+  - 4 seed-* запуска подряд → каждый говорит `ingredientsUpserted: 5` ✓
+  - psql query → ingredients = 20 (5×4), source_*  = 1 snapshot each ✓
+  - Повторный прогон 4 seed-* → ingredients остаётся 20 (UPSERT idempotency ✓), source_5ka snapshot=4 (4 запуска суммарно), tseh/ll/vv=2 (2 запуска). Append-only sources работает ✓
+- **Решение:** Cookie-cutter копирование 5К-парсера в 3 другие папки. Refactor в общий generic-парсер отложен — реальные API endpoints магазинов будут различаться, и абстракция получится преждевременной. После того как 2+ реальных парсера заработают, можно выделить общее.
+- **Закрыто как done:** `scr-parse-tseh`, `scr-parse-ll`, `scr-parse-vv`. 
+- **Phase 1 ✅ DONE.** 11/37 фичей готово. Перенесена в «История фаз» в PLAN.md с полным summary.
+- **Проверки:** vitest (23/23: 4×4 mapper + 7 schemas) ✅, tsc core+worker ✅, smoke 4 sources × 2 прогона ✅.
+- **Файлы:** 24 новых файла в core/src/parsers/{tseh,ll,vv}, 6 файлов в worker/src/{jobs,cli}, обновления в core/src/index.ts, worker/src/index.ts, worker/package.json, docs/ROADMAP.json, docs/PLAN.md.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — Phase 1 / шаг 4: Worker cron + seed CLI; scr-parse-5ka DONE
 
 - **Сделано:**

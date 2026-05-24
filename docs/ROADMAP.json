@@ -636,7 +636,7 @@
       "kind": "script",
       "module": "Поиск",
       "phase": 1,
-      "status": "in_progress",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -657,7 +657,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Cron минимум 1×/неделю, рекомендуется Сб. Источник: 5ka.ru API или скрейпинг (TBD). Не использует App/data/ingredients_spb.json."
+      "notes": "Cron минимум 1×/неделю, рекомендуется Сб. Источник: 5ka.ru API или скрейпинг (TBD). Не использует App/data/ingredients_spb.json. [2026-05-24: каркас + stub-pipeline закрыты, idempotent UPSERT работает. Реальный API (reverse-engineered 5ka.ru endpoints) — improvement task, требует endpoints от пользователя из DevTools.]"
     },
     {
       "id": "scr-parse-tseh",

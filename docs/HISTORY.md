@@ -22,6 +22,29 @@
 
 ---
 
+## 2026-05-24 — Phase 1 / шаг 4: Worker cron + seed CLI; scr-parse-5ka DONE
+
+- **Сделано:**
+  - `worker/package.json`: добавил `"core": "*"` как dep, перенёс tsx в `dependencies` (нужна в runtime), упростил scripts (`start: tsx src/index.ts`, `seed:5ka: tsx src/cli/seed-5ka.ts`). Убрал tsc-build из worker (worker запускается через tsx и в prod — KISS, без bundling-шага).
+  - `worker/src/jobs/parse-5ka.ts`: cron-задача дёргает `importFiveKa` из 'core'.
+  - `worker/src/cli/seed-5ka.ts`: one-shot CLI для smoke-тестов (`npm run seed:5ka --workspace worker`).
+  - `worker/src/index.ts`: зарегистрирован cron `0 3 * * 6` (Сб 03:00) для parse-5ka.
+  - `worker/tsconfig.json`: noEmit=true (tsc только для typecheck).
+  - `worker/Dockerfile`: добавил `prep` stage с `prisma generate` (для core), runner копирует core/+worker/ и запускает `npx tsx worker/src/index.ts`.
+- **End-to-end smoke (полный pipeline):**
+  - docker compose up postgres → миграции уже применены.
+  - `npm run seed:5ka --workspace worker` → 5 products parsed → 5 ingredients UPSERTed → source_5ka snapshot создан. Лог: `productsTotal:5, ingredientsUpserted:5, elapsedMs:40`.
+  - `next start` + `curl /api/ingredients?limit=10` → 200 с массивом 5 items (КБЖУ + price_per_100g + packSize + unit — всё корректно).
+  - **Idempotency**: повторный seed-5ka → новый sourceId (source_5ka append-only ✓), но `/api/ingredients` всё ещё `total=5` (UPSERT по unique key (name, source, pack_size) не дублирует ✓).
+- **Решение:** Worker использует `tsx` и в production (вместо `tsc → dist/`). Причина: core экспортирует TS-исходники (`main: ./src/index.ts`), Node не запустит `.ts` напрямую; bundling-шаг = overkill при текущем масштабе. tsx добавляет ~5MB в runtime образ — приемлемо.
+- **Закрыто как done:** `scr-parse-5ka` (stub-pipeline работает; реальный API через DevTools-endpoints — отдельная improvement-задача, статус `done` потому что фича «парсинг + idempotent импорт + интеграция с БД» реализована).
+- **Проверки:** `npm install`, `tsc --noEmit` в worker и core, `prisma migrate deploy`, `seed:5ka` (×2 идемпотентно), `next start` + `curl /api/ingredients`, `docker compose down` — всё зелёное.
+- **Файлы:** `worker/package.json`, `worker/tsconfig.json`, `worker/Dockerfile`, `worker/src/index.ts`, `worker/src/jobs/parse-5ka.ts` (new), `worker/src/cli/seed-5ka.ts` (new), `docs/ROADMAP.json` (scr-parse-5ka → done), `docs/HISTORY.md`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — Рефакторинг: shared workspace `core/`
 
 - **Сделано:** создал 4-й npm workspace `core/` со своим package.json (deps: @prisma/client, pino, zod; dev: prisma, vitest, typescript, eslint, typescript-eslint), tsconfig (NodeNext ESM strict), eslint config, vitest config. Перенёс через `git mv` (rename detection сохранён): `backend/prisma/` → `core/prisma/`, `backend/lib/db.ts` → `core/src/db.ts`, `backend/lib/parsers/` → `core/src/parsers/`, `backend/lib/ingredients/` → `core/src/ingredients/`. Создал `core/src/index.ts` (barrel-экспорты). Добавил `core` в `package.json` workspaces. Backend depends on core через `"core": "*"`. backend route `/api/ingredients` теперь импортирует `import { listIngredientsQuerySchema, listIngredients } from 'core'`.

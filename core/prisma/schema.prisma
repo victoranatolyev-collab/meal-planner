@@ -23,7 +23,10 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  profile Profile?
+  profile         Profile?
+  nutritionTarget NutritionTarget?
+  tagRules        TagRule[]
+  recipes         Recipe[]
 
   @@map("users")
 }
@@ -120,6 +123,9 @@ model SourceVv {
 /// Общий нормализованный каталог ингредиентов.
 /// Phase 1 / ent-ingredients. Все парсеры пишут сюда. БЕЗ привязки к user — каталог общий.
 /// Дубли разрешаются по (name, source, pack_size).
+///
+/// Phase 2: добавлены теги (tags text[]) — это ключевой механизм валидации правил.
+/// GIN индекс на tags создаётся вручную в миграции (Prisma пока не умеет inline GIN).
 model Ingredient {
   id           String           @id @default(uuid())
   name         String
@@ -133,11 +139,161 @@ model Ingredient {
   weightG      Int?             @map("weight_g")
   packSize     String?          @map("pack_size")
   unit         String           @default("g")
+  tags         String[]         @default([])
   createdAt    DateTime         @default(now()) @map("created_at")
   updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  recipeIngredients RecipeIngredient[]
 
   @@unique([name, source, packSize], name: "uniq_name_source_pack")
   @@index([source])
   @@index([name])
   @@map("ingredients")
+}
+
+// ============================================================
+// Phase 2 — Recipes + Tag-based Rules
+// Tag-based система: ingredients.tags[] + recipe_tags + tag_dictionary.
+// Правила = выборки SQL по тегам (см. docs/HISTORY.md 2026-05-25).
+// ============================================================
+
+/// Категория тега — группировка для UI и валидации.
+enum TagCategory {
+  NUTRIENT // 'protein', 'iron', 'calcium'
+  ALLERGEN // 'lactose', 'gluten', 'nuts'
+  CATEGORY // 'meat', 'dairy', 'vegetable'
+  BEHAVIOR // 'caffeine', 'alcohol', 'sweetener'
+  MEAL_TAG // 'iron_meal', 'sweet_breakfast', 'training_meal' (только для recipes)
+  OTHER
+}
+
+/// Справочник всех известных тегов. Не FK к ingredients.tags[] (loose coupling).
+/// UI берёт отсюда автокомплит + валидацию имён.
+model Tag {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  category    TagCategory
+  description String?
+  isSystem    Boolean     @default(false) @map("is_system")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@map("tag_dictionary")
+}
+
+/// Целевые КБЖУ + бюджет (1:1 с User).
+/// Phase 2 / часть ent-nutrition-rules.
+model NutritionTarget {
+  id                      String   @id @default(uuid())
+  userId                  String   @unique @map("user_id")
+  kcalPerDay              Decimal  @map("kcal_per_day") @db.Decimal(7, 2)
+  proteinGPerDay          Decimal  @map("protein_g_per_day") @db.Decimal(6, 2)
+  fatGPerDay              Decimal  @map("fat_g_per_day") @db.Decimal(6, 2)
+  carbsGPerDay            Decimal  @map("carbs_g_per_day") @db.Decimal(6, 2)
+  proteinGPerKgMin        Decimal? @map("protein_g_per_kg_min") @db.Decimal(4, 2)
+  budgetTargetRubPerWeek  Decimal? @map("budget_target_rub_per_week") @db.Decimal(8, 2)
+  budgetSoftCapRubPerWeek Decimal? @map("budget_soft_cap_rub_per_week") @db.Decimal(8, 2)
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("nutrition_targets")
+}
+
+/// Виды правил на тегах.
+enum RuleKind {
+  BAN_TAG // запрет ингредиента с этим тегом (везде)
+  BAN_TAG_IN_MEAL // запрет в рецептах с meal_tag
+  REQUIRE_TAG_IN_MEAL // обязателен в рецептах с meal_tag
+  MIN_PER_WEEK // минимум приёмов с этим тегом за неделю (quantity)
+  MAX_PER_WEEK // максимум приёмов с этим тегом за неделю (quantity)
+}
+
+/// Правила питания пользователя — все через теги.
+/// Phase 2 / часть ent-nutrition-rules.
+model TagRule {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  ruleKind     RuleKind @map("rule_kind")
+  tagName      String   @map("tag_name")
+  mealTag      String?  @map("meal_tag")
+  quantity     Int?
+  exceptionTag String?  @map("exception_tag")
+  reason       String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@index([tagName])
+  @@map("tag_rules")
+}
+
+/// Источник появления рецепта.
+enum RecipeSource {
+  LLM // сгенерирован Claude API через scr-search-recipes
+  MANUAL // создан пользователем вручную через UI/агента
+  IMPORTED // импортирован из внешнего источника (например cookbook scraper в будущем)
+}
+
+/// Рецепт — per-user (LLM генерит под индивидуальный профиль).
+/// Phase 2 / ent-recipes. Статус-флаги (is_relevant/is_normalized/is_approved) определяют,
+/// в какой части пайплайна находится рецепт.
+model Recipe {
+  id               String       @id @default(uuid())
+  userId           String       @map("user_id")
+  name             String
+  instructions     String       @default("")
+  isRelevant       Boolean      @default(false) @map("is_relevant")
+  isNormalized     Boolean      @default(false) @map("is_normalized")
+  isApproved       Boolean      @default(false) @map("is_approved")
+  rejectionReasons String[]     @default([]) @map("rejection_reasons")
+  totalKcal        Decimal?     @map("total_kcal") @db.Decimal(8, 2)
+  totalProteinG    Decimal?     @map("total_protein_g") @db.Decimal(7, 2)
+  totalFatG        Decimal?     @map("total_fat_g") @db.Decimal(7, 2)
+  totalCarbsG      Decimal?     @map("total_carbs_g") @db.Decimal(7, 2)
+  source           RecipeSource @default(MANUAL)
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredients RecipeIngredient[]
+  tags        RecipeTag[]
+
+  @@index([userId])
+  @@index([userId, isApproved])
+  @@map("recipes")
+}
+
+/// Junction: ингредиент в рецепте с количеством.
+/// fresh_addon = true для свежих добавок поверх (зелень, специи).
+model RecipeIngredient {
+  recipeId     String  @map("recipe_id")
+  ingredientId String  @map("ingredient_id")
+  qtyG         Int     @map("qty_g")
+  freshAddon   Boolean @default(false) @map("fresh_addon")
+  note         String?
+
+  recipe     Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@id([recipeId, ingredientId])
+  @@map("recipe_ingredients")
+}
+
+/// Junction: теги рецепта (для scope правил BAN_TAG_IN_MEAL / REQUIRE_TAG_IN_MEAL).
+/// Примеры: 'iron_meal', 'sweet_breakfast', 'training_meal'.
+model RecipeTag {
+  recipeId String @map("recipe_id")
+  tagName  String @map("tag_name")
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@id([recipeId, tagName])
+  @@index([tagName])
+  @@map("recipe_tags")
 }

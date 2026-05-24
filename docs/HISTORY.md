@@ -22,6 +22,32 @@
 
 ---
 
+## 2026-05-25 — Phase 2 / шаг 1: tag-based схема (recipes + nutrition_rules)
+
+- **Сделано:** расширил `core/prisma/schema.prisma` 7 новыми моделями + 1 расширение существующей:
+  - `Tag` (table `tag_dictionary`) + `TagCategory` enum [NUTRIENT, ALLERGEN, CATEGORY, BEHAVIOR, MEAL_TAG, OTHER]
+  - `Ingredient.tags String[]` + manual GIN индекс `ingredients_tags_gin` (Prisma не умеет inline GIN, добавил CREATE INDEX в migration.sql вручную)
+  - `NutritionTarget` (1:1 user) — целевые КБЖУ + бюджет
+  - `TagRule` + `RuleKind` enum [BAN_TAG, BAN_TAG_IN_MEAL, REQUIRE_TAG_IN_MEAL, MIN_PER_WEEK, MAX_PER_WEEK] — все правила питания через теги
+  - `Recipe` (per-user FK) + `RecipeSource` enum [LLM, MANUAL, IMPORTED] — статус-флаги is_relevant/is_normalized/is_approved, total_kcal/protein/fat/carbs Decimal
+  - `RecipeIngredient` junction (qty_g, fresh_addon, note)
+  - `RecipeTag` junction (для scope правил MEAL_TAG)
+  - Связи на User: + nutritionTarget, tagRules[], recipes[]
+- **AskUserQuestion (по архитектуре Phase 2):**
+  - **Tag-based vs нормализованная 5-табличная схема:** пользователь предложил tag-based архитектуру (теги на ингредиентах → правила = SQL по тегам). Принято. Распиал, как иначе бы выглядела 5-табличная (nutrition_targets/banned_ingredients/dietary_restrictions/dish_frequency_rules/custom_rules), но tag-based проще и гибче.
+  - **Recipes:** per-user (LLM генерит под индивидуальный профиль).
+  - **Recipe totals:** stored как Decimal (для быстрых выборок в plan-алгоритме).
+  - **Tag dictionary:** отдельная таблица tag_dictionary с категорией (не FK, loose coupling — UI берёт автокомплит).
+- **Миграция:** `prisma migrate dev --create-only --name recipes_and_rules`, manual append GIN index, `migrate deploy`. Postgres: 14 таблиц (+6 новых: nutrition_targets, recipe_ingredients, recipe_tags, recipes, tag_dictionary, tag_rules). `\d ingredients` показал `tags text[]` + `ingredients_tags_gin gin (tags)`.
+- **Smoke:** insert 3 tags в tag_dictionary, UPDATE ingredients SET tags = '...', SELECT WHERE 'lactose' = ANY(tags) — вернул 2 строки (молоко). Tag-based queries работают.
+- **Закрыто как done:** `ent-nutrition-rules`, `ent-recipes`. 13/37 фичей.
+- **Проверки:** prisma format/validate/generate, migrate deploy (14 таблиц), tsc в core/backend/worker, vitest 23/23 — все зелёные.
+- **Файлы:** `core/prisma/schema.prisma` (расширение), `core/prisma/migrations/20260524210257_recipes_and_rules/migration.sql` (+manual GIN index), `docs/ROADMAP.json`, `docs/HISTORY.md`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — ✅ Phase 1 закрыта: 3 P2-парсера + полный pipeline 4 источников
 
 - **Сделано:** cookie-cutter копии five-ka каталога в `core/src/parsers/{tseh,ll,vv}/` (8 файлов в каждом). Python-скрипт с sed-replace: имена классов, IngredientSource enum (FIVEKA→TSEH/LL/VV), prisma model refs (source5ka→sourceTseh/sourceLl/sourceVv), env vars, fixture metadata. Дополнил `core/src/index.ts` экспортами `importTseh, importLl, importVv`. Создал в worker 3 jobs (`parse-tseh.ts`, `parse-ll.ts`, `parse-vv.ts`) и 3 CLI seed-* через шаблон. Зарегистрировал 3 cron-задачи (15/30/45 субботы — каждая 15 мин после 5K). Добавил scripts в worker/package.json.

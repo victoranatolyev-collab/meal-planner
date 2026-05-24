@@ -3,7 +3,7 @@
   "project": "nutrition-rework",
   "description": "Полный рерайт приложения питания с Python CLI + JSON-файлов на Next.js + PostgreSQL стек. Документ — единый источник правды о фичах, фазах внедрения, статусах и архитектурных решениях.",
   "created_at": "2026-05-24",
-  "updated_at": "2026-05-24",
+  "updated_at": "2026-05-25",
   "git": {
     "source_branch": "main",
     "target_branch": "rework/nextjs-postgres",
@@ -324,7 +324,7 @@
       "kind": "entity",
       "module": "Поиск",
       "phase": 2,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -343,7 +343,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Решение: одна таблица с тремя bool-флагами (или enum status). Связь рецепт↔ингредиенты через junction-таблицу recipe_ingredients (qty_g, fresh_addon, note)."
+      "notes": "Решение: одна таблица с тремя bool-флагами (или enum status). Связь рецепт↔ингредиенты через junction-таблицу recipe_ingredients (qty_g, fresh_addon, note). [2026-05-25: миграция применена. Tag-based архитектура: ingredients.tags text[] с GIN, recipe_tags, tag_dictionary, nutrition_targets, tag_rules.]"
     },
     {
       "id": "ent-nutrition-rules",
@@ -352,7 +352,7 @@
       "kind": "entity",
       "module": "Валидация",
       "phase": 2,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -370,7 +370,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Подумать: rules как jsonb или нормализованная таблица. Сейчас для reference — App/data/nutrition_norms.json + menu_rules.md, но в БД зальём через UI/агента."
+      "notes": "Подумать: rules как jsonb или нормализованная таблица. Сейчас для reference — App/data/nutrition_norms.json + menu_rules.md, но в БД зальём через UI/агента. [2026-05-25: миграция применена. Tag-based архитектура: ingredients.tags text[] с GIN, recipe_tags, tag_dictionary, nutrition_targets, tag_rules.]"
     },
     {
       "id": "ent-stock",

@@ -43,8 +43,8 @@
 **Цель:** Поднять справочник рецептов с пайплайном «найти → нормализовать → провалидировать». UI-редактор правил питания.
 
 **Включает (feature):**
-- [ ] `ent-nutrition-rules` — Правила питания (P0)
-- [ ] `ent-recipes` — Рецепты (P0)
+- [x] `ent-nutrition-rules` — Правила питания (P0) ✅ 2026-05-25 (tag-based: tag_dictionary, nutrition_targets, tag_rules)
+- [x] `ent-recipes` — Рецепты (P0) ✅ 2026-05-25 (recipes + recipe_ingredients + recipe_tags + ingredients.tags GIN)
 - [ ] `scr-search-recipes` — Поиск рецептов (P0, через Claude API)
 - [ ] `scr-normalize-recipe` — Нормализация рецепта (P0)
 - [ ] `scr-validate-recipes` — Валидация рецептов (P0)
@@ -53,7 +53,7 @@
 **Зависимости:** Phase 1 (нужен каталог ингредиентов для маппинга).
 
 **Acceptance criteria:**
-- Таблицы `nutrition_rules`, `recipes`, `recipe_ingredients` (junction) созданы
+- ✅ Таблицы `tag_dictionary`, `nutrition_targets`, `tag_rules`, `recipes`, `recipe_ingredients`, `recipe_tags` созданы; `ingredients.tags text[]` с GIN индексом
 - `scr-search-recipes` через Claude API генерирует N рецептов под профиль и пишет с `is_relevant=true`
 - `scr-normalize-recipe` маппит ингредиенты на каталог (fuzzy по name через `pg_trgm`), считает КБЖУ, ставит `is_normalized=true`
 - `scr-validate-recipes` проверяет рецепт против `nutrition_rules` + запрещённых продуктов (§13a) и ставит `is_approved=true/false` с `rejection_reasons[]`

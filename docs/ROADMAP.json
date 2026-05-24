@@ -4,14 +4,12 @@
   "description": "Полный рерайт приложения питания с Python CLI + JSON-файлов на Next.js + PostgreSQL стек. Документ — единый источник правды о фичах, фазах внедрения, статусах и архитектурных решениях.",
   "created_at": "2026-05-24",
   "updated_at": "2026-05-24",
-
   "git": {
     "source_branch": "main",
     "target_branch": "rework/nextjs-postgres",
     "main_branch_locked": true,
     "main_branch_note": "Старое Python-приложение в ветке main работает и используется. Не трогать — все изменения только в rework/nextjs-postgres."
   },
-
   "stack": {
     "_note": "Полная архитектура и обоснование выборов — в docs/ARCHITECTURE.md. Этот блок — краткая сводка.",
     "language": "TypeScript",
@@ -33,14 +31,18 @@
     "caldav": "Apple Reminders push через CalDAV + App-Specific Password (см. arc.md секция A)",
     "auth": "Deferred. План: Auth.js v5 — Telegram login или email/password. Multi-user-ready FK с самого старта.",
     "deployment": "Self-host VPS + Docker (docker-compose)",
-    "containers": ["backend (Next.js)", "frontend (nginx + Vite build)", "worker (node-cron)", "postgres"],
+    "containers": [
+      "backend (Next.js)",
+      "frontend (nginx + Vite build)",
+      "worker (node-cron)",
+      "postgres"
+    ],
     "background_jobs": "node-cron в worker-контейнере",
     "storage": "Docker volume на VPS (PDFs анализов, картинки рецептов)",
     "logging": "pino (структурированные JSON-логи)",
     "testing": "Vitest (unit) + Playwright (e2e)",
     "locale": "RU only"
   },
-
   "data_migration": {
     "policy": "Clean slate — новая БД с нуля, без импорта из старой версии",
     "old_data_role": "Reference only — структуру и значения из App/data/*.json и App/plans/*.json смотреть для понимания, но не импортировать автоматически",
@@ -48,7 +50,6 @@
     "parser_schedule": "Минимум 1 раз/неделю. Рекомендуется Сб (за сутки до заказа на следующую неделю).",
     "user_data_seeding": "Профиль / health records / правила питания / расписание — заполняет сам пользователь через web UI или Telegram-агента."
   },
-
   "modules": {
     "_description": "Логические модули приложения (по схеме на бумаге). Не обязательно отражаются в коде — это группировка для понимания.",
     "Поиск": "Загрузка/парсинг сырых данных из источников (магазины, рецепты, здоровье) и поиск рецептов",
@@ -56,7 +57,6 @@
     "Расчёт": "Расчёт норм, плана недели, остатков, корзины, заказа",
     "Сопровождение": "Дневник, коррекции плана, нотификации (Apple Reminders), Telegram-агент, мониторинг отклонений"
   },
-
   "status_vocabulary": {
     "idea": "идея, обсуждается, ещё не утверждена",
     "planned": "утверждено, в плане, ещё не начато",
@@ -65,20 +65,17 @@
     "done": "внедрено и работает",
     "wontfix": "отказались, не делаем"
   },
-
   "priority_vocabulary": {
     "P0": "критично — без этого MVP не собирается",
     "P1": "важно — нужно для полноценной работы",
     "P2": "хорошо иметь — повышает UX, но не блокер",
     "P3": "опционально / на потом"
   },
-
   "complexity_vocabulary": {
     "low": "часы работы",
     "medium": "1-3 дня",
     "high": "неделя+ / требует исследования"
   },
-
   "feature_schema": {
     "_description": "Шаблон полей одной фичи. Все фичи в массиве features[] должны следовать ему. Поля со звёздочкой — обязательные.",
     "id": "* kebab-case (ent-* для сущностей БД, scr-* для скриптов/функций)",
@@ -102,7 +99,6 @@
     "touch_existing": "* boolean (по правилу всегда false)",
     "notes": "произвольные заметки / открытые вопросы"
   },
-
   "features": [
     {
       "id": "ent-users",
@@ -110,13 +106,20 @@
       "description": "Учётные записи. Multi-user ready, но на старте — 1 запись (для тебя).",
       "kind": "entity",
       "module": null,
-      "phase": null,
+      "phase": 0,
       "status": "planned",
-      "priority": null,
-      "needed_now": false,
-      "stack": ["postgres", "prisma"],
+      "priority": "P0",
+      "needed_now": true,
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
       "dependencies": [],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -128,13 +131,22 @@
       "description": "Базовая информация: имя, фамилия, логин/email, данные аутентификации. 1:1 с users.",
       "kind": "entity",
       "module": null,
-      "phase": null,
+      "phase": 0,
       "status": "planned",
-      "priority": null,
-      "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "priority": "P0",
+      "needed_now": true,
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -146,13 +158,22 @@
       "description": "Всё, что влияет на пищевые нормы и здоровье: антропометрия, анализы (Hb, ферритин, B12), эмоциональное состояние, симптомы, тренировки. От объективных метрик до субъективных ощущений.",
       "kind": "entity",
       "module": "Сопровождение",
-      "phase": null,
+      "phase": 3,
       "status": "planned",
-      "priority": null,
+      "priority": "P1",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -164,13 +185,22 @@
       "description": "Сырые данные последней выгрузки из Пятёрочки: список товаров, цены, веса, штрих-категории.",
       "kind": "entity",
       "module": "Поиск",
-      "phase": null,
+      "phase": 1,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -182,13 +212,22 @@
       "description": "Сырые данные последней выгрузки из Цех 85 (булочная).",
       "kind": "entity",
       "module": "Поиск",
-      "phase": null,
+      "phase": 1,
       "status": "planned",
-      "priority": null,
+      "priority": "P2",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -200,13 +239,22 @@
       "description": "Сырые данные последней выгрузки из «Люди Любят» (ЛЛ).",
       "kind": "entity",
       "module": "Поиск",
-      "phase": null,
+      "phase": 1,
       "status": "planned",
-      "priority": null,
+      "priority": "P2",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -218,13 +266,22 @@
       "description": "Сырые данные последней выгрузки из ВкусВилл (ВВ).",
       "kind": "entity",
       "module": "Поиск",
-      "phase": null,
+      "phase": 1,
       "status": "planned",
-      "priority": null,
+      "priority": "P2",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -236,13 +293,25 @@
       "description": "Общая нормализованная база товаров/ингредиентов. Поля: name, kcal/100g, БЖУ, цена, единица, источник (5К/Цех/ЛЛ/ВВ), PLU/код, weight_g.",
       "kind": "entity",
       "module": "Поиск",
-      "phase": null,
+      "phase": 1,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-source-5ka", "ent-source-tseh", "ent-source-ll", "ent-source-vv"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-source-5ka",
+        "ent-source-tseh",
+        "ent-source-ll",
+        "ent-source-vv"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -254,13 +323,23 @@
       "description": "Справочник рецептов с ингредиентами и способом приготовления. Статус-флаги: is_relevant (найден поиском под профиль), is_normalized (приведён к каноничной форме с маппингом на Каталог), is_approved (прошёл валидацию).",
       "kind": "entity",
       "module": "Поиск",
-      "phase": null,
+      "phase": 2,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-ingredients", "ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-ingredients",
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -272,13 +351,22 @@
       "description": "Индивидуальные правила: цели КБЖУ, бюджет, аллергии/непереносимости, запреты (§13a: чеснок/гречка/майонез/whey/алкоголь), кастомные правила (iron rule, C1, ЛЛ ≤3×/нед, курица ≥4 дн/нед, печень 1×/нед, белок ≥1.4г/кг).",
       "kind": "entity",
       "module": "Валидация",
-      "phase": null,
+      "phase": 2,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -290,13 +378,23 @@
       "description": "Что есть дома: товары + количества + дата последнего обновления.",
       "kind": "entity",
       "module": "Расчёт",
-      "phase": null,
+      "phase": 3,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-ingredients", "ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-ingredients",
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -308,13 +406,23 @@
       "description": "Текущая собираемая корзина для следующего заказа: список товаров с количествами и магазином-источником. До отправки заказа.",
       "kind": "entity",
       "module": "Расчёт",
-      "phase": null,
+      "phase": 4,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-ingredients", "ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-ingredients",
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -326,13 +434,25 @@
       "description": "План питания на неделю: дни → приёмы → блюда (рецепты + порции). Обеспечивает плановую сумму КБЖУ при соблюдении правил.",
       "kind": "entity",
       "module": "Расчёт",
-      "phase": null,
+      "phase": 3,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-recipes", "ent-nutrition-rules", "ent-users", "ent-stock"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-recipes",
+        "ent-nutrition-rules",
+        "ent-users",
+        "ent-stock"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -344,13 +464,24 @@
       "description": "Архив фактически отправленных заказов: shop, items, prices, timestamps, статус доставки. Источник для сверки факт vs план.",
       "kind": "entity",
       "module": "Расчёт",
-      "phase": null,
+      "phase": 4,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-cart", "ent-ingredients", "ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-cart",
+        "ent-ingredients",
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -362,13 +493,24 @@
       "description": "Факт-журнал: что и когда пользователь съел. Источник для сравнения факт vs план и коррекции.",
       "kind": "entity",
       "module": "Сопровождение",
-      "phase": null,
+      "phase": 5,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-recipes", "ent-week-plan", "ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-recipes",
+        "ent-week-plan",
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -380,13 +522,23 @@
       "description": "Когда отправлять напоминания: приёмы пищи, тренировки, окно без кофе/чая ±1-2ч от железа, разморозка батч-блюд. Каждое правило → запись в Apple Reminders через CalDAV.",
       "kind": "entity",
       "module": "Сопровождение",
-      "phase": null,
+      "phase": 5,
       "status": "planned",
-      "priority": null,
+      "priority": "P1",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-users", "ent-week-plan"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-users",
+        "ent-week-plan"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -398,13 +550,22 @@
       "description": "Связь user ↔ telegram_chat_id, поля username, first_name, is_active. Нужно для отправки сообщений и идентификации входящих сообщений в боте.",
       "kind": "entity",
       "module": "Сопровождение",
-      "phase": null,
+      "phase": 6,
       "status": "planned",
-      "priority": null,
+      "priority": "P2",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-users"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-users"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -416,32 +577,53 @@
       "description": "Сохранённые сообщения user ↔ agent в Telegram: messages, timestamps, intent (распознанный агентом), action_taken (что сделал в БД), success flag. Используется агентом для контекста (короткая память).",
       "kind": "entity",
       "module": "Сопровождение",
-      "phase": null,
+      "phase": 6,
       "status": "planned",
-      "priority": null,
+      "priority": "P2",
       "needed_now": false,
-      "stack": ["postgres", "prisma"],
-      "dependencies": ["ent-users", "ent-telegram-account"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "postgres",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-users",
+        "ent-telegram-account"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
       "notes": "Контекст агента = последние N сообщений (N = 10-20). Старые остаются в БД для аналитики/дебага, но не подгружаются в каждом запросе."
     },
-
     {
       "id": "scr-calc-norms",
       "name": "Расчёт нормы",
       "description": "Рассчитывает целевые КБЖУ дня на основе профиля + health records + правил (вес, рост, активность, медицинские факторы, цели).",
       "kind": "script",
       "module": "Расчёт",
-      "phase": null,
+      "phase": 3,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
-      "dependencies": ["ent-profile", "ent-health-records", "ent-nutrition-rules"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-profile",
+        "ent-health-records",
+        "ent-nutrition-rules"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -453,13 +635,25 @@
       "description": "Парсит данные напрямую с источника Пятёрочки (5ka.ru или агрегатор) и обновляет ent-source-5ka + Каталог ингредиентов.",
       "kind": "script",
       "module": "Поиск",
-      "phase": null,
+      "phase": 1,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma", "scraping-lib"],
-      "dependencies": ["ent-source-5ka", "ent-ingredients"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma",
+        "scraping-lib"
+      ],
+      "dependencies": [
+        "ent-source-5ka",
+        "ent-ingredients"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -471,13 +665,25 @@
       "description": "Парсит данные с источника Цех 85 и обновляет ent-source-tseh + Каталог.",
       "kind": "script",
       "module": "Поиск",
-      "phase": null,
+      "phase": 1,
       "status": "planned",
-      "priority": null,
+      "priority": "P2",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma", "scraping-lib"],
-      "dependencies": ["ent-source-tseh", "ent-ingredients"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma",
+        "scraping-lib"
+      ],
+      "dependencies": [
+        "ent-source-tseh",
+        "ent-ingredients"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -489,13 +695,25 @@
       "description": "Парсит данные с источника «Люди Любят» и обновляет ent-source-ll + Каталог.",
       "kind": "script",
       "module": "Поиск",
-      "phase": null,
+      "phase": 1,
       "status": "planned",
-      "priority": null,
+      "priority": "P2",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma", "scraping-lib"],
-      "dependencies": ["ent-source-ll", "ent-ingredients"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma",
+        "scraping-lib"
+      ],
+      "dependencies": [
+        "ent-source-ll",
+        "ent-ingredients"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -507,13 +725,25 @@
       "description": "Парсит данные с источника ВкусВилл и обновляет ent-source-vv + Каталог.",
       "kind": "script",
       "module": "Поиск",
-      "phase": null,
+      "phase": 1,
       "status": "planned",
-      "priority": null,
+      "priority": "P2",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma", "scraping-lib"],
-      "dependencies": ["ent-source-vv", "ent-ingredients"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma",
+        "scraping-lib"
+      ],
+      "dependencies": [
+        "ent-source-vv",
+        "ent-ingredients"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -525,13 +755,26 @@
       "description": "Поиск новых рецептов через Claude API (LLM генерит варианты под профиль + правила) или с внешних источников. Создаёт записи в Рецептах с is_relevant=true.",
       "kind": "script",
       "module": "Поиск",
-      "phase": null,
+      "phase": 2,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma", "anthropic-sdk"],
-      "dependencies": ["ent-recipes", "ent-profile", "ent-nutrition-rules"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma",
+        "anthropic-sdk"
+      ],
+      "dependencies": [
+        "ent-recipes",
+        "ent-profile",
+        "ent-nutrition-rules"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
@@ -543,13 +786,24 @@
       "description": "Приводит рецепт к каноничной форме: маппит ингредиенты на Каталог (resolve по name fuzzy match), нормализует количества (qty_g), считает КБЖУ. Устанавливает is_normalized=true.",
       "kind": "script",
       "module": "Поиск",
-      "phase": null,
+      "phase": 2,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
-      "dependencies": ["ent-recipes", "ent-ingredients"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-recipes",
+        "ent-ingredients"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -561,13 +815,24 @@
       "description": "Проверяет рецепт против правил питания (запрещённые ингредиенты, аллергии, iron rule, C1, бюджет ингредиентов). Устанавливает is_approved=true/false с причиной отказа.",
       "kind": "script",
       "module": "Валидация",
-      "phase": null,
+      "phase": 2,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
-      "dependencies": ["ent-recipes", "ent-nutrition-rules"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-recipes",
+        "ent-nutrition-rules"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -579,13 +844,26 @@
       "description": "Пересчитывает текущие остатки: вычитает использованное (по плану/дневнику), прибавляет купленное (из истории заказов).",
       "kind": "script",
       "module": "Расчёт",
-      "phase": null,
+      "phase": 3,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
-      "dependencies": ["ent-stock", "ent-order-history", "ent-food-diary", "ent-week-plan"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-stock",
+        "ent-order-history",
+        "ent-food-diary",
+        "ent-week-plan"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -597,13 +875,26 @@
       "description": "Собирает корзину для заказа: берёт План недели → вычитает Остатки → группирует по магазинам → формирует список товаров с количествами.",
       "kind": "script",
       "module": "Расчёт",
-      "phase": null,
+      "phase": 4,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
-      "dependencies": ["ent-week-plan", "ent-stock", "ent-cart", "ent-ingredients"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-week-plan",
+        "ent-stock",
+        "ent-cart",
+        "ent-ingredients"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -615,12 +906,23 @@
       "description": "Генерация плана: hybrid algorithm. Сначала Claude API генерирует черновик плана (рецепт на каждый слот) → правила-валидатор проверяет → при провалах локально replace отдельных позиций (greedy под КБЖУ/бюджет/остатки).",
       "kind": "script",
       "module": "Расчёт",
-      "phase": null,
+      "phase": 3,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma", "anthropic-sdk"],
-      "dependencies": ["ent-week-plan", "ent-recipes", "ent-nutrition-rules", "ent-stock", "ent-profile"],
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma",
+        "anthropic-sdk"
+      ],
+      "dependencies": [
+        "ent-week-plan",
+        "ent-recipes",
+        "ent-nutrition-rules",
+        "ent-stock",
+        "ent-profile"
+      ],
       "implementation": {
         "steps": [
           "Подготовить контекст: профиль + правила + одобренные рецепты + остатки",
@@ -643,13 +945,24 @@
       "description": "Отправляет корзину как заказ в API магазина (5ka.ru/...) или формирует данные для ручного заказа. Создаёт запись в Истории заказов.",
       "kind": "script",
       "module": "Расчёт",
-      "phase": null,
+      "phase": 4,
       "status": "planned",
-      "priority": null,
+      "priority": "P1",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
-      "dependencies": ["ent-cart", "ent-order-history"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-cart",
+        "ent-order-history"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
@@ -661,13 +974,25 @@
       "description": "Фиксирует фактически съеденное (пользователем или предзаполненно из плана). Сравнивает с планом для анализа отклонений.",
       "kind": "script",
       "module": "Сопровождение",
-      "phase": null,
+      "phase": 5,
       "status": "planned",
-      "priority": null,
+      "priority": "P0",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
-      "dependencies": ["ent-food-diary", "ent-week-plan", "ent-recipes"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-food-diary",
+        "ent-week-plan",
+        "ent-recipes"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -679,13 +1004,23 @@
       "description": "Импорт данных о здоровье: анализы (от лаборатории / PDF / OCR), симптомы, эмоциональное состояние, тренировки. Пишет в Health records.",
       "kind": "script",
       "module": "Поиск",
-      "phase": null,
+      "phase": 3,
       "status": "planned",
-      "priority": null,
+      "priority": "P1",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
-      "dependencies": ["ent-health-records"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-health-records"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
@@ -697,13 +1032,26 @@
       "description": "Адаптация плана на основе дневника (что реально съел) + изменений в health records + смены правил. Loop: факт → пересчёт остатка недели.",
       "kind": "script",
       "module": "Сопровождение",
-      "phase": null,
+      "phase": 5,
       "status": "planned",
-      "priority": null,
+      "priority": "P1",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "prisma"],
-      "dependencies": ["ent-week-plan", "ent-food-diary", "ent-health-records", "ent-nutrition-rules"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-week-plan",
+        "ent-food-diary",
+        "ent-health-records",
+        "ent-nutrition-rules"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
@@ -715,12 +1063,20 @@
       "description": "Создаёт/обновляет задачи в Apple Reminders через CalDAV API. Использует App-Specific Password (см. arc.md секция A). Шаблоны: «пора <приём>», «тренировка через X», «iron-окно: без кофе», «разморозить <блюдо>».",
       "kind": "script",
       "module": "Сопровождение",
-      "phase": null,
+      "phase": 5,
       "status": "planned",
-      "priority": null,
+      "priority": "P1",
       "needed_now": false,
-      "stack": ["nodejs", "caldav", "cron", "prisma"],
-      "dependencies": ["ent-notification-schedule", "ent-week-plan"],
+      "stack": [
+        "nodejs",
+        "caldav",
+        "cron",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-notification-schedule",
+        "ent-week-plan"
+      ],
       "implementation": {
         "steps": [
           "Конфиг: APPLE_ID + APPLE_APP_PASSWORD в env",
@@ -746,13 +1102,24 @@
       "description": "CRUD-форма и API для управления Правилами питания пользователя: цели КБЖУ, бюджет, аллергии, кастомные правила.",
       "kind": "script",
       "module": "Валидация",
-      "phase": null,
+      "phase": 2,
       "status": "planned",
-      "priority": null,
+      "priority": "P1",
       "needed_now": false,
-      "stack": ["nextjs", "react", "typescript", "prisma"],
-      "dependencies": ["ent-nutrition-rules"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "react",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-nutrition-rules"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -764,13 +1131,24 @@
       "description": "CRUD-форма и API для управления Расписанием уведомлений: добавить/удалить триггер, поменять время, шаблон.",
       "kind": "script",
       "module": "Сопровождение",
-      "phase": null,
+      "phase": 5,
       "status": "planned",
-      "priority": null,
+      "priority": "P2",
       "needed_now": false,
-      "stack": ["nextjs", "react", "typescript", "prisma"],
-      "dependencies": ["ent-notification-schedule"],
-      "implementation": {"steps": [], "tech": null, "test_strategy": null},
+      "stack": [
+        "nextjs",
+        "react",
+        "typescript",
+        "prisma"
+      ],
+      "dependencies": [
+        "ent-notification-schedule"
+      ],
+      "implementation": {
+        "steps": [],
+        "tech": null,
+        "test_strategy": null
+      },
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
@@ -782,11 +1160,17 @@
       "description": "Бидирекциональный Telegram-бот: принимает natural-language сообщения от пользователя → Claude API с tool-use → определяет intent → вызывает любой из скриптов системы → отвечает результатом. Имеет полный доступ к функциональности web UI.",
       "kind": "script",
       "module": "Сопровождение",
-      "phase": null,
+      "phase": 6,
       "status": "planned",
-      "priority": null,
+      "priority": "P2",
       "needed_now": false,
-      "stack": ["nextjs", "typescript", "grammy", "anthropic-sdk", "prisma"],
+      "stack": [
+        "nextjs",
+        "typescript",
+        "grammy",
+        "anthropic-sdk",
+        "prisma"
+      ],
       "dependencies": [
         "ent-telegram-account",
         "ent-agent-conversations",

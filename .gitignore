@@ -21,3 +21,18 @@ output/*.html
 # OS
 .DS_Store
 Thumbs.db
+
+# Node / TypeScript (rework branch)
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Iteration scratch (per-iteration plan files, must not be committed)
+docs/.iteration-plan.md
+

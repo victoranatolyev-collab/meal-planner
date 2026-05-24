@@ -22,6 +22,16 @@
 
 ---
 
+## 2026-05-24 — Назначены фазы 0–6 и приоритеты всех 37 фичей
+
+- **Сделано:** заполнил `docs/PLAN.md` конкретными фазами 0–6 со списками `feature_id`, целями, acceptance-criteria и открытыми вопросами. Проставил `phase`/`priority`/`needed_now` для всех 37 фичей в `docs/ROADMAP.json`. Распределение: Phase 0=2, 1=9, 2=6, 3=7, 4=4, 5=6, 6=3. По приоритету: P0=20, P1=7, P2=10. `needed_now=true` — только у Phase 0 (старт). Добавил `.gitignore` правила для node/env/iteration-scratch.
+- **Решение:** group-by по 4 уточнённым вопросам (AskUserQuestion): `ent-health-records` → Phase 3; парсеры — только 5К как P0, остальные P2 в той же Phase 1; UI-редакторы (`scr-edit-rules`, `scr-edit-schedule`) — рядом со своей сущностью (вертикальный slicing); `scr-correct-plan` → Phase 5.
+- **Файлы:** `docs/ROADMAP.json`, `docs/PLAN.md`, `docs/HISTORY.md`, `.gitignore`
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — Инициализация документации проекта
 
 - **Сделано:** создана 4-файловая система документации в `App/docs/`:

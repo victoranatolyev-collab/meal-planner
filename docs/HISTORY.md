@@ -22,6 +22,33 @@
 
 ---
 
+## 2026-05-25 — ARCHITECTURE: LLM микросервис + очередь pg-boss
+
+- **Сделано:** обновил ARCHITECTURE.md под новые архитектурные решения до начала scr-search-recipes:
+  - §9.4 (раньше LLM-policy в §9) → перенесено в новую большую **§10 LLM-сервис** (10 подсекций: обоснование, стек, структура, HTTP-контракт, job lifecycle, adapter contract, dev режимы, промпты, prompt caching, schema validation, error handling, cost tracking, безопасность).
+  - §9 остался только Telegram-агента.
+  - §11 (deploy, бывшая §10) — обновлена под 5 контейнеров (+llm-service). pg-boss tables создаются автоматически в Postgres schema `pgboss`.
+  - §12 (repo structure) — +llm-service/.
+  - §13 (changelog) — запись с обоснованием.
+- **Решения (через AskUserQuestion с расширенным объяснением методов):**
+  - LLM как **отдельный микросервис** сейчас (не позже)
+  - **pg-boss** для очереди (postgres-native, без Redis) — пользователь явно сказал «простая очередь» + 2+ пользователей в перспективе + нет SLA от Anthropic
+  - **Hono** HTTP framework (modern, type-safe, fast)
+  - **Adapter pattern** (AnthropicAdapter first, OpenAI/Gemini ready)
+  - **3 dev режима:** stub (фикстуры), cli (spawns `claude`), api (Anthropic SDK)
+  - **Async job lifecycle** с long-polling endpoint (backend POST /jobs → wait → result)
+- **Аргументация перед пользователем:**
+  - Объяснил отличия Claude CLI vs API (CLI = только local dev, в prod не работает)
+  - Расписал 6 методов fuzzy-match (pg_trgm vs JS string-similarity vs embeddings vs hybrid) — в прошлой итерации
+  - Расписал 4 варианта LLM расположения (core/ vs микросервис vs HTTP-wrapper vs Python)
+  - Аргументировал почему очередь нужна (decoupling, persistence, нет SLA)
+- **Реализация (код, контейнеры, миграция llm_jobs)** — следующие итерации. ARCHITECTURE-first подход.
+- **Файлы:** `docs/ARCHITECTURE.md` (major restructure §9-§13), `docs/HISTORY.md`, `docs/PLAN.md` (нужно поправить если упоминается старая §10).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-25 — Phase 2 / шаг 3: scr-normalize-recipe (pg_trgm + unit conversions)
 
 - **Сделано:** реализовал normalizer рецептов — маппинг raw-имён (от LLM) на каталог через pg_trgm fuzzy match + конвертация единиц через таблицу unit_conversions + расчёт суммарных КБЖУ.

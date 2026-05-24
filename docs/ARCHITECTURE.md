@@ -473,48 +473,210 @@ Telegram update ─► /api/telegram/webhook
 - Авторизация: входящее сообщение → `telegram_chat_id` → `telegram_accounts.user_id` → действия только в scope этого юзера
 - Никаких прямых SQL-команд от агента — только через tool definitions
 
-### 9.4 LLM-вызовы вне агента (для search-recipes / calc-week-plan)
+### 9.4 Где живёт LLM-логика
 
-Кроме Telegram-агента, Claude API вызывается **изнутри backend service-функций**: `scr-search-recipes` (Phase 2) и `scr-calc-week-plan` (Phase 3). Единая политика:
-
-**Где код:** `core/src/llm/` — клиент-singleton, типизированные обёртки, промпты как отдельные модули. Не `inline strings` в service-файлах.
-
-**Где промпты:** `core/src/llm/prompts/<name>.ts` — каждый промпт = отдельный файл с экспортом `export const PROMPT = `...`;`. Версионируем через git. Для прокладок (system+user composition) — функции, не template-литералы по месту вызова.
-
-**Prompt caching:** для системных промптов (профиль пользователя + правила + список одобренных рецептов) — используем Anthropic prompt caching через `cache_control: { type: 'ephemeral' }`. Кэш живёт 5 мин — экономия токенов на повторных вызовах в той же сессии (generate plan → validate → fix → retry).
-
-**Schema-validation ответа:** Claude отдаёт JSON. **Каждый ответ обязательно валидируется Zod-схемой ДО записи в БД.** Если ответ невалиден — retry с `system` prompt-фиксом (`"твой предыдущий ответ нарушил schema X — поправь поле Y"`). Максимум 2 retry, иначе — ошибка вверх.
-
-**Error handling:**
-- `429 Rate limit` → exponential backoff (1s, 2s, 4s), max 3 попытки
-- `500/503` → 1 retry через 2s, потом fail вверх
-- `400 Invalid request` → не retry, log + fail (это баг промпта)
-- `Timeout` (default 60s) → 1 retry, потом fail
-
-**Стоимость:** каждый LLM-вызов логируется через `pino` с полями `{model, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, cost_usd}`. Это нужно для последующего мониторинга стоимости эксплуатации.
-
-**Никогда:** не передаём в LLM secrets, пароли, личные данные кроме нужного контекста (имя, КБЖУ, правила). Не используем LLM для системных решений (auth, payments — таких в проекте и нет).
+Сам код Claude API + промптов + retry — **в отдельном микросервисе `llm-service`** (см. §10), не в backend. Backend и worker ходят к нему через HTTP. Telegram-агент тоже — webhook в backend перенаправляет запросы в llm-service через очередь.
 
 ---
 
-## 10. Деплой
+## 10. LLM-сервис (отдельный микросервис)
 
-### 10.1 Docker Compose (фактическая конфигурация)
+### 10.1 Обоснование
 
-Полный файл в корне репозитория. Ключевые моменты:
+LLM-вызовы (search-recipes, calc-week-plan, telegram-agent) — общая инфраструктура: промпты, retry, cost-tracking, prompt caching, выбор провайдера. Выносим в отдельный workspace + Docker container `llm-service` с момента старта (см. HISTORY 2026-05-25):
 
-- **Build context = корень монорепо** (`.`), `dockerfile: ./backend/Dockerfile` и т.д. — это нужно для npm workspaces (Dockerfile copies `package.json`, `core/`, `<workspace>/`, выполняет `npm ci --workspaces` чтобы deps корректно разрешились).
-- **Postgres healthcheck** через `pg_isready`, `depends_on: { postgres: { condition: service_healthy } }` для backend/worker.
-- **Prisma migrate в build-time backend:** `WORKDIR /repo/core && npx prisma generate` (схема живёт в `core/prisma/`).
-- **Volume:** `postgres_data` для долгоживущих данных.
-- **Сетка:** дефолтная bridge от compose.
-- **Порты:** postgres 5432, backend 3000, frontend (nginx) 80→8080 на хосте.
+- **Единый источник промптов** и cost-logging для всех 3 потребителей.
+- **Adapter pattern** позволяет менять LLM провайдера (Claude → OpenAI → Gemini) без правок в backend/worker — только смена `LLM_PROVIDER` env.
+- **Изоляция API-key**: только llm-service знает ключи.
+- **Готовность к Python**: если позже понадобятся embeddings / локальные ML — переписываем llm-service, контракт HTTP не меняется.
+- **Очередь** обеспечивает persistence (job выживает рестарт), retry, decoupling.
+
+### 10.2 Стек llm-service
+
+| Слой | Технология | Заметки |
+|---|---|---|
+| Runtime | Node.js LTS 22 | tsx в runtime (см. §6, тот же подход что и worker) |
+| HTTP framework | **Hono** | Modern, type-safe, fast, multi-runtime |
+| Queue | **pg-boss** | Postgres-native, без Redis. Достаточно для текущего масштаба |
+| Adapters | TypeScript classes | `AnthropicAdapter`, `OpenAIAdapter`, … |
+| LLM SDK | `@anthropic-ai/sdk` (first) | + `openai` SDK когда понадобится |
+| Validation | Zod | Promot input + response schemas |
+| Logging | pino | + cost-tracking в `llm_jobs` |
+
+### 10.3 Структура
+
+```
+llm-service/
+├── src/
+│   ├── index.ts                # Hono app + pg-boss subscriber
+│   ├── server.ts               # HTTP routes
+│   ├── adapters/
+│   │   ├── adapter.ts          # interface LLMAdapter
+│   │   ├── anthropic.ts        # AnthropicAdapter (first)
+│   │   ├── stub.ts             # StubAdapter (для тестов и dev без API key)
+│   │   └── cli.ts              # ClaudeCliAdapter (опц.: spawns `claude` CLI)
+│   ├── jobs/
+│   │   ├── queue.ts            # pg-boss setup
+│   │   ├── search-recipes.ts   # job handler
+│   │   ├── calc-plan.ts        # (Phase 3)
+│   │   └── agent-reply.ts      # (Phase 6, Telegram)
+│   ├── prompts/
+│   │   ├── search-recipes.ts   # PROMPT_TEMPLATE + buildPrompt()
+│   │   ├── calc-plan.ts
+│   │   └── agent-system.ts
+│   └── schemas/
+│       ├── search-recipes.ts   # Zod schema ожидаемого ответа Claude
+│       └── ...
+├── package.json
+├── tsconfig.json
+└── Dockerfile
+```
+
+### 10.4 HTTP-контракт
+
+Async job pattern. Backend/worker дёргают endpoint, получают job_id, либо ждут синхронно (long-polling до 60 сек), либо опрашивают.
+
+| Endpoint | Использование |
+|---|---|
+| `POST /jobs` body `{kind: 'search-recipes'\|'calc-plan'\|'agent-reply', input: {...}}` | Enqueue job, response `{job_id}` |
+| `GET /jobs/:id` | `{status: 'pending'\|'running'\|'completed'\|'failed', result?, error?, cost?}` |
+| `POST /jobs/:id/wait?timeout=60` | Long-poll: ждёт до timeout сек или завершения |
+| `GET /healthz` | Liveness |
+
+### 10.5 Job lifecycle
+
+```
+backend ──POST /jobs──► llm-service (Hono)
+                            │
+                            └── enqueue в pg-boss (Postgres `pgboss.job` table)
+                            │
+                            └── return job_id
+
+pg-boss subscriber (тот же container llm-service) подхватывает:
+  job → adapter.generate(prompt, schema) → Zod validate → store result
+                                             │
+                                             └── update `llm_jobs` table (наша)
+backend ──POST /jobs/:id/wait──► long-poll до status=completed/failed
+                                             │
+                                             └── вернуть result
+```
+
+### 10.6 Adapter contract
+
+```ts
+interface LLMAdapter {
+  generateStructured<T>(args: {
+    systemPrompt: string;        // что заведомо не меняется (правила, профиль) — кэшируется
+    userPrompt: string;
+    responseSchema: ZodSchema<T>;
+    maxRetries?: number;
+    enablePromptCache?: boolean; // Anthropic-specific, OpenAI ignores
+  }): Promise<{
+    result: T;
+    cost: { inputTokens, outputTokens, cacheRead, cacheWrite, usd };
+    durationMs: number;
+  }>;
+}
+```
+
+Один интерфейс, несколько имплементаций. `AnthropicAdapter` использует `cache_control: { type: 'ephemeral' }` (см. ниже). `OpenAIAdapter` игнорирует флаг, OpenAI caching работает иначе.
+
+### 10.7 Dev режимы
+
+`LLM_MODE` env:
+
+| Mode | Что делает | Когда использовать |
+|---|---|---|
+| `stub` | Возвращает фикстуры из `llm-service/src/fixtures/<kind>.json` | Юнит-тесты, dev без API key, smoke runs |
+| `cli` | Spawns `claude` CLI в shell, парсит stdout, валидирует Zod | Локальный dev с авторизованным CLI пользователя |
+| `api` | Реальный Anthropic SDK вызов | Production, integration tests |
+
+`LLM_PROVIDER` env: `anthropic` (default) / `openai` / `gemini` (когда добавимся).
+
+### 10.8 Промпты
+
+Каждый промпт = отдельный TS-файл в `llm-service/src/prompts/<name>.ts`. Экспорт:
+
+```ts
+export const SYSTEM_PROMPT = `Ты диетолог. Профиль: ...`;  // кэшируется
+export function buildUserPrompt(args: {...}): string { ... }
+export const RESPONSE_SCHEMA = z.object({...});  // импортируется handlers
+```
+
+Версионируется через git.
+
+### 10.9 Prompt caching
+
+Для Anthropic-провайдера: системный промпт (профиль пользователя + правила + список одобренных рецептов) маркируется `cache_control: { type: 'ephemeral' }`. Кэш живёт 5 мин. Экономия токенов когда в одной сессии: generate plan → validate → fix → retry; или последовательные `agent-reply` вызовы в Telegram.
+
+### 10.10 Schema validation ответа
+
+Каждый ответ LLM **обязательно валидируется Zod**:
+
+- Успех → result сохраняется.
+- Невалидно → retry с `system` correction prompt (`"твой ответ не прошёл schema X — поправь поле Y"`). Max 2 retry.
+- 3 невалидных подряд → job failed, ошибка во `llm_jobs.error`.
+
+### 10.11 Error handling и retry
+
+| Ошибка | Стратегия |
+|---|---|
+| `429 Rate limit` | Exponential backoff (1s, 2s, 4s), max 3 попытки |
+| `500/503` | 1 retry через 2s, потом fail |
+| `400 Invalid request` | Не retry — log + fail (баг промпта) |
+| `Timeout` (60s default) | 1 retry, потом fail |
+| Zod validation fail | См. §10.10 — max 2 schema-correction retries |
+
+Retry-логика на уровне adapter'а (provider-specific) + общая retry pg-boss (3 попытки для job-level failures).
+
+### 10.12 Cost tracking
+
+Каждый завершённый job → запись в `llm_jobs` (новая Prisma модель):
+
+```
+llm_jobs
+- id, job_kind, user_id?, provider, model
+- status enum [pending, running, completed, failed]
+- input_tokens, output_tokens, cache_read_tokens, cache_write_tokens
+- cost_usd Decimal
+- duration_ms int
+- created_at, completed_at, error?
+```
+
+Используется для:
+- Месячного отчёта по стоимости
+- Алертинга при превышении лимита
+- Debugging (полный input/output можно хранить в jsonb)
+
+### 10.13 Безопасность
+
+- **Изоляция API key**: только llm-service видит `ANTHROPIC_API_KEY` (и др. провайдеры). Backend знает только URL llm-service.
+- Передавать в LLM только нужный контекст (имя, КБЖУ, правила, рецепты). Никаких паролей, токенов, личных данных вне scope диетологии.
+- Системные действия (auth, payments) — никогда через LLM (таких в проекте нет, но фиксируем принцип).
+
+---
+
+## 11. Деплой
+
+### 11.1 Docker Compose (фактическая конфигурация)
+
+Полный файл в корне репозитория. **5 сервисов:** postgres, backend, worker, frontend, **llm-service** (добавлен 2026-05-25, см. §10).
+
+Ключевые моменты:
+
+- **Build context = корень монорепо** (`.`), `dockerfile: ./<workspace>/Dockerfile`. Нужно для npm workspaces (Dockerfile copies `package.json`, `core/`, `<workspace>/`, выполняет `npm ci --workspaces`).
+- **Postgres healthcheck** через `pg_isready`, `depends_on: { postgres: { condition: service_healthy } }` для backend/worker/llm-service.
+- **pg-boss queue tables** в Postgres `pgboss` schema — создаются автоматически при первом старте llm-service (`pgboss.start()`).
+- **Prisma migrate** в build-time через `core/prisma`: `WORKDIR /repo/core && npx prisma generate`.
+- **Volume:** `postgres_data`.
+- **Сетка:** дефолтная bridge.
+- **Порты:** postgres 5432, backend 3000, frontend (nginx) 80→8080, llm-service 3001 (internal-only, не публикуется наружу).
 
 Применение миграций при первом запуске:
 ```bash
 docker compose up -d postgres                            # дожидаемся healthy
-npm run prisma:migrate:deploy --workspace core           # с хоста через DATABASE_URL=localhost:5432
-docker compose up -d backend worker frontend             # остальное
+npm run prisma:migrate:deploy --workspace core           # с хоста: миграции схемы
+docker compose up -d backend worker llm-service frontend # остальные сервисы (llm-service сам создаст pgboss tables)
 ```
 
 В production миграции применяются через **отдельный one-shot контейнер** (deploy-time, до старта backend), не на каждом старте backend. Конкретный механизм (helm job / docker compose run --rm migrator) — выбирается при деплое.
@@ -569,13 +731,18 @@ App/                          # репозиторий на ветке rework/ne
 │   └── src/
 │       ├── db.ts             # PrismaClient singleton
 │       ├── parsers/          # Парсеры магазинов
-│       └── ingredients/      # Бизнес-логика ингредиентов
+│       ├── ingredients/      # Service layer
+│       ├── validation/       # Tag-based rule engine
+│       └── normalization/    # Fuzzy match + unit conversion
 │
-├── backend/                  # Next.js REST API (импортирует из 'core')
+├── llm-service/              # LLM микросервис (Hono + pg-boss)
+│   └── src/{adapters,jobs,prompts,schemas}/
+│
+├── backend/                  # Next.js REST API (импортирует из 'core', дёргает llm-service)
 │
 ├── frontend/                 # Vite + React SPA
 │
-├── worker/                   # node-cron-задачи (импортирует из 'core')
+├── worker/                   # node-cron-задачи (импортирует из 'core', дёргает llm-service)
 │
 ├── docker-compose.yml
 ├── CLAUDE.md                 # правила для AI-агента
@@ -589,6 +756,27 @@ App/                          # репозиторий на ветке rework/ne
 ## 13. История изменений архитектуры
 
 (Append-only, кратко. Большие изменения дублируем в `HISTORY.md` с обоснованием.)
+
+### 2026-05-25 — LLM выделен в отдельный микросервис + очередь pg-boss
+
+Существенная перестройка слоя LLM до начала scr-search-recipes.
+
+**Что меняется:**
+- §9.4 (раньше всё LLM-policy здесь) → перенесено в новую **§10 LLM-сервис**. §9 теперь только про Telegram-агента + интеграцию через очередь.
+- **Новая §10:** llm-service как отдельный workspace + Docker container. Внутри: Hono HTTP server, pg-boss queue (Postgres-native, без Redis), adapter pattern (`AnthropicAdapter` first, OpenAI/Gemini ready to plug). Async job lifecycle с long-polling endpoint. Cost tracking в новой таблице `llm_jobs`.
+- **Стек llm-service:** Node 22 + tsx runtime + Hono + pg-boss + Zod + pino.
+- **Dev режимы:** `LLM_MODE=stub|cli|api` — stub для тестов, cli для local dev с авторизованным `claude`, api для прода.
+- **Провайдеры через env:** `LLM_PROVIDER=anthropic|openai|gemini` — adapter pattern изолирует API-разницу.
+- §11 (бывшая §10) — обновлена для 5 контейнеров (+llm-service).
+- §12 — структура `App/` обновлена: +`llm-service/`.
+
+**Почему сейчас:**
+- Решение пользователя: 2+ пользователей в перспективе, нет SLA гарантий от Anthropic — нужна персистентная очередь.
+- 3 будущих потребителя LLM (search-recipes/calc-plan/telegram-agent) — общая инфраструктура промптов и cost-tracking.
+- Готовность к смене провайдера (Claude → OpenAI / Gemini) одной env-переменной.
+- Готовность к Python-микросервису, если потребуются embeddings / локальные ML.
+
+**Что НЕ меняется в этой итерации:** код. Документ-первый подход. Skeleton llm-service + scr-search-recipes — отдельные итерации.
 
 ### 2026-05-25 — Большой апдейт после Phase 1 + старт Phase 2 (10 правок)
 

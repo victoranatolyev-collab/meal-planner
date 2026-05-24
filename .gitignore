@@ -36,3 +36,7 @@ dist/
 # Iteration scratch (per-iteration plan files, must not be committed)
 docs/.iteration-plan.md
 
+# Legacy Python-app artifacts (only on main branch — see policy clean-slate)
+plans/
+
+

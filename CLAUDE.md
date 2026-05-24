@@ -1,136 +1,60 @@
-# Meal Planner — инструкции для Claude
+# Meal Planner — Rework (Next.js backend + Vite/React frontend)
 
-Этот каталог содержит самодостаточное приложение для еженедельного планирования питания с генерацией markdown/CSV/HTML и интерактивным CLI.
+> Эта ветка (`rework/nextjs-postgres`) — полный рерайт приложения.
+> Старая Python-версия — в ветке `main`, **не трогать**.
 
-## Что я (Claude) могу здесь делать
+---
 
-Когда пользователь работает в этой папке, я могу:
+## 🚨 ОБЯЗАТЕЛЬНЫЕ ПРАВИЛА ДЛЯ AI-АГЕНТА
 
-1. **Создавать и править планы** — JSON-файлы в `plans/week_*.json`
-2. **Запускать команды** — `python -m meal_planner ...` (см. ниже)
-3. **Добавлять новые блюда** — в `data/dishes_library.json`
-4. **Добавлять кастомные ингредиенты** — в `data/custom_ingredients.json`
-5. **Сверять факт-заказ с планом** — через `order-match`
-6. **Валидировать план по правилам** (КБЖУ, бюджет, железо, C1)
-7. **Генерировать HTML/markdown отчёты**
+### 1. Перед началом работы ВСЕГДА читай 4 документа:
+- **`docs/ARCHITECTURE.md`** — контракт системы. Все решения по коду должны соответствовать ему.
+- **`docs/ROADMAP.json`** — какие фичи нужны, их статусы, описания, зависимости.
+- **`docs/PLAN.md`** — текущий план: какие фазы, на каком шаге сейчас.
+- **`docs/HISTORY.md`** — что уже сделано, какие решения приняты ранее.
 
-## Профиль пользователя
+### 2. После КАЖДОЙ значимой итерации обнови:
+- **`docs/HISTORY.md`** — добавь запись (datestamp + 2-5 строк по структуре: что сделал / с чем столкнулся / какое решение / файлы / коммит). Кратко.
+- **`docs/ROADMAP.json`** — обнови `status` фич (`planned` → `in_progress` → `done`).
+- **`docs/PLAN.md`** — отметь прогресс по шагам (галочки в `[ ]` → `[x]`).
 
-Перед любыми действиями прочитай:
-- `data/user_profile.json` — антропометрия, аллергии, тренировки, бюджет
-- `data/nutrition_norms.json` — целевые ккал/БЖУ и правила (anemia, lactose, iron-no-coffee)
-- `data/menu_rules.md` — текстовые правила (C1, исключения §13a)
+### 3. `docs/ARCHITECTURE.md` — менять ТОЛЬКО при крайней необходимости:
+- Это контракт. Несовместимые правки = переписывание кода.
+- При изменении: обязательно фиксируй в `HISTORY.md` с обоснованием.
 
-**Ключевые факты пользователя:**
-- 24 г / 190 см / 86 кг / FFMI 21.2 (атлет)
-- Hb 110 — анемия → железо приоритет, печень 1×/нед, кофе/чай не ±1-2ч от железа
-- Лактоза лёгкая непереносимость → лактозо-свободное молоко OK
-- Тренировки Пн+Чт 12:30-14:00
-- Бюджет ≤ 6000₽/неделя (план), soft cap 7000₽
-- Цель КБЖУ: 2455 ккал / 161Б / 90Ж / 250У
-- НЕ любит: гречку, печень (но 1× ради железа)
-- НЕ ест: whey-протеин, чеснок (правило §13a)
+### 4. Ветка `main` — заблокирована.
+Там работающее Python-приложение в продакшене. **Не трогать**. Можно читать для понимания старой логики.
 
-## CLI команды
+### 5. Reference-данные пользователя
+До первого запуска БД для контекста смотри (из `main`):
+- `App/data/user_profile.json` — антропометрия, аллергии, тренировки
+- `App/data/nutrition_norms.json` — нормы и правила
+- `App/data/menu_rules.md` — текстовые правила
 
-Из папки `app/`:
+После первого запуска источник правды — БД (Postgres).
 
-```bash
-# Все артефакты сразу (md + csv + validate + html + report):
-python -m meal_planner all plans/week_2026-W21.json
+---
 
-# Отдельно:
-python -m meal_planner render <plan>        # → output/weekly_plan.md
-python -m meal_planner shopping <plan>      # → output/shopping_list.csv
-python -m meal_planner validate <plan>      # → output/validation_report.md
-python -m meal_planner report <plan>        # rich-таблицы в терминал
-python -m meal_planner order-match <plan>   # сверка факт-заказа
-python -m meal_planner html <plan>          # → output/weekly_plan.html
-python -m meal_planner create               # интерактивно
-python -m meal_planner edit <plan>          # интерактивно
-```
+## Стек (сводка, детали в `docs/ARCHITECTURE.md`)
 
-## Архитектура
+| Слой | Технология |
+|---|---|
+| **Backend** | Next.js (App Router) — только REST API + worker |
+| **Frontend** | React + Vite + TypeScript + **SCSS** (отдельное SPA) |
+| **DB** | PostgreSQL + Prisma |
+| **LLM** | Anthropic Claude API (`@anthropic-ai/sdk`) |
+| **Telegram** | grammY (LLM-агент с tool-use доступом) |
+| **Notifications** | Apple Reminders via CalDAV |
+| **Deploy** | Self-host VPS + Docker (compose: backend / frontend / worker / postgres) |
+| **Testing** | Vitest (unit) + Playwright (e2e) |
 
-```
-app/
-├── meal_planner/         # Python-пакет (источник кода)
-│   ├── schema.py         # Pydantic-модели (WeekPlan, Dish, Meal, MealItem)
-│   ├── catalog.py        # Загрузчик ингредиентов (PLU+local)
-│   ├── resolver.py       # Резолв план → ResolvedWeek с КБЖУ
-│   ├── render_md.py      # JSON → markdown
-│   ├── shopping.py       # JSON → CSV
-│   ├── validate.py       # Rule-based валидатор
-│   ├── report.py         # Rich-сводка
-│   ├── order_match.py    # Diff факт vs план
-│   ├── html_viewer.py    # Самодостаточный HTML
-│   ├── create.py         # Интерактивное создание
-│   ├── edit.py           # Интерактивный редактор
-│   ├── config.py         # Пути (override через MEAL_PLANNER_ROOT env)
-│   └── __main__.py       # CLI entry point
-├── data/
-│   ├── ingredients_spb.json     # 5794 PLU Пятёрочки СПб 5590
-│   ├── dishes_library.json      # ~30 шаблонов блюд
-│   ├── custom_ingredients.json  # Цех 85, ЛЛ, домашние, Маркетплейс
-│   ├── user_profile.json        # Профиль (читай для контекста)
-│   ├── nutrition_norms.json     # Нормы и правила
-│   └── menu_rules.md            # Текстовые правила (контекст)
-├── plans/
-│   └── week_*.json              # Источники правды (один на неделю)
-├── output/                      # Генерируемые артефакты
-└── tests/                       # pytest-сьют
-```
+См. `docs/ARCHITECTURE.md` для полной картины и деталей.
 
-## Воркфлоу создания новой недели
+---
 
-Если пользователь говорит «сделай новую неделю» или «план на следующую неделю»:
+## Концепция модулей (логические группы)
 
-1. Прочитай предыдущую неделю: `plans/week_LAST.json`
-2. Создай новую: `cp plans/week_LAST.json plans/week_NEW.json`
-3. Обнови в новой:
-   - `week_id`, `start_date`, `end_date`
-   - `stock_at_home[]` — учти остатки от прошлой недели (Milky Way -3 шт уже использовано, и т.д.)
-   - Убери `actual_orders[]` (старый заказ)
-   - Если нужно — поменяй блюда в `schedule[].meals[].items[].dish_id`
-4. Прогони: `python -m meal_planner all plans/week_NEW.json`
-5. Покажи валидацию-отчёт пользователю
-6. Если есть ошибки/warnings — обсуди с пользователем, поправь, перегенерируй
-
-## Воркфлоу после факт-заказа
-
-Если пользователь прислал фактический заказ Пятёрочки:
-
-1. Прочитай скриншоты заказа или открытую страницу
-2. Добавь в `plans/week_*.json` секцию `actual_orders[]` с массивом `items`
-3. Запусти: `python -m meal_planner order-match plans/week_*.json`
-4. Покажи различия: missing / extra / qty_diff / price_diff
-5. Если есть критичные расхождения (отсутствует ингредиент Main A) — предложи правки плана
-
-## Правила, которые ВСЕГДА проверяй
-
-1. **Iron rule (Вс):** в приёмах с тегом `iron_meal` — НЕТ молочки, НЕТ кофе/чая ±1-2ч
-2. **C1:** сладкий завтрак (тег `sweet_breakfast`) — БЕЗ сладкого хвоста (если не указан `c1_exclusion`)
-3. **Протеин ≥ 1.4 г/кг** = 120г/день минимум (целевые 161г = 1.87 г/кг)
-4. **Курица ≥ 4 дней/нед** (любимое + источник белка)
-5. **Печень 1×/нед** (для железа)
-6. **ЛЛ десерты ≤ 3×/нед** (бюджетный фактор + сахар)
-7. **Бюджет ≤ 6000₽** (target), 7000₽ soft cap
-
-## Запрещённые продукты (§13a)
-
-- ❌ Чеснок
-- ❌ Гречка
-- ❌ Майонез
-- ❌ Whey-протеин
-- ❌ Алкоголь (только 1 раз/нед в выходные с учётом ккал)
-
-## Полезные ссылки на код
-
-- `data/dishes_library.json` — все доступные блюда (используй `dish_id` оттуда)
-- `meal_planner/schema.py` — структура JSON-плана
-- `meal_planner/validate.py` — список правил валидатора (полный)
-- `meal_planner/__main__.py` — список CLI команд
-
-## Если что-то непонятно
-
-Спроси пользователя. НЕ выдумывай PLU/КБЖУ. Если ингредиента нет в каталоге — добавь в `data/custom_ingredients.json` с реалистичными значениями ИЛИ запроси у пользователя точные данные с упаковки.
+1. **Поиск** — парсинг данных из источников + поиск рецептов
+2. **Валидация** — проверка рецептов и правил
+3. **Расчёт** — нормы, план недели, остатки, корзина, заказ
+4. **Сопровождение** — дневник, коррекции плана, Apple Reminders, Telegram-агент

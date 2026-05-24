@@ -22,6 +22,19 @@
 
 ---
 
+## 2026-05-24 — Phase 1 / шаг 2: парсер 5К каркас + Vitest
+
+- **Сделано:** написал каркас парсера 5К в `backend/lib/parsers/five-ka/`: `types.ts` (FiveKaProduct shape per `data/ingredients_spb.json` из main), `parser.ts` (interface + env-фабрика stub/api), `stub-parser.ts` (читает фикстуру), `api-parser.ts` (skeleton с JSDoc-инструкцией, как пользователь должен достать endpoints/cookies из DevTools), `mapper.ts` (FiveKaProduct → `Prisma.IngredientCreateInput`, считает price_per_100g, Decimal), `importer.ts` (INSERT в source_5ka + idempotent UPSERT в ingredients по unique key (name, source, pack_size)). Поднял Vitest в backend, 4 юнит-теста маппера зелёные.
+- **Решение:** Сегодня — только каркас. Реальный API подключим в следующей итерации после того, как пользователь предоставит endpoints из DevTools (5ka.ru блокирует WebFetch 403). До этого парсер работает на фикстуре (`FIVEKA_PARSER_MODE=stub` default). Сценарий: можно сейчас запустить весь pipeline на 5 mock-позициях, проверить идемпотентность UPSERT, и не блокировать downstream Phase 2-4.
+- **Маппер-правила:** source=FIVEKA, externalCode=String(plu), КБЖУ напрямую (5К отдаёт на 100г), price_per_100g = regular*100/weightG если оба есть, packSize=weight.label.
+- **Status:** `scr-parse-5ka` → in_progress (done после успешного импорта реального снимка 5К).
+- **Проверки:** `npm install` (vitest), `npm run test` (4/4 passed), `tsc --noEmit` clean, `next build` OK, `eslint` clean.
+- **Файлы:** `backend/lib/parsers/five-ka/{types,parser,stub-parser,api-parser,mapper,importer,mapper.test}.ts`, `backend/lib/parsers/five-ka/__fixtures__/sample.json`, `backend/vitest.config.ts`, `backend/package.json` (+vitest, +test scripts), `docs/ROADMAP.json`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — Phase 1 / шаг 1: схема каталога (5 entities закрыто)
 
 - **Сделано:** расширил `backend/prisma/schema.prisma` 5 моделями: `Source5ka`, `SourceTseh`, `SourceLl`, `SourceVv` (4 append-only журнала парсеров) и `Ingredient` (общий каталог) + enum `IngredientSource` (FIVEKA/TSEH/LL/VV/CUSTOM). Сгенерировал миграцию `20260524200347_catalog` через `prisma migrate dev --create-only`, применил через `migrate deploy`. `\dt` показывает 8 таблиц.

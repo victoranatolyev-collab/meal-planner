@@ -22,6 +22,27 @@
 
 ---
 
+## 2026-05-25 — Архитектурный апдейт: 6 drift-фиксов + 4 новые концепции
+
+- **Сделано:** ARCHITECTURE.md приведён в соответствие с кодом + явно зафиксированы концепции, которые накопились в коде но не были в контракте.
+- **Drift fixes:**
+  - §4.1: убрана старая `backend/lib/` структура, ссылка на `core/`
+  - §4.2: добавлено про service-функции в `core/src/<domain>/`, единая Zod-схема для REST + agent tools, Next.js webpack interop
+  - §6: tsx-runtime worker явно зафиксирован
+  - §8.4: stub-first / API-second стратегия парсеров с идемпотентностью на уровне DB unique
+  - §10.1: фактическая docker compose конфигурация с root build context + core/prisma
+- **Новые концепции:**
+  - **§5.3 UI strategy:** backend-first, UI в конце Phase (явное решение пользователя)
+  - **§7.2 Tag-based:** центральный концепт Phase 2 с полной таблицей маппинга правил → tag_rules строк
+  - **§7.3 Validator engine:** контракт `validateRecipe()`, SQL-only подход, recipe-level vs week-level правила
+  - **§9.4 LLM policy:** код в core/src/llm/, промпты как файлы, Zod-валидация ответа, retry policy, cost logging
+- **Решение:** все 10 правок одним коммитом (вариант 1 из AskUserQuestion). UI-стратегия = backend-first.
+- **Файлы:** `docs/ARCHITECTURE.md` (major), `docs/HISTORY.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-25 — Phase 2 / шаг 1: tag-based схема (recipes + nutrition_rules)
 
 - **Сделано:** расширил `core/prisma/schema.prisma` 7 новыми моделями + 1 расширение существующей:

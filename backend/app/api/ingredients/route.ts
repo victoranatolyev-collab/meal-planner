@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ZodError } from 'zod';
-import { listIngredientsQuerySchema } from '../../../lib/ingredients/schemas';
-import { listIngredients } from '../../../lib/ingredients/service';
+import { listIngredientsQuerySchema, listIngredients } from 'core';
 
 /**
  * GET /api/ingredients

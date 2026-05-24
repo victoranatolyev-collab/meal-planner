@@ -1,8 +1,8 @@
 import pino from 'pino';
-import { prisma } from '../../db';
-import { createFiveKaParser } from './parser';
-import { mapFiveKaToIngredient } from './mapper';
-import type { FiveKaProduct } from './types';
+import { prisma } from '../../db.js';
+import { createFiveKaParser } from './parser.js';
+import { mapFiveKaToIngredient } from './mapper.js';
+import type { FiveKaProduct } from './types.js';
 
 const logger = pino({ name: 'parser:5ka' });
 

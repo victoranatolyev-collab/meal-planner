@@ -22,6 +22,20 @@
 
 ---
 
+## 2026-05-24 — Рефакторинг: shared workspace `core/`
+
+- **Сделано:** создал 4-й npm workspace `core/` со своим package.json (deps: @prisma/client, pino, zod; dev: prisma, vitest, typescript, eslint, typescript-eslint), tsconfig (NodeNext ESM strict), eslint config, vitest config. Перенёс через `git mv` (rename detection сохранён): `backend/prisma/` → `core/prisma/`, `backend/lib/db.ts` → `core/src/db.ts`, `backend/lib/parsers/` → `core/src/parsers/`, `backend/lib/ingredients/` → `core/src/ingredients/`. Создал `core/src/index.ts` (barrel-экспорты). Добавил `core` в `package.json` workspaces. Backend depends on core через `"core": "*"`. backend route `/api/ingredients` теперь импортирует `import { listIngredientsQuerySchema, listIngredients } from 'core'`.
+- **Решение (через AskUserQuestion):** вариант 1 — общая библиотека `core/`. Закрыт TBD из ARCHITECTURE.md §6. Phase 2-6 будут активно складывать сюда shared services (recipes, validation, plan calc, agent-tools).
+- **Столкнулся:** (1) NodeNext-ESM требует явные `.js`-расширения в relative imports. Прогнал sed-замену по всем файлам core/src. (2) Webpack Next.js не понимает `.js→.ts` ремаппинг. Решение: `transpilePackages: ['core']` + `webpack.resolve.extensionAlias = { '.js': ['.ts', '.tsx', '.js'] }` в next.config.ts. (3) Backend остался без тестов (все ушли в core). Решение: `vitest run --passWithNoTests`.
+- **Dockerfiles:** обновил backend/frontend/worker — добавил `COPY core/package.json` в deps stage и `COPY core ./core` в builder stage. Backend builder делает `prisma generate` уже из `core/` (где лежит schema).
+- **ARCHITECTURE.md §6:** TBD убран, описана структура core/. §12: добавлен `core/` в дерево репозитория. Changelog (§13) дополнен.
+- **Проверки:** `npm install` OK, `prisma generate` (из core), `tsc --noEmit` в core ✅ и backend ✅, `vitest run` в core (11/11) ✅, в backend (no tests, exit 0) ✅, `eslint` в core/backend ✅, `next build` ✅.
+- **Файлы:** новые `core/{package.json,tsconfig.json,eslint.config.mjs,vitest.config.ts}`, `core/src/index.ts`. Переименованы (git mv): 12 файлов из `backend/{prisma,lib}` в `core/{prisma,src}`. Изменены: `package.json` (root, workspaces+scripts), `backend/{package.json,next.config.ts,Dockerfile,app/api/ingredients/route.ts}`, `frontend/Dockerfile`, `worker/Dockerfile`, `docs/ARCHITECTURE.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — Phase 1 / шаг 3: GET /api/ingredients с пагинацией
 
 - **Сделано:** layered endpoint:

@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import type { FiveKaParser } from './parser';
-import type { FiveKaParseResult } from './types';
+import type { FiveKaParser } from './parser.js';
+import type { FiveKaParseResult } from './types.js';
 
 /**
  * Stub-парсер: читает фикстуру вместо реального источника.

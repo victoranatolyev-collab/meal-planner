@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Prisma, IngredientSource } from '@prisma/client';
-import { mapFiveKaToIngredient } from './mapper';
-import type { FiveKaProduct } from './types';
+import { mapFiveKaToIngredient } from './mapper.js';
+import type { FiveKaProduct } from './types.js';
 
 describe('mapFiveKaToIngredient', () => {
   it('маппит позицию с полным КБЖУ и ценой', () => {

@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { prisma } from '../db';
-import type { ListIngredientsQuery } from './schemas';
+import { prisma } from '../db.js';
+import type { ListIngredientsQuery } from './schemas.js';
 
 /**
  * Бизнес-логика выборки ингредиентов с пагинацией и фильтром.

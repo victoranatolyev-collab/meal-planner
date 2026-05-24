@@ -9,6 +9,7 @@ WORKDIR /repo
 
 # Копируем корневой workspace package.json + lockfile + папки workspaces с package.json
 COPY package.json package-lock.json ./
+COPY core/package.json ./core/
 COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
 COPY worker/package.json ./worker/
@@ -23,11 +24,13 @@ WORKDIR /repo
 
 COPY --from=deps /repo/node_modules ./node_modules
 COPY package.json package-lock.json ./
+COPY core ./core
 COPY backend ./backend
 
-# Prisma generate (нужен schema.prisma в backend/prisma)
-WORKDIR /repo/backend
+# Prisma generate (schema живёт в core/prisma)
+WORKDIR /repo/core
 RUN npx prisma generate
+WORKDIR /repo/backend
 RUN npm run build
 
 # ============ runner ============
@@ -46,7 +49,7 @@ RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder --chown=nextjs:nodejs /repo/backend/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /repo/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /repo/backend/package.json ./package.json
-COPY --from=builder --chown=nextjs:nodejs /repo/backend/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /repo/core ./core
 COPY --from=builder --chown=nextjs:nodejs /repo/backend/next.config.ts ./next.config.ts
 
 USER nextjs

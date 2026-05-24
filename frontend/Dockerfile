@@ -5,6 +5,7 @@
 FROM node:22-alpine AS deps
 WORKDIR /repo
 COPY package.json package-lock.json ./
+COPY core/package.json ./core/
 COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
 COPY worker/package.json ./worker/

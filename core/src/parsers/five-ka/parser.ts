@@ -1,4 +1,4 @@
-import type { FiveKaParseResult } from './types';
+import type { FiveKaParseResult } from './types.js';
 
 /**
  * Контракт парсера: дать FiveKaParseResult.
@@ -20,9 +20,9 @@ export interface FiveKaParser {
 export async function createFiveKaParser(): Promise<FiveKaParser> {
   const mode = process.env['FIVEKA_PARSER_MODE'] ?? 'stub';
   if (mode === 'api') {
-    const { ApiFiveKaParser } = await import('./api-parser');
+    const { ApiFiveKaParser } = await import('./api-parser.js');
     return new ApiFiveKaParser();
   }
-  const { StubFiveKaParser } = await import('./stub-parser');
+  const { StubFiveKaParser } = await import('./stub-parser.js');
   return new StubFiveKaParser();
 }

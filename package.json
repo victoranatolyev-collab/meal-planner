@@ -4,6 +4,7 @@
   "private": true,
   "description": "Monorepo для rework приложения питания. Workspaces: backend (Next.js API), frontend (Vite/React SPA), worker (node-cron).",
   "workspaces": [
+    "core",
     "backend",
     "frontend",
     "worker"
@@ -12,9 +13,16 @@
     "node": ">=22"
   },
   "scripts": {
+    "core:test": "npm run test --workspace core",
+    "core:typecheck": "npm run typecheck --workspace core",
+    "core:lint": "npm run lint --workspace core",
+    "core:prisma:generate": "npm run prisma:generate --workspace core",
+    "core:prisma:migrate:dev": "npm run prisma:migrate:dev --workspace core",
+    "core:prisma:migrate:deploy": "npm run prisma:migrate:deploy --workspace core",
     "backend:dev": "npm run dev --workspace backend",
     "backend:build": "npm run build --workspace backend",
     "backend:typecheck": "npm run typecheck --workspace backend",
-    "backend:lint": "npm run lint --workspace backend"
+    "backend:lint": "npm run lint --workspace backend",
+    "backend:test": "npm run test --workspace backend"
   }
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { listIngredientsQuerySchema } from './schemas';
+import { listIngredientsQuerySchema } from './schemas.js';
 
 describe('listIngredientsQuerySchema', () => {
   it('применяет дефолты для limit/offset', () => {

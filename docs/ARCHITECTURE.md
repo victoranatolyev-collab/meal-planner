@@ -256,7 +256,7 @@ frontend/
 | Push Reminders | Ежедневно 04:00 | `scr-notifications` → создаёт задачи в Apple Reminders на день |
 | Пересчёт остатков | После события | `scr-calc-stock` (trigger от backend по очереди) |
 
-Worker и backend используют **одну БД** (Postgres) и общую `lib/` через monorepo-структуру или git submodule (TBD).
+Worker и backend используют **одну БД** (Postgres) и общую кодовую базу через workspace `core/` (см. §12). Парсер, Prisma client, бизнес-логика — там. backend и worker импортируют через `from 'core'`.
 
 ---
 
@@ -473,18 +473,22 @@ App/                          # репозиторий на ветке rework/ne
 │   ├── HISTORY.md
 │   └── ARCHITECTURE.md       # этот файл
 │
-├── backend/                  # Next.js (REST API + worker entry, App Router)
-│   └── (создаётся в Phase 1)
+├── core/                     # Общая библиотека (npm workspace)
+│   ├── prisma/               # Prisma schema + миграции
+│   └── src/
+│       ├── db.ts             # PrismaClient singleton
+│       ├── parsers/          # Парсеры магазинов
+│       └── ingredients/      # Бизнес-логика ингредиентов
+│
+├── backend/                  # Next.js REST API (импортирует из 'core')
 │
 ├── frontend/                 # Vite + React SPA
-│   └── (создаётся в Phase 1+)
 │
-├── worker/                   # node-cron-задачи
-│   └── (создаётся в Phase 2+)
+├── worker/                   # node-cron-задачи (импортирует из 'core')
 │
-├── docker-compose.yml        # (создаётся в Phase 1)
+├── docker-compose.yml
 ├── CLAUDE.md                 # правила для AI-агента
-└── README.md                 # (обновится позже, описание для людей)
+└── README.md                 # описание для людей
 ```
 
 В `main` сейчас лежит Python-версия (`meal_planner/`, `data/`, `plans/`, `tests/`). После merge rework'a в main она будет заменена на новую структуру.
@@ -494,6 +498,10 @@ App/                          # репозиторий на ветке rework/ne
 ## 13. История изменений архитектуры
 
 (Append-only, кратко. Большие изменения дублируем в `HISTORY.md` с обоснованием.)
+
+### 2026-05-24 — Добавлен shared workspace `core/`
+
+Снят TBD из §6 о shared lib. Создан 4-й npm workspace `core/`. Туда переехали: `prisma/` (schema + миграции + client singleton), `parsers/`, `ingredients/` (Zod-схемы + service). Backend и worker импортируют через `from 'core'`. Backend настроен с `transpilePackages: ['core']` + webpack `extensionAlias` для NodeNext-ESM-импортов с `.js`-расширениями.
 
 ### 2026-05-24 — Документ создан
 - Зафиксированы все стек-решения после обсуждения с пользователем

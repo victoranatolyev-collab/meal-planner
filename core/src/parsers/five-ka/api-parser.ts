@@ -1,5 +1,5 @@
-import type { FiveKaParser } from './parser';
-import type { FiveKaParseResult } from './types';
+import type { FiveKaParser } from './parser.js';
+import type { FiveKaParseResult } from './types.js';
 
 /**
  * Реальный парсер 5К через reverse-engineered API.

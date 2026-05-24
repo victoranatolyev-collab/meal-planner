@@ -1,5 +1,5 @@
 import { Prisma, IngredientSource } from '@prisma/client';
-import type { FiveKaProduct } from './types';
+import type { FiveKaProduct } from './types.js';
 
 /**
  * Маппит сырой FiveKaProduct в форму, готовую к Prisma upsert в ingredients.

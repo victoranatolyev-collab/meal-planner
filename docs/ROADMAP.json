@@ -787,7 +787,7 @@
       "kind": "script",
       "module": "Поиск",
       "phase": 2,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -807,7 +807,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Аналог resolver.py в старой Python-версии. Fuzzy matching по name через pg_trgm или внешнюю lib."
+      "notes": "Аналог resolver.py в старой Python-версии. Fuzzy matching по name через pg_trgm или внешнюю lib. [2026-05-25: pg_trgm fuzzy match + unit_conversions table (16 seed rows). threshold 0.3 + warning at <0.5. Pure unit-conversion func + DB-wrapper normalizer.]"
     },
     {
       "id": "scr-validate-recipes",

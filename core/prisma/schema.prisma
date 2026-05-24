@@ -252,6 +252,7 @@ model Recipe {
   isNormalized     Boolean      @default(false) @map("is_normalized")
   isApproved       Boolean      @default(false) @map("is_approved")
   rejectionReasons String[]     @default([]) @map("rejection_reasons")
+  rawIngredients   Json?        @map("raw_ingredients") @db.JsonB
   totalKcal        Decimal?     @map("total_kcal") @db.Decimal(8, 2)
   totalProteinG    Decimal?     @map("total_protein_g") @db.Decimal(7, 2)
   totalFatG        Decimal?     @map("total_fat_g") @db.Decimal(7, 2)
@@ -283,6 +284,22 @@ model RecipeIngredient {
 
   @@id([recipeId, ingredientId])
   @@map("recipe_ingredients")
+}
+
+/// Конвертация единиц измерения → грамм.
+/// Phase 2 / scr-normalize-recipe. Универсальные дефолты + опциональный per-tag override.
+/// Seed строится в миграции pg_trgm_and_units (system-rows, is_system=true).
+model UnitConversion {
+  id            String   @id @default(uuid())
+  unit          String   @unique
+  gramsPerUnit  Decimal  @map("grams_per_unit") @db.Decimal(10, 4)
+  ingredientTag String?  @map("ingredient_tag")
+  description   String?
+  isSystem      Boolean  @default(false) @map("is_system")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("unit_conversions")
 }
 
 /// Junction: теги рецепта (для scope правил BAN_TAG_IN_MEAL / REQUIRE_TAG_IN_MEAL).

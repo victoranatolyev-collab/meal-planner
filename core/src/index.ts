@@ -27,3 +27,17 @@ export type {
   ValidationInput,
   ValidationResult,
 } from './validation/index.js';
+
+// Normalization (fuzzy match + unit conversion)
+export {
+  normalizeRecipe,
+  findBestIngredientMatch,
+  convertToGrams,
+  DEFAULT_MATCH_CONFIG,
+} from './normalization/index.js';
+export type {
+  RawIngredient,
+  MatchedIngredient,
+  NormalizationResult,
+  MatchConfig,
+} from './normalization/index.js';

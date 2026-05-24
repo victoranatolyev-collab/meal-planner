@@ -22,6 +22,25 @@
 
 ---
 
+## 2026-05-25 — Phase 2 / шаг 3: scr-normalize-recipe (pg_trgm + unit conversions)
+
+- **Сделано:** реализовал normalizer рецептов — маппинг raw-имён (от LLM) на каталог через pg_trgm fuzzy match + конвертация единиц через таблицу unit_conversions + расчёт суммарных КБЖУ.
+  - **Миграция `pg_trgm_and_units`**: `CREATE EXTENSION pg_trgm`, GIN trigram index на `ingredients.name`, новая таблица `unit_conversions` (id, unit, grams_per_unit, ingredient_tag?, is_system), seed 16 universal/tag-specific conversions (г, кг, мл, л, столовая/чайная ложка, шт for egg-tag, etc), `+Recipe.rawIngredients Json?` для хранения LLM-output до normalization.
+  - `core/src/normalization/types.ts` — RawIngredient, MatchedIngredient, NormalizationResult, MatchConfig (default threshold 0.3).
+  - `core/src/normalization/unit-conversion.ts` — pure-функция `convertToGramsWith(conversions, qty, unit, tags)` + DB-wrapper `convertToGrams` с in-memory cache.
+  - `core/src/normalization/fuzzy-match.ts` — `findBestIngredientMatch(rawName, config)` через `prisma.$queryRaw` с `similarity()`.
+  - `core/src/normalization/normalizer.ts` — DB-wrapper `normalizeRecipe(recipeId)`: читает raw_ingredients → fuzzy + convert per item → totals inline → transaction (deleteMany + createMany + update recipe). Warning при weak match (sim < 0.5) или failed conversion.
+- **Решения через AskUserQuestion (с расширенным объяснением методов):** pg_trgm для MVP (бесплатно, быстро, стандарт Postgres). Unit conversion table (не hardcode — расширяемо). Threshold 0.3 + warning (не fail). Эволюционный план: LLM-валидатор поверх pg_trgm в Phase 3+ при первых промахах; pgvector + embeddings — если каталог разрастётся.
+- **Тесты (8 для unit-conversion):** базовые grams, кг→1000, ложка→15, case-insensitive+trim, шт+egg тэг, шт без тэга → null+reason, неизвестный unit, приоритет tag-specific над universal.
+- **Smoke:** seed:5ka заполнил ingredients → pg_trgm SQL запрос `similarity(name, 'молоко')` вернул «Молоко лактозо-свободное 1.5%» (sim=0.24); query `similarity('куриная грудка')` нашёл «Куриное филе охлаждённое» (sim=0.15). Pg_trgm работает, GIN-индекс используется.
+- **Закрыто как done:** `scr-normalize-recipe`. 15/37 фичей.
+- **Проверки:** prisma format/validate/generate, migrate deploy (+pg_trgm extension, +GIN index, +unit_conversions с 16 seed rows), vitest 41/41 (8 новых + 33 предыдущих), tsc core+backend+worker clean.
+- **Файлы:** `core/prisma/schema.prisma` (+UnitConversion model, +Recipe.rawIngredients), `core/prisma/migrations/20260524213604_pg_trgm_and_units/migration.sql` (с manual CREATE EXTENSION + GIN + 16 seed inserts), `core/src/normalization/{types,unit-conversion,fuzzy-match,normalizer,index,unit-conversion.test}.ts`, `core/src/index.ts`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-25 — Phase 2 / шаг 2: scr-validate-recipes (tag-based rule engine)
 
 - **Сделано:** реализовал валидатор рецептов по контракту из ARCHITECTURE §7.3.

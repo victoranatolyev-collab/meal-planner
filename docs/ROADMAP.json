@@ -186,7 +186,7 @@
       "kind": "entity",
       "module": "Поиск",
       "phase": 1,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -213,7 +213,7 @@
       "kind": "entity",
       "module": "Поиск",
       "phase": 1,
-      "status": "planned",
+      "status": "done",
       "priority": "P2",
       "needed_now": false,
       "stack": [
@@ -240,7 +240,7 @@
       "kind": "entity",
       "module": "Поиск",
       "phase": 1,
-      "status": "planned",
+      "status": "done",
       "priority": "P2",
       "needed_now": false,
       "stack": [
@@ -267,7 +267,7 @@
       "kind": "entity",
       "module": "Поиск",
       "phase": 1,
-      "status": "planned",
+      "status": "done",
       "priority": "P2",
       "needed_now": false,
       "stack": [
@@ -294,7 +294,7 @@
       "kind": "entity",
       "module": "Поиск",
       "phase": 1,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [

@@ -22,6 +22,19 @@
 
 ---
 
+## 2026-05-24 — Phase 1 / шаг 1: схема каталога (5 entities закрыто)
+
+- **Сделано:** расширил `backend/prisma/schema.prisma` 5 моделями: `Source5ka`, `SourceTseh`, `SourceLl`, `SourceVv` (4 append-only журнала парсеров) и `Ingredient` (общий каталог) + enum `IngredientSource` (FIVEKA/TSEH/LL/VV/CUSTOM). Сгенерировал миграцию `20260524200347_catalog` через `prisma migrate dev --create-only`, применил через `migrate deploy`. `\dt` показывает 8 таблиц.
+- **Решение (через AskUserQuestion):** (1) Scope — **global catalog** (без user_id FK). Каталог 5К одинаков для всех; кастомные ингредиенты добавим отдельным механизмом позже. (2) Source-таблицы — **append-only** с `parsed_at DESC` индексом. Каждый запуск парсера = новая запись; история нужна для сравнения парсов и отлова регрессов; свежий снимок = `ORDER BY parsed_at DESC LIMIT 1`.
+- **Дизайн:** sources — единая shape (`id, parsed_at, raw jsonb, summary jsonb, timestamps`). Ingredient — поля per ROADMAP (`name, source, external_code, kcal/protein/fat/carbs_100g Decimal, price_per_100g Decimal, weight_g, pack_size, unit`). Unique (name, source, pack_size). Decimal для точных расчётов КБЖУ/цен.
+- **Закрыто как done:** `ent-source-5ka`, `ent-source-tseh`, `ent-source-ll`, `ent-source-vv`, `ent-ingredients`. Итого 7/37 фичей done.
+- **Проверки:** `prisma format/validate/generate`, `migrate deploy` (8 таблиц в БД), `tsc --noEmit`, `next build`, `eslint`, `docker compose down` — все зелёные.
+- **Файлы:** `backend/prisma/schema.prisma`, `backend/prisma/migrations/20260524200347_catalog/migration.sql`, `docs/ROADMAP.json`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-24 — ✅ Phase 0 закрыта: Docker compose + migrate deploy
 
 - **Сделано:** написал 3 multi-stage Dockerfile (backend node:22-alpine, frontend node→nginx:1.27-alpine, worker node→alpine с tini), `nginx.conf` с SPA fallback + `/api/` proxy на backend:3000, корневой `docker-compose.yml` с 4 сервисами (postgres:16-alpine, backend, worker, frontend) + healthcheck на postgres + depends_on с service_healthy + volume `postgres_data`. `.dockerignore` в каждом workspace. Корневой `.env.example` + локальный `.env`.

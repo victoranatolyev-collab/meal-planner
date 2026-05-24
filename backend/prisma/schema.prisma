@@ -43,3 +43,101 @@ model Profile {
 
   @@map("profiles")
 }
+
+// ============================================================
+// Phase 1 — Catalog
+// Источники = append-only снимки парсеров (история).
+// Каталог ingredients = общий, не привязан к user (см. HISTORY 2026-05-24).
+// ============================================================
+
+/// Источник ингредиента — enum для нормализованного каталога.
+/// CUSTOM — задел для пользовательских ингредиентов (домашние, дача), без привязки к магазину.
+enum IngredientSource {
+  FIVEKA
+  TSEH
+  LL
+  VV
+  CUSTOM
+}
+
+/// Сырые данные одного запуска парсера Пятёрочки (5К).
+/// Phase 1 / ent-source-5ka. Append-only: каждый успешный парс — новая запись.
+/// Самый свежий снимок: `ORDER BY parsed_at DESC LIMIT 1`.
+model Source5ka {
+  id        String   @id @default(uuid())
+  parsedAt  DateTime @default(now()) @map("parsed_at")
+  raw       Json     @db.JsonB
+  summary   Json     @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parsedAt(sort: Desc)])
+  @@map("source_5ka")
+}
+
+/// Сырые данные одного запуска парсера Цех 85.
+/// Phase 1 / ent-source-tseh. Append-only.
+model SourceTseh {
+  id        String   @id @default(uuid())
+  parsedAt  DateTime @default(now()) @map("parsed_at")
+  raw       Json     @db.JsonB
+  summary   Json     @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parsedAt(sort: Desc)])
+  @@map("source_tseh")
+}
+
+/// Сырые данные одного запуска парсера «Люди Любят».
+/// Phase 1 / ent-source-ll. Append-only.
+model SourceLl {
+  id        String   @id @default(uuid())
+  parsedAt  DateTime @default(now()) @map("parsed_at")
+  raw       Json     @db.JsonB
+  summary   Json     @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parsedAt(sort: Desc)])
+  @@map("source_ll")
+}
+
+/// Сырые данные одного запуска парсера ВкусВилл.
+/// Phase 1 / ent-source-vv. Append-only.
+model SourceVv {
+  id        String   @id @default(uuid())
+  parsedAt  DateTime @default(now()) @map("parsed_at")
+  raw       Json     @db.JsonB
+  summary   Json     @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parsedAt(sort: Desc)])
+  @@map("source_vv")
+}
+
+/// Общий нормализованный каталог ингредиентов.
+/// Phase 1 / ent-ingredients. Все парсеры пишут сюда. БЕЗ привязки к user — каталог общий.
+/// Дубли разрешаются по (name, source, pack_size).
+model Ingredient {
+  id           String           @id @default(uuid())
+  name         String
+  source       IngredientSource
+  externalCode String?          @map("external_code")
+  kcal100g     Decimal?         @map("kcal_100g") @db.Decimal(8, 2)
+  protein100g  Decimal?         @map("protein_100g") @db.Decimal(6, 2)
+  fat100g      Decimal?         @map("fat_100g") @db.Decimal(6, 2)
+  carbs100g    Decimal?         @map("carbs_100g") @db.Decimal(6, 2)
+  pricePer100g Decimal?         @map("price_per_100g") @db.Decimal(10, 2)
+  weightG      Int?             @map("weight_g")
+  packSize     String?          @map("pack_size")
+  unit         String           @default("g")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  @@unique([name, source, packSize], name: "uniq_name_source_pack")
+  @@index([source])
+  @@index([name])
+  @@map("ingredients")
+}

@@ -8,14 +8,19 @@
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "pino": "^9.5.0",
-    "zod": "^3.23.0"
+    "zod": "^3.23.0",
+    "@prisma/client": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
@@ -26,6 +31,7 @@
     "@eslint/js": "^9.15.0",
     "typescript-eslint": "^8.15.0",
     "eslint-config-next": "^15.0.0",
-    "prettier": "^3.3.0"
+    "prettier": "^3.3.0",
+    "prisma": "^6.0.0"
   }
 }

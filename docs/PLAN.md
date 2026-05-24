@@ -31,15 +31,15 @@
 **Цель:** Поднять скелет проекта: docker-compose с 4 контейнерами, Prisma + первая миграция (users + profile), пустые рабочие endpoints backend и точка входа frontend. После фазы — `docker compose up` запускает Postgres + backend + frontend + worker, миграции применяются, `GET /api/health` возвращает 200.
 
 **Включает (feature):**
-- [ ] `ent-users` — Пользователи (P0)
-- [ ] `ent-profile` — Профиль (P0)
+- [~] `ent-users` — Пользователи (P0) — schema + migration написаны, applied — после Postgres up
+- [~] `ent-profile` — Профиль (P0) — schema + migration написаны, applied — после Postgres up
 
 **Не-feature задачи (инфраструктура):**
 - [x] Monorepo: корневой `package.json` + npm workspaces, `.nvmrc`
 - [x] Backend: `package.json` (Next.js 15, pino, zod), `tsconfig.json` (strict), `next.config.ts`, ESLint 9 flat config + Prettier
 - [x] Frontend: `package.json` (Vite 6, React 19, react-router 7), `tsconfig.json` (project references), `vite.config.ts` (с dev-proxy /api→:3000), SCSS modules + design tokens, ESLint 9 + Prettier
 - [x] Worker: `package.json` (node-cron, pino, tsx, typescript), `tsconfig.json` (NodeNext ESM strict), `src/index.ts` (heartbeat + graceful shutdown). Prisma подключим вместе с миграцией.
-- [ ] Prisma: `schema.prisma` с моделями `User`, `Profile`, первая миграция (закрывает `ent-users` + `ent-profile`)
+- [x] Prisma: `schema.prisma` с моделями `User`, `Profile` (1:1 FK Cascade), миграция `init` SQL сгенерирована, `lib/db.ts` singleton. Применение к живому Postgres — после docker-compose.
 - [x] `backend/.env.example` (DATABASE_URL, ANTHROPIC_API_KEY, TELEGRAM_*, APPLE_*, LOG_LEVEL)
 - [x] `frontend/.env.example` (VITE_API_BASE_URL); worker .env.example — пока пусто
 - [x] `worker/.env.example` (DATABASE_URL, ANTHROPIC_API_KEY, APPLE_*, LOG_LEVEL)

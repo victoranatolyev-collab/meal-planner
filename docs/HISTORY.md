@@ -22,6 +22,19 @@
 
 ---
 
+## 2026-05-24 — Phase 0 / шаг 4: Prisma + первая миграция (ent-users + ent-profile)
+
+- **Сделано:** подключил Prisma 6 в backend (`prisma` dev + `@prisma/client` dep + 4 npm-скрипта prisma:*). Создал `backend/prisma/schema.prisma` с моделями `User` (id uuid, email unique, timestamps) и `Profile` (1:1 с User через `user_id` unique FK + onDelete: Cascade; поля: firstName, lastName, locale='ru', timestamps). Snake_case колонки через `@map`, snake_case таблицы через `@@map("users"/"profiles")`. Сгенерировал миграцию `20260524192718_init/migration.sql` через `prisma migrate diff --from-empty` — не требует живого Postgres. `backend/lib/db.ts` — singleton PrismaClient (защита от множественных коннектов в dev hot-reload).
+- **Решение:** UUID v4 как PK (Prisma default uuid). Антропометрия (рост/вес/возраст) НЕ в Profile — пойдёт в `health_records` (Phase 3). Auth-поля (password/sessions) тоже не сейчас — добавим с Auth.js. Prisma живёт в backend; worker подключится к этому же schema позже (Phase 1+) — точная схема импорта решится при первом cron-парсере.
+- **Столкнулся:** `prisma validate` ругался на отсутствие `DATABASE_URL` env. Workaround: inline-передал env var для validate. Для format/generate переменная не нужна.
+- **Проверки:** `prisma format`, `prisma validate` (с env), `prisma generate` → client в `node_modules/@prisma/client` (v6.19.3), `tsc --noEmit`, `next build`, `eslint` — все зелёные.
+- **Файлы:** `backend/package.json`, `backend/prisma/schema.prisma`, `backend/prisma/migrations/20260524192718_init/migration.sql`, `backend/prisma/migrations/migration_lock.toml`, `backend/lib/db.ts`, `docs/ROADMAP.json` (ent-users, ent-profile → in_progress).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+- **Заметка:** Status `done` для ent-users/ent-profile поставим после применения миграции к живому Postgres в следующей итерации (docker-compose).
+
+---
+
 ## 2026-05-24 — Phase 0 / шаг 3: Worker (node-cron) скелет
 
 - **Сделано:** создал `worker/` workspace: чистый Node.js + TypeScript (NodeNext ESM) + node-cron + pino. `src/index.ts` стартует процесс, логирует pid+node version, регистрирует minute-heartbeat cron (debug-уровень), обрабатывает SIGTERM/SIGINT с graceful shutdown (stop cron → 500ms grace → exit 0). Билд: tsc → `dist/index.js`. Dev-режим: `tsx watch`.

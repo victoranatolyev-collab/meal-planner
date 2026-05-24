@@ -1,0 +1,45 @@
+// Prisma schema для meal-planner backend.
+// Каждая сущность из docs/ROADMAP.json соответствует модели.
+// Сейчас — Phase 0: только User + Profile. Остальные сущности добавим в соответствующих фазах.
+//
+// Документация Prisma: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = []
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Учётная запись пользователя (multi-user-ready).
+/// Phase 0 / ent-users. На старте — 1 запись seed'ом.
+/// Auth-поля добавим в Auth.js фазе.
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile Profile?
+
+  @@map("users")
+}
+
+/// Профиль пользователя — 1:1 с User.
+/// Phase 0 / ent-profile. Имя, локаль. Антропометрия и health-данные — в `health_records` (Phase 3).
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  firstName String?  @map("first_name")
+  lastName  String?  @map("last_name")
+  locale    String   @default("ru")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}

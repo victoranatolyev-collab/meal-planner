@@ -286,6 +286,44 @@ model RecipeIngredient {
   @@map("recipe_ingredients")
 }
 
+/// Статус LLM-job в llm_jobs audit-таблице.
+enum LlmJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+/// Audit-лог LLM-вызовов из llm-service. См. ARCHITECTURE.md §10.12.
+/// Запись создаётся при старте, обновляется при completion. Используется
+/// для cost-tracking, отладки, мониторинга.
+/// pg-boss tracks queue state (separate `pgboss.job` table) — это наш аудит.
+model LlmJob {
+  id               String       @id @default(uuid())
+  pgBossJobId      String?      @unique @map("pg_boss_job_id")
+  jobKind          String       @map("job_kind")
+  userId           String?      @map("user_id")
+  provider         String
+  model            String
+  status           LlmJobStatus @default(PENDING)
+  input            Json?        @db.JsonB
+  output           Json?        @db.JsonB
+  error            String?
+  inputTokens      Int?         @map("input_tokens")
+  outputTokens     Int?         @map("output_tokens")
+  cacheReadTokens  Int?         @map("cache_read_tokens")
+  cacheWriteTokens Int?         @map("cache_write_tokens")
+  costUsd          Decimal?     @map("cost_usd") @db.Decimal(10, 6)
+  durationMs       Int?         @map("duration_ms")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  completedAt      DateTime?    @map("completed_at")
+
+  @@index([jobKind, status])
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+  @@map("llm_jobs")
+}
+
 /// Конвертация единиц измерения → грамм.
 /// Phase 2 / scr-normalize-recipe. Универсальные дефолты + опциональный per-tag override.
 /// Seed строится в миграции pg_trgm_and_units (system-rows, is_system=true).

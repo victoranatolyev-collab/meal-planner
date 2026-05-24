@@ -65,5 +65,25 @@ services:
     ports:
       - '8080:80'
 
+  llm-service:
+    build:
+      context: .
+      dockerfile: ./llm-service/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-meal}:${POSTGRES_PASSWORD:-meal}@postgres:5432/${POSTGRES_DB:-meal_planner}
+      LLM_MODE: ${LLM_MODE:-stub}
+      LLM_PROVIDER: ${LLM_PROVIDER:-anthropic}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PORT: 3001
+      NODE_ENV: production
+    ports:
+      - '3001:3001'
+
 volumes:
   postgres_data:

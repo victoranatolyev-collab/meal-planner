@@ -22,6 +22,40 @@
 
 ---
 
+## 2026-05-25 — Phase 2 шаг 4: llm-service skeleton + llm_jobs migration
+
+- **Сделано:** реализовал llm-service workspace по контракту ARCHITECTURE §10:
+  - **llm-service/** новый npm workspace: package.json (hono, @hono/node-server, pg-boss, zod, pino, tsx + core workspace dep), tsconfig.json (NodeNext ESM), eslint.config.mjs.
+  - **src/adapters/adapter.ts**: interface LLMAdapter + Cost + GenerateArgs/Result типы.
+  - **src/adapters/stub.ts**: StubAdapter — читает фикстуру `src/fixtures/<kind>.json` по convention `kind:<name>` в user prompt, валидирует Zod схемой, cost = 0.
+  - **src/jobs/types.ts**: 3 kinds (search-recipes / calc-plan / agent-reply), Zod schemas per kind (input + output), `JOB_KINDS` const, `KIND_SCHEMAS` map.
+  - **src/jobs/queue.ts**: pg-boss bootstrap + start/stop helpers. Auto-creates schema `pgboss` в Postgres.
+  - **src/jobs/handler.ts**: generic handler — выбирает adapter по `LLM_MODE`, валидирует input, вызывает adapter.generateStructured, пишет audit в `llm_jobs`.
+  - **src/server.ts**: Hono routes: GET /healthz, POST /jobs (enqueue), GET /jobs/:id (audit lookup), POST /jobs/:id/wait?timeout=N (long-polling), GET /kinds.
+  - **src/index.ts**: bootstrap — boss.start() → createQueue+work per kind → Hono serve() → graceful SIGTERM/SIGINT.
+  - **src/fixtures/search-recipes.json**: 2 stub-рецепта (куриная грудка с гречкой, творог с ягодами).
+  - **Dockerfile**: multi-stage с tsx runtime (как worker).
+  - **.dockerignore**, **.env.example**.
+- **Prisma:** +`LlmJob` model + `LlmJobStatus` enum (PENDING/RUNNING/COMPLETED/FAILED). Audit-таблица для cost-tracking. Поля: pg_boss_job_id (unique), job_kind, user_id?, provider, model, status, input/output jsonb, tokens, cache_read/write, cost_usd Decimal, duration_ms, error?, timestamps. Миграция `llm_jobs` (20260524220950).
+- **docker-compose.yml:** +service `llm-service` (depends_on postgres healthy, env DATABASE_URL/LLM_MODE/LLM_PROVIDER/ANTHROPIC_API_KEY/OPENAI_API_KEY, exposed 3001).
+- **Dockerfile-ы (backend/frontend/worker):** +COPY llm-service/package.json в deps stage — нужно для npm ci workspaces.
+- **root package.json:** +llm-service в workspaces, +npm scripts (llm:dev, llm:start, llm:typecheck).
+- **Столкнулся:** (1) pg-boss 10 требует явный `boss.createQueue(name)` ДО `send/work` — раньше queue создавалась автоматически на work. Исправил в index.ts. (2) TypeScript не может narrow `KIND_SCHEMAS[kind]` discriminated union — cast `as ZodTypeAny` в handler (TODO: переделать как discriminated map). (3) `getBoss` imported но не использован (используется внутри send) — добавил `void getBoss` чтобы tsc принял.
+- **End-to-end smoke (работает):**
+  - docker compose up postgres + migrate deploy (llm_jobs created)
+  - `tsx llm-service/src/index.ts` → 3 queue+worker registered → http listening на 3001
+  - `curl /healthz` → `{status:ok, service:llm-service}` ✓
+  - `POST /jobs {kind:search-recipes, input:{count:2}}` → `{jobId: uuid}` ✓
+  - pg-boss подхватил, handler выполнил, StubAdapter вернул fixture, audit COMPLETED
+  - `GET /jobs/:id` → COMPLETED + output (2 рецепта из фикстуры) + cost:0 ✓
+- **Решение:** реализована только stub-имплементация. AnthropicAdapter и ClaudeCliAdapter — следующие итерации.
+- **Проверки:** prisma migrate, tsc llm-service/core/backend, vitest core 41/41, eslint llm-service clean, smoke end-to-end.
+- **Файлы:** llm-service/* (12 новых), core/prisma/schema.prisma (+LlmJob, +LlmJobStatus), core/prisma/migrations/20260524220950_llm_jobs/migration.sql, package.json (root), docker-compose.yml, backend/Dockerfile, frontend/Dockerfile, worker/Dockerfile (+COPY llm-service/package.json).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-25 — ARCHITECTURE: LLM микросервис + очередь pg-boss
 
 - **Сделано:** обновил ARCHITECTURE.md под новые архитектурные решения до начала scr-search-recipes:

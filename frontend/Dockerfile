@@ -9,6 +9,7 @@ COPY core/package.json ./core/
 COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
 COPY worker/package.json ./worker/
+COPY llm-service/package.json ./llm-service/
 RUN npm ci --workspaces --include-workspace-root
 
 # ============ builder ============

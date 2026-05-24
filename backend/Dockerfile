@@ -13,6 +13,7 @@ COPY core/package.json ./core/
 COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
 COPY worker/package.json ./worker/
+COPY llm-service/package.json ./llm-service/
 
 # Устанавливаем все зависимости (npm workspaces подхватит)
 RUN npm ci --workspaces --include-workspace-root

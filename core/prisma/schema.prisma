@@ -28,6 +28,7 @@ model User {
   tagRules        TagRule[]
   recipes         Recipe[]
   stockItems      StockItem[]
+  weekPlans       WeekPlan[]
 
   @@map("users")
 }
@@ -266,6 +267,7 @@ model Recipe {
   user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   ingredients RecipeIngredient[]
   tags        RecipeTag[]
+  planItems   PlanMealItem[]
 
   @@index([userId])
   @@index([userId, isApproved])
@@ -378,4 +380,100 @@ model StockItem {
   @@unique([userId, ingredientId], name: "uniq_user_ingredient")
   @@index([userId])
   @@map("stock")
+}
+
+/// Статус недельного плана.
+enum WeekPlanStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+/// Недельный план питания. Phase 3 / ent-week-plan.
+/// Структура (точно как legacy plans/week_*.json): week_plans → plan_days → plan_meals → plan_meal_items.
+/// Цели КБЖУ + бюджет — СНИМОК на момент создания (план = исторический артефакт,
+/// правка NutritionTarget позже не меняет старые планы).
+model WeekPlan {
+  id               String         @id @default(uuid())
+  userId           String         @map("user_id")
+  weekIso          String         @map("week_iso") // "2026-W21"
+  startDate        DateTime       @map("start_date") @db.Date
+  endDate          DateTime       @map("end_date") @db.Date
+  status           WeekPlanStatus @default(DRAFT)
+  kcalTarget       Decimal        @map("kcal_target") @db.Decimal(7, 2)
+  proteinGTarget   Decimal        @map("protein_g_target") @db.Decimal(6, 2)
+  fatGTarget       Decimal        @map("fat_g_target") @db.Decimal(6, 2)
+  carbsGTarget     Decimal        @map("carbs_g_target") @db.Decimal(6, 2)
+  budgetTargetRub  Decimal?       @map("budget_target_rub") @db.Decimal(8, 2)
+  budgetSoftCapRub Decimal?       @map("budget_soft_cap_rub") @db.Decimal(8, 2)
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  days PlanDay[]
+
+  @@unique([userId, weekIso], name: "uniq_user_week")
+  @@index([userId, status])
+  @@map("week_plans")
+}
+
+/// День плана. day_type — свободная строка (training / office / rest), как legacy.
+model PlanDay {
+  id         String   @id @default(uuid())
+  weekPlanId String   @map("week_plan_id")
+  date       DateTime @db.Date
+  dayType    String?  @map("day_type")
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  weekPlan WeekPlan   @relation(fields: [weekPlanId], references: [id], onDelete: Cascade)
+  meals    PlanMeal[]
+
+  @@unique([weekPlanId, date], name: "uniq_plan_date")
+  @@index([weekPlanId])
+  @@map("plan_days")
+}
+
+/// Приём пищи в дне. mealTags — meal-уровневые теги (sweet_breakfast, c1_exclusion, iron_meal)
+/// для валидатора недели (MIN/MAX_PER_WEEK, exception_tag — см. ARCHITECTURE §7.2/§7.3).
+model PlanMeal {
+  id        String   @id @default(uuid())
+  planDayId String   @map("plan_day_id")
+  name      String
+  time      String? // "08:30" (HH:MM)
+  sortOrder Int      @map("sort_order")
+  mealTags  String[] @default([]) @map("meal_tags")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  planDay PlanDay        @relation(fields: [planDayId], references: [id], onDelete: Cascade)
+  items   PlanMealItem[]
+
+  @@index([planDayId])
+  @@map("plan_meals")
+}
+
+/// Позиция приёма — одна ссылка на рецепт + порция.
+/// portionFactor: предрасчитанный объём порции (0.8 / 1.0 / 2.0), default 1.0 — масштабирует
+/// КБЖУ рецепта. fromStock — берётся из остатков; tail — сладкий «хвост» / добавка.
+model PlanMealItem {
+  id            String   @id @default(uuid())
+  planMealId    String   @map("plan_meal_id")
+  recipeId      String   @map("recipe_id")
+  portionFactor Decimal  @default(1.0) @map("portion_factor") @db.Decimal(4, 2)
+  fromStock     Boolean  @default(false) @map("from_stock")
+  tail          Boolean  @default(false)
+  sortOrder     Int      @map("sort_order")
+  note          String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  planMeal PlanMeal @relation(fields: [planMealId], references: [id], onDelete: Cascade)
+  recipe   Recipe   @relation(fields: [recipeId], references: [id], onDelete: Restrict)
+
+  @@index([planMealId])
+  @@index([recipeId])
+  @@map("plan_meal_items")
 }

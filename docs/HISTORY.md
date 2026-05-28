@@ -22,6 +22,26 @@
 
 ---
 
+## 2026-05-28 — Phase 3 / шаг 2: ent-week-plan (миграция `week_plan`, 4 таблицы)
+
+- **Сделано:** центральная сущность планирования — недельный план. 4 таблицы + enum (точно как legacy plans/week_*.json, по решению пользователя через AskUserQuestion).
+  - `WeekPlan` (week_plans): weekIso, start/end date, `status` enum (DRAFT/ACTIVE/ARCHIVED), **snapshot целей** (kcal/protein/fat/carbs target + budget target/softcap — копия NutritionTarget на момент создания), unique (userId, weekIso), index (userId, status).
+  - `PlanDay` (plan_days): date + dayType (свободная строка: training/office/rest) + notes, unique (weekPlanId, date).
+  - `PlanMeal` (plan_meals): name + time ("08:30") + sortOrder + **mealTags[]** (sweet_breakfast/c1_exclusion/iron_meal — для валидатора недели) + notes.
+  - `PlanMealItem` (plan_meal_items): recipe FK + **portionFactor** Decimal default 1.0 (предрасчитанные объёмы 0.8/1/2, одна ссылка на рецепт) + fromStock + tail (сладкий хвост) флаги + sortOrder.
+  - Relations: User.weekPlans, Recipe.planItems. Cascade через всё дерево (plan→day→meal→item); recipe onDelete Restrict.
+- **Решения пользователя (AskUserQuestion):** (1) схема ТОЧНО как legacy (day_type, meal time/tags/notes, item from_stock/tail) — meal_tags нужны валидатору недели; (2) targets+budget — SNAPSHOT в план (исторический артефакт); (3) порция — одна ссылка на рецепт + предрасчитанный portionFactor (0.8/1/2), не свободный множитель.
+- **Миграция:** `migrate dev --create-only --name week_plan` (20260528191402) → deploy → generate. Plain tables.
+- **Smoke (psql):** построил дерево week_plan→day→meal→item (join к плану = 1); DELETE week_plan → cascade снял plan_days=0 и plan_meal_items=0 (каскад через 4 уровня работает).
+- **Столкнулся:** psql DO-блок — id-колонки TEXT (Prisma String @default(uuid)), не uuid-тип; переменные надо `text` + `gen_random_uuid()::text`. (Gotcha: Prisma uuid → TEXT в postgres.)
+- **Закрыто как done:** `ent-week-plan`. 19/37.
+- **Проверки:** prisma format/validate (valid 🚀)/migrate/generate; core vitest 68/68, tsc core/backend/worker OK.
+- **Файлы:** `core/prisma/schema.prisma` (+enum WeekPlanStatus, +4 модели, +relations User/Recipe), `core/prisma/migrations/20260528191402_week_plan/migration.sql`, `docs/ROADMAP.json`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — Phase 3 / шаг 1: ent-stock (миграция `stock`)
 
 - **Сделано:** первая фича Phase 3 — таблица остатков. Модель `StockItem` (table `stock`): `userId`+`ingredientId` FK, `qtyG Int`, `note?`, timestamps. `@@unique([userId, ingredientId])` (одна строка на ингредиент → upsert), index `userId`. onDelete: Cascade(user) / Restrict(ingredient) — как у recipe_ingredients. Relations добавлены на `User` (stockItems) и `Ingredient` (stockItems).

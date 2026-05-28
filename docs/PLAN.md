@@ -53,8 +53,8 @@
 - [ ] `scr-import-health` — Выгрузка здоровья (P1)
 - [ ] `scr-calc-norms` — Расчёт нормы (P0)
 - [x] `ent-stock` — Остатки (P0) ✅ 2026-05-28 (миграция `stock`: StockItem, unique user+ingredient, FK cascade/restrict)
+- [x] `ent-week-plan` — План недели (P0) ✅ 2026-05-28 (миграция `week_plan`: WeekPlan→PlanDay→PlanMeal→PlanMealItem, точно как legacy; snapshot targets+budget; meal_tags[]; portionFactor)
 - [ ] `scr-calc-stock` — Расчёт остатков (P0)
-- [ ] `ent-week-plan` — План недели (P0)
 - [ ] `scr-calc-week-plan` — Расчёт плана на неделю (P0, hybrid LLM+greedy)
 
 **Зависимости:** Phase 2 (нужны рецепты + правила).
@@ -152,10 +152,10 @@
 ## Текущий шаг
 
 **Фаза:** Phase 3 — Plan. Phase 2 ✅ DONE 2026-05-28.
-**Сделано:** `ent-stock` ✅ (миграция `stock`).
-**Следующая задача (по алгоритму P0→P1, entity до script):** `ent-week-plan` (P0 entity) — все deps теперь done (ent-recipes, ent-nutrition-rules, ent-users, ent-stock). Структура: `week_plans → days → meals → meal_items` (meal_items ссылаются на recipes + порции).
-**Затем (по deps):** `ent-health-records`(P1) разблокирует `scr-calc-norms`(P0); `scr-calc-week-plan`(P0) после ent-week-plan; `scr-calc-stock`(P0) ждёт order-history/food-diary (Phase 4/5) — частично может считать от плана.
-**Открытый вопрос Phase 3 (AskUserQuestion перед `ent-health-records`):** структура `health_records` — одна jsonb-таблица или нормализованная (anthropometry / lab_tests / mood_logs / training_logs)? Блокирует `ent-health-records` + `scr-calc-norms`.
+**Сделано:** `ent-stock` ✅, `ent-week-plan` ✅ (обе миграции применены, smoke OK). 19/37.
+**Следующая задача:** `ent-health-records` (P1 entity) — разблокирует `scr-calc-norms` (P0). Порядок по зависимостям: health-records → scr-calc-norms (targets из profile+health+rules) → scr-calc-week-plan (hybrid LLM+greedy, самая сложная). `scr-calc-stock` ждёт order-history (Phase 4)/food-diary (Phase 5) — частично может считать от плана.
+**⚠️ Открытый вопрос (AskUserQuestion ПЕРЕД `ent-health-records`):** структура `health_records` — одна jsonb-таблица или нормализованная (anthropometry / lab_tests / mood_logs / training_logs)? Блокирует `ent-health-records` + `scr-calc-norms`. Также: какие именно поля для scr-calc-norms (вес/рост/возраст/активность/Hb/ферритин)?
+**Альтернатива (P0 ready):** `scr-calc-week-plan` deps все готовы, но это «самая сложная фича» (нужна реализация calc-plan job в llm-service) — логичнее после scr-calc-norms.
 
 ---
 

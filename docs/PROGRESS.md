@@ -70,3 +70,9 @@
 - **Сделал:** миграция `stock` (StockItem: user+ingredient FK, qtyG, unique(user,ingredient) для upsert, Cascade/Restrict). Smoke psql: upsert идемпотентен + FK enforced. `ent-stock` → done. 18/37.
 - **Решение:** current-state хранение (1 строка/пара), не ledger; qtyG граммы (как recipe_ingredients). Низкая сложность — без вопросов.
 - **Следующее:** `ent-week-plan` (P0 entity, deps готовы): схема week_plans→days→meals→meal_items. Затем ent-health-records (P1, нужен AskUserQuestion по схеме) разблокирует scr-calc-norms.
+
+## Iteration 8 — 2026-05-28 — Phase 3 шаг 2: ent-week-plan
+
+- **Сделал:** миграция `week_plan` — 4 таблицы (WeekPlan→PlanDay→PlanMeal→PlanMealItem) + enum WeekPlanStatus. По AskUserQuestion: точно как legacy (day_type/meal time+tags/from_stock+tail), snapshot targets+budget в план, portionFactor (предрасч. 0.8/1/2, одна ссылка). Smoke: дерево + cascade-delete через 4 уровня OK. `ent-week-plan` → done. 19/37.
+- **Узнал (gotcha):** Prisma `String @default(uuid())` → колонка TEXT (не uuid-тип) в postgres. В psql DO-блоках: переменные `text`, `gen_random_uuid()::text`.
+- **Следующее:** `ent-health-records` (P1) — РАЗБЛОКИРУЕТ scr-calc-norms (P0). ⚠️ Перед ним **AskUserQuestion**: структура health_records (jsonb vs нормализ.) + какие поля нужны scr-calc-norms (вес/рост/возраст/активность/Hb/ферритин). Альтернатива: scr-calc-week-plan (P0 ready, но самая сложная — нужен calc-plan job в llm-service).

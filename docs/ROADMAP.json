@@ -436,7 +436,7 @@
       "kind": "entity",
       "module": "Расчёт",
       "phase": 3,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -457,7 +457,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Структура: week_plans → days → meals → meal_items. Аналог plans/week_*.json в reference."
+      "notes": "Структура: week_plans → days → meals → meal_items. Аналог plans/week_*.json в reference. [2026-05-28: миграция week_plan. Точно как legacy (решение пользователя): WeekPlan (snapshot kcal/protein/fat/carbs targets + budget, status enum, unique user+week_iso) → PlanDay (date + day_type + notes, unique plan+date) → PlanMeal (name + time + meal_tags[] для валидатора недели + notes) → PlanMealItem (recipe FK + portionFactor Decimal default 1.0 (предрасч. 0.8/1/2) + from_stock + tail). Cascade через всё дерево, recipe onDelete Restrict. Smoke: дерево + cascade-delete OK.]"
     },
     {
       "id": "ent-order-history",

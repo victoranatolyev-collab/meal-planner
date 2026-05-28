@@ -57,3 +57,10 @@
 - **Узнал:** Untitled UI `Select` = `items` + render `Select.Item`, React Aria `selectedKey`/`onSelectionChange` через RHF Controller. Кнопки-действия — нативный `onClick` (RAC Button v1.16 форвардит; onPress не в типах). Conditional поля формы — через `watch('ruleKind')`.
 - **Не проверено:** визуал в браузере (build/lint/types зелёные; backend tag-rules CRUD уже curl-smoke-verified).
 - **Следующее:** ЕДИНСТВЕННЫЙ незакрытый Phase-2 acceptance — e2e-тест rule→recipe→normalize→validate через API (integration test). Потом Phase 2 → история, старт Phase 3.
+
+## Iteration 6 — 2026-05-28 — ✅ Phase 2 закрыта (e2e acceptance)
+
+- **Сделал:** `worker/src/cli/e2e-phase2.ts` — integration-смоук всего пайплайна Phase 2 (searchRecipes stub → normalizeRecipe pg_trgm → validateRecipe BAN_TAG). 8 проверок, прогон зелёный против docker pg + llm-service stub. Phase 2 → «История фаз», Активная фаза → **Phase 3**. 17/37.
+- **Решение:** e2e = CLI-смоук (паттерн seed-*), не vitest (не тащим БД/llm-service в unit-прогон). core unit-тесты остаются чистыми (68/68).
+- **Узнал:** service-функции с Zod `.default()` в схеме имеют output-тип параметра (обязательные defaulted-поля) — прямой вызов без parse требует их явно (createTagRule → isActive).
+- **Следующее (Phase 3):** старт. ВАЖНО: открытый вопрос — структура `health_records` (jsonb vs нормализованная) → **AskUserQuestion** перед `ent-health-records`/`scr-calc-norms`. Кандидат на первую задачу: `scr-calc-norms` (P0, чистая функция) или `ent-stock` (P0 entity).

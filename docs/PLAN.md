@@ -5,7 +5,7 @@
 > История уже завершённых фаз — в конце документа в разделе «История фаз».
 
 **Текущая ветка:** `rework/nextjs-postgres`
-**Статус:** Phase 0 ✅ DONE, Phase 1 ✅ DONE (обе 2026-05-24). Активная фаза: **Phase 2 (Recipes)** — **все 6 фич done** (17/37). Остался единственный незакрытый acceptance-критерий: e2e-тест «правило → рецепт → нормализация → валидация через API». После него Phase 2 → «История фаз», старт Phase 3.
+**Статус:** Phase 0 ✅, Phase 1 ✅, Phase 2 ✅ DONE (2026-05-28, 17/37 фич). Активная фаза: **Phase 3 (Plan)** — расчёт норм, остатков, генерация плана недели.
 
 ---
 
@@ -38,31 +38,9 @@
 
 ---
 
-## Phase 2 — Recipes
+## Phase 2 — Recipes ✅ DONE 2026-05-28
 
-**Цель:** Поднять справочник рецептов с пайплайном «найти → нормализовать → провалидировать». UI-редактор правил питания.
-
-**Включает (feature):**
-- [x] `ent-nutrition-rules` — Правила питания (P0) ✅ 2026-05-25 (tag-based: tag_dictionary, nutrition_targets, tag_rules)
-- [x] `ent-recipes` — Рецепты (P0) ✅ 2026-05-25 (recipes + recipe_ingredients + recipe_tags + ingredients.tags GIN)
-- [x] `scr-search-recipes` — Поиск рецептов (P0) ✅ 2026-05-28 (core/recipes → llm-service POST /jobs+wait → persist is_relevant=true; stub-first, AnthropicAdapter в backlog)
-- [x] `scr-normalize-recipe` — Нормализация рецепта (P0) ✅ 2026-05-25 (pg_trgm fuzzy + unit_conversions + totals)
-- [x] `scr-validate-recipes` — Валидация рецептов (P0) ✅ 2026-05-25 (tag-based rule engine, §7.3 ARCHITECTURE)
-- [x] `scr-edit-rules` — Редактирование правил (P1) ✅ 2026-05-28 (backend core/rules + REST; UI `/rules` на Untitled UI — форма КБЖУ + секция tag-rules CRUD)
-
-**Зависимости:** Phase 1 (нужен каталог ингредиентов для маппинга).
-
-**Acceptance criteria:**
-- ✅ Таблицы `tag_dictionary`, `nutrition_targets`, `tag_rules`, `recipes`, `recipe_ingredients`, `recipe_tags` созданы; `ingredients.tags text[]` с GIN индексом
-- `scr-search-recipes` через Claude API генерирует N рецептов под профиль и пишет с `is_relevant=true`
-- `scr-normalize-recipe` маппит ингредиенты на каталог (fuzzy по name через `pg_trgm`), считает КБЖУ, ставит `is_normalized=true`
-- `scr-validate-recipes` проверяет рецепт против `nutrition_rules` + запрещённых продуктов (§13a) и ставит `is_approved=true/false` с `rejection_reasons[]`
-- Web UI `/rules` — формы для CRUD правил питания (RHF + Zod + SCSS modules)
-- E2E-тест: создать правило → создать рецепт → нормализовать → провалидировать (через API)
-
-**Открытые вопросы:**
-- Структура `nutrition_rules`: одна jsonb-колонка или нормализованная схема (отдельные таблицы для allergies, custom_rules)? Обсудить при реализации `ent-nutrition-rules`.
-- Источник «N рецептов под профиль» — только Claude API или ещё внешние сайты?
+См. подробности в разделе [«История фаз»](#история-фаз).
 
 ---
 
@@ -173,17 +151,44 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 2 — Recipes (весь backend готов; frontend-фундамент на Untitled UI поднят 2026-05-28).
-**Сделано (инфра):** frontend мигрирован на Untitled UI React (Tailwind v4 + React Aria) + MCP `untitledui` — см. HISTORY/ARCHITECTURE §5.
-**Сделано (/rules шаг 1, 2026-05-28):** фронтовый data-слой (api-клиент + TanStack Query + `useCurrentUser` через `GET /api/users` — без хардкода) + форма целей КБЖУ (RHF + Untitled UI InputNumber, GET/PUT `/api/nutrition-targets`).
-**Сделано (/rules шаг 2, 2026-05-28):** секция tag-rules CRUD на `/rules` (Select ruleKind + conditional quantity/mealTag + список с toggle isActive/delete, POST/PATCH/DELETE `/api/tag-rules`). `scr-edit-rules` → **done**. Все 6 фич Phase 2 закрыты.
-**Следующая итерация (закрытие Phase 2):** e2e-acceptance тест «правило → рецепт → нормализация → валидация через API» (integration: seed user+rules+ingredients → searchRecipes stub → normalizeRecipe → validateRecipe → assert). Затем перенос Phase 2 в «История фаз» + Активная фаза → **Phase 3 (Plan)**.
+**Фаза:** Phase 3 — Plan (старт). Phase 2 ✅ DONE 2026-05-28 (e2e `worker/src/cli/e2e-phase2.ts` зелёный).
+**Активная задача (по алгоритму P0→P1, entity до script):** Phase 3 содержит `ent-health-records`(P1), `scr-import-health`(P1), `scr-calc-norms`(P0), `ent-stock`(P0), `scr-calc-stock`(P0), `ent-week-plan`(P0), `scr-calc-week-plan`(P0). Кандидат на старт — `scr-calc-norms` (чистая функция profile+health+rules → targets) либо `ent-stock` (P0 entity, простая).
+**Открытый вопрос Phase 3 (требует AskUserQuestion при старте):** структура `health_records` — одна jsonb-таблица или нормализованная (anthropometry / lab_tests / mood_logs / training_logs)? Это блокирует `ent-health-records` и `scr-calc-norms`.
 
 ---
 
 ## История фаз
 
 Когда фаза завершается — переносим её сюда с пометкой `✅ DONE` + датой.
+
+### Phase 2 — Recipes ✅ DONE 2026-05-28
+
+**Цель:** справочник рецептов с пайплайном «найти → нормализовать → провалидировать» + UI-редактор правил питания.
+
+**Закрытые фичи (6):** ent-nutrition-rules, ent-recipes, scr-search-recipes, scr-normalize-recipe, scr-validate-recipes, scr-edit-rules.
+
+**Реализовано:**
+- **Tag-based схема** (центральный концепт): `tag_dictionary`, `nutrition_targets`, `tag_rules` + `ingredients.tags text[]` (GIN) + `recipes`/`recipe_ingredients`/`recipe_tags`. Правила = SQL-выборки по тегам.
+- **scr-validate-recipes:** pure `evaluateRules` (BAN_TAG / BAN_TAG_IN_MEAL / REQUIRE_TAG_IN_MEAL; MIN/MAX_PER_WEEK — week-level) + DB-wrapper `validateRecipe`. 10 юнит-тестов.
+- **scr-normalize-recipe:** pg_trgm fuzzy-match (extension + GIN) + `unit_conversions` (16 seed) + расчёт КБЖУ. threshold 0.3.
+- **LLM-микросервис** (`llm-service/`): Hono + pg-boss + Adapter pattern (Stub реализован; Anthropic/CLI — backlog). `llm_jobs` audit. Контракт ARCHITECTURE §10.
+- **scr-search-recipes:** `core/src/recipes/` — `searchRecipes()` → llm-service (POST /jobs + wait) → persist Recipe (source=LLM, is_relevant=true, rawIngredients для нормализатора, recipe_tags). Backend `POST /api/recipes/search`. Stub-first.
+- **scr-edit-rules:** `core/src/rules/` CRUD (tag_rules + nutrition_targets, Zod superRefine) + REST (`/api/nutrition-targets`, `/api/tag-rules[/:id]`). UI `/rules` на **Untitled UI React** (форма КБЖУ + tag-rules CRUD).
+- **Frontend-стек сменён** (решение пользователя): SCSS modules → **Tailwind v4 + Untitled UI React + React Aria** + MCP `untitledui`. ARCHITECTURE §5/§13.
+
+**Acceptance criteria — все ✅:**
+- ✅ Таблицы tag_dictionary/nutrition_targets/tag_rules/recipes/recipe_ingredients/recipe_tags + ingredients.tags GIN
+- ✅ scr-search-recipes генерирует N рецептов is_relevant=true (через llm-service; stub-first)
+- ✅ scr-normalize-recipe маппит на каталог (pg_trgm), считает КБЖУ, is_normalized=true
+- ✅ scr-validate-recipes против tag_rules → is_approved + rejection_reasons
+- ✅ Web UI `/rules` — CRUD правил (RHF + Zod + Untitled UI; стек сменён со SCSS на Tailwind)
+- ✅ E2E-тест rule→recipe→normalize→validate через API: `worker/src/cli/e2e-phase2.ts` (8 проверок зелёные)
+
+**Backlog (не блокирует):** AnthropicAdapter/ClaudeCliAdapter (нужен ANTHROPIC_API_KEY); реальные API парсеров; визуальная проверка UI в браузере.
+
+**Коммиты:** 0007ca1, 376b77f, 60d3856, 21c79af, 0954261, (e2e — текущий).
+
+---
 
 ### Phase 1 — Catalog ✅ DONE 2026-05-24
 

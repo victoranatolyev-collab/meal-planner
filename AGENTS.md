@@ -177,8 +177,8 @@ Untitled UI инпуты — это React Aria (value/onChange-значение,
 
 - **Phase 0** Foundation ✅
 - **Phase 1** Catalog ✅
-- **Phase 2** Recipes (текущая, 4/6 done)
-- **Phase 3** Plan (расчёт КБЖУ + week_plan)
+- **Phase 2** Recipes ✅ (2026-05-28, e2e зелёный)
+- **Phase 3** Plan (текущая — расчёт КБЖУ + остатки + week_plan)
 - **Phase 4** Procurement (cart + orders)
 - **Phase 5** Tracking (diary + notifications)
 - **Phase 6** Agent (Telegram)

@@ -4,6 +4,7 @@
   "description": "Полный рерайт приложения питания с Python CLI + JSON-файлов на Next.js + PostgreSQL стек. Документ — единый источник правды о фичах, фазах внедрения, статусах и архитектурных решениях.",
   "created_at": "2026-05-24",
   "updated_at": "2026-05-28",
+  "phase_status": "Phase 0/1/2 ✅ DONE. Активная — Phase 3 (Plan). 17/37 фич done.",
   "git": {
     "source_branch": "main",
     "target_branch": "rework/nextjs-postgres",

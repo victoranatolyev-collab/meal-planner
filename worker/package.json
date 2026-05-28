@@ -10,6 +10,7 @@
     "seed:tseh": "tsx src/cli/seed-tseh.ts",
     "seed:ll": "tsx src/cli/seed-ll.ts",
     "seed:vv": "tsx src/cli/seed-vv.ts",
+    "e2e:phase2": "tsx src/cli/e2e-phase2.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },

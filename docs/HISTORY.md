@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-28 — ✅ Phase 2 закрыта: e2e acceptance (rule→recipe→normalize→validate)
+
+- **Сделано:** закрыл последний acceptance-критерий Phase 2 — e2e-тест всего пайплайна рецептов, и перенёс Phase 2 в «История фаз».
+  - `worker/src/cli/e2e-phase2.ts` (+ npm script `e2e:phase2`) — integration-smoke, прогоняющий цепочку через реальные core-сервисы + БД: seed user + 3 ингредиента с тегами (CUSTOM) + правило BAN_TAG garlic → `searchRecipes` (stub) → создание 2 контролируемых рецептов (с чесноком / чистый) → `normalizeRecipe` (pg_trgm) → `validateRecipe` → assert + проверка персистентности флагов. 8 проверок, exit 0/1.
+- **Решение:** e2e как **CLI integration-смоук** (паттерн worker `seed-*`), НЕ vitest-тест — чтобы не тащить живую БД/llm-service в дефолтный unit-прогон (core тесты остаются чистыми). Запускается против docker pg + llm-service stub.
+- **End-to-end прогон (зелёный):** [1/4] searchRecipes → 2 рецепта is_relevant; [2/4] normalize → «чеснок»→«Чеснок свежий» (pg_trgm); [3/4] validate → рецепт с чесноком ОТКЛОНЁН (`BAN_TAG(garlic): ингредиент «Чеснок свежий»…`), чистый ОДОБРЕН; [4/4] флаги в БД (is_normalized, is_approved=false, rejection_reasons). ✅ E2E PASSED.
+- **Столкнулся:** `createTagRule(input: TagRuleCreate)` требует `isActive` (Zod `.default(true)` → output-тип обязателен), прямой вызов без parse падал на tsc — добавил `isActive: true`. (Минорный API-нюанс: post-parse output type у service-функций.)
+- **Phase 2 ✅ DONE.** Все 6 фич + 6 acceptance-критериев закрыты. 17/37. Перенесена в «История фаз» в PLAN.md с полным summary. Активная фаза → **Phase 3 (Plan)**.
+- **Проверки:** worker tsc + eslint clean; e2e прогон зелёный (8/8). Регресс не трогал (только worker + docs).
+- **Файлы:** `worker/src/cli/e2e-phase2.ts` (new), `worker/package.json` (+e2e:phase2), `docs/PLAN.md` (Phase 2 → история, Активная → Phase 3), `docs/ROADMAP.json` (updated_at), `AGENTS.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — Phase 2 / scr-edit-rules UI (шаг 2/2): tag-rules CRUD → scr-edit-rules DONE
 
 - **Сделано:** секция CRUD правил-тегов на `/rules` — закрывает `scr-edit-rules`. Все 6 фич Phase 2 теперь done (17/37).

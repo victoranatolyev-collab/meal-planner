@@ -84,3 +84,7 @@ export type {
 
 // Users
 export { listUsers } from './users/index.js';
+
+// Norms (scr-calc-norms: расчёт целевых КБЖУ из anthropometry)
+export { calcNorms, calcNormsForUser } from './norms/index.js';
+export type { NormsInput, NormsResult, CalcNormsForUserResult } from './norms/index.js';

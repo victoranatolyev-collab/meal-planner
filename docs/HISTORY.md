@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-28 — Phase 3 / шаг 4: scr-calc-norms (расчёт целевых КБЖУ)
+
+- **Сделано:** первый расчётный скрипт Phase 3 — целевые КБЖУ из антропометрии. Паттерн validation/: pure-функция + DB-wrapper + endpoint.
+  - `core/src/norms/calc.ts` — pure `calcNorms(input)`: BMR Mifflin-St Jeor (sex-константа +5/−161) × activity-множитель (SEDENTARY 1.2 .. VERY_ACTIVE 1.9) × goal-поправка (CUT 0.85 / MAINTAIN 1.0 / GAIN 1.1) → kcal; макросы: белок = proteinGPerKg × вес (default 1.8), жир = 30% kcal, углеводы = остаток. Возвращает bmr/tdee/kcal/P/F/C + breakdown.
+  - `core/src/norms/service.ts` — `calcNormsForUser(userId)`: последний снимок anthropometry + proteinGPerKgMin из NutritionTarget → calcNorms. Бросает если нет anthropometry / не заданы activityLevel/goal.
+  - `backend/app/api/norms/route.ts` — GET ?userId (422 calc_failed если нет данных).
+- **Решение:** scr-calc-norms = **рекомендация-оценка**, НЕ перезаписывает NutritionTarget (authoritative-цели правит пользователь через /rules — так уже устроено). Стандартная формула (Mifflin + activity multipliers); reference data/nutrition_norms.json — для сверки порядка величин. Точная подгонка под внешний калькулятор (doctorushakov 2455) не цель — это evidence-based estimate, пользователь корректирует.
+- **Закрыто как done:** `scr-calc-norms`. 21/37.
+- **Проверки:** vitest core 76/76 (+8 norms: BMR male/female, TDEE, goal-порядок, белок default+override, жир %, макро-баланс ±6 ккал), tsc core/backend, eslint core/backend, next build (route /api/norms). **Smoke** (docker pg + seed anthropometry + GET /api/norms): male 86кг/190/24/MODERATE/MAINTAIN → bmr 1933, tdee 2995, kcal 2995, P155/F100/C369 (формула сходится); user без anthropometry → 422. ✓
+- **Файлы:** `core/src/norms/{types,calc,service,index,calc.test}.ts` (5 новых), `backend/app/api/norms/route.ts` (новый), `core/src/index.ts` (re-export), `docs/ROADMAP.json`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — Phase 3 / шаг 3: ent-health-records (4 нормализованные таблицы)
 
 - **Сделано:** сущность здоровья — полная нормализация + append-only (решение пользователя via AskUserQuestion, grounded в reference user_profile.json / ABCDEFG framework). 4 таблицы + 3 enum.

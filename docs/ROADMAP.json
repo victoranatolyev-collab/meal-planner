@@ -607,7 +607,7 @@
       "kind": "script",
       "module": "Расчёт",
       "phase": 3,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -628,7 +628,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Чистая функция: state → targets. Кэшируется при изменении входов."
+      "notes": "Чистая функция: state → targets. Кэшируется при изменении входов. [2026-05-28: core/src/norms/ — pure calcNorms (Mifflin-St Jeor BMR × activity 1.2..1.9 × goal 0.85/1.0/1.1 → kcal; белок г/кг (из nutrition_targets.proteinGPerKgMin или 1.8), жир 30%, углеводы остаток) + calcNormsForUser (последний anthropometry). GET /api/norms?userId (422 если нет anthropometry). Возвращает рекомендацию, НЕ перезаписывает NutritionTarget (override через /rules). 8 юнит-тестов. Smoke: 86кг male → bmr 1933 / kcal 2995 / P155 F100 C369.]"
     },
     {
       "id": "scr-parse-5ka",

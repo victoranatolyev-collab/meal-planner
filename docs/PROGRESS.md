@@ -82,3 +82,9 @@
 - **Сделал:** миграция health_records — полная нормализация (AskUserQuestion): 4 append-only таблицы (anthropometry/lab_tests/training_logs/mood_logs) + enums Sex/ActivityLevel/Goal. anthropometry = снимок входов норм (sex/age/height/weight/activity/goal). Все с measured_at + index DESC. Smoke: latest-snapshot OK. `ent-health-records` → done. 20/37. Все entity Phase 3 закрыты.
 - **Решение:** нормализация + append-only (тренды важны: вес, Hb-динамика при анемии). authoritative targets остаются в NutritionTarget (через /rules); scr-calc-norms = вычисление-предложение.
 - **Следующее:** `scr-calc-norms` (P0, разблокирован) — чистая функция: latest anthropometry → BMR (Mifflin-St Jeor) × activity → kcal → макросы (proteinGPerKgMin из nutrition_targets). Без вопросов (формула стандартная, reference nutrition_norms.json). Скорее всего core/src/norms/ pure + DB-wrapper.
+
+## Iteration 10 — 2026-05-28 — Phase 3 шаг 4: scr-calc-norms
+
+- **Сделал:** core/src/norms/ — pure calcNorms (Mifflin-St Jeor × activity × goal + макросы) + calcNormsForUser (latest anthropometry) + GET /api/norms. 8 юнит-тестов. Smoke: 86кг male → bmr 1933 / kcal 2995 / P155 F100 C369; 422 без anthropometry. `scr-calc-norms` → done. 21/37.
+- **Решение:** норма = рекомендация, не перезапись NutritionTarget (override через /rules). Стандартная формула, reference для сверки.
+- **Следующее:** `scr-calc-week-plan` (P0, ready, САМАЯ СЛОЖНАЯ — hybrid LLM+greedy). План разбить: (1) calc-plan job в llm-service (сейчас placeholder) + prompt + fixture; (2) core/src/plan/ orchestration (LLM draft → validate каждый рецепт → greedy replacement) + persist в week_plans дерево; (3) endpoint + e2e. По правилу Ralph — закрыть первую подзадачу за итерацию.

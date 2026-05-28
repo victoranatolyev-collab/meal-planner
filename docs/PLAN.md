@@ -51,7 +51,7 @@
 **Включает (feature):**
 - [x] `ent-health-records` — Health records (P1) ✅ 2026-05-28 (полная нормализация + append-only: anthropometry/lab_tests/training_logs/mood_logs + enums Sex/ActivityLevel/Goal)
 - [ ] `scr-import-health` — Выгрузка здоровья (P1)
-- [ ] `scr-calc-norms` — Расчёт нормы (P0)
+- [x] `scr-calc-norms` — Расчёт нормы (P0) ✅ 2026-05-28 (core/norms: pure Mifflin-St Jeor + activity + goal + макросы; GET /api/norms; рекомендация, не перезапись NutritionTarget)
 - [x] `ent-stock` — Остатки (P0) ✅ 2026-05-28 (миграция `stock`: StockItem, unique user+ingredient, FK cascade/restrict)
 - [x] `ent-week-plan` — План недели (P0) ✅ 2026-05-28 (миграция `week_plan`: WeekPlan→PlanDay→PlanMeal→PlanMealItem, точно как legacy; snapshot targets+budget; meal_tags[]; portionFactor)
 - [ ] `scr-calc-stock` — Расчёт остатков (P0)
@@ -152,10 +152,9 @@
 ## Текущий шаг
 
 **Фаза:** Phase 3 — Plan. Phase 2 ✅ DONE 2026-05-28.
-**Сделано:** `ent-stock` ✅, `ent-week-plan` ✅, `ent-health-records` ✅ (миграции + smoke OK). 20/37. Все entity Phase 3 done.
-**Следующая задача:** `scr-calc-norms` (P0) — теперь разблокирована (ent-health-records готов). Чистая функция: последний снимок anthropometry (sex/age/height/weight/activity/goal) → BMR (Mifflin-St Jeor) × activity-множитель → kcal → макросы (белок г/кг из nutrition_targets.proteinGPerKgMin, жир %, остальное углеводы). Записывает/возвращает targets; NutritionTarget уже редактируется через /rules (override). Сослаться на reference nutrition_norms.json (P26/F33/C41, 2455 kcal — пример).
-**Затем:** `scr-calc-week-plan` (P0, hybrid LLM+greedy, самая сложная — нужна реализация calc-plan job в llm-service); `scr-import-health` (P1); `scr-calc-stock` (P0, частично — ждёт order-history/food-diary из Phase 4/5).
-**Структура health (готова):** anthropometry (входы норм), lab_tests, training_logs, mood_logs — все append-only с measured_at.
+**Сделано:** все entity Phase 3 ✅ + `scr-calc-norms` ✅ (core/norms + GET /api/norms). 21/37.
+**Следующая задача:** `scr-calc-week-plan` (P0, ready — все deps done) — **самая сложная фича**. Hybrid: Claude API (через llm-service calc-plan job — сейчас placeholder, нужна реализация) генерит черновик плана → scr-validate-recipes на каждый рецепт → greedy replacement при провалах под КБЖУ/бюджет/остатки. Вероятно НЕСКОЛЬКО итераций: (1) calc-plan job в llm-service (prompt + fixture stub) + контракт; (2) core/src/plan/ orchestration (LLM → validate → greedy fallback) + persist в week_plans дерево; (3) endpoint + e2e. Разбить по правилу Ralph.
+**Затем:** `scr-import-health` (P1, проще — форма/импорт в health-таблицы); `scr-calc-stock` (P0, частично — ждёт order-history (Phase 4)/food-diary (Phase 5)).
 
 ---
 

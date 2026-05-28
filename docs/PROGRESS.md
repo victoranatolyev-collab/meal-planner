@@ -161,3 +161,9 @@
 
 - **Сделал:** миграция notification_schedule — NotificationSchedule (triggerType enum, schedule string, reminderList default Daily, template, isActive) + enum NotificationTrigger. Smoke OK. `ent-notification-schedule` → done. 31/37.
 - **Следующее:** `scr-notifications` (P1) — генерация задач из schedule+week_plan → Apple Reminders (CalDAV) через worker cron. Stub-first (реальный CalDAV нужны Apple creds — backlog). Дедуп по UID. Затем scr-correct-plan, scr-edit-schedule. Осталось 6 фич.
+
+## Iteration 24 — 2026-05-29 — scr-notifications (Apple Reminders, stub-first)
+
+- **Сделал:** core/src/notifications/ — pure buildReminderTasks (детерминир. uid → дедуп) + StubReminderAdapter + pushReminders/runDailyReminders + worker cron 04:00 + POST /api/notifications/run. 5 unit-тестов. Smoke: run×2 → одинаковые uids (дедуп). `scr-notifications` → done. 32/37.
+- **Решение:** Adapter pattern + stub (реальный CalDAV — backlog, нужны APPLE creds). Дедуп через детерминированный UID.
+- **Следующее:** `scr-correct-plan` (P1) — diff план vs факт (week_plan vs food_diary), пересчёт остатка дня/недели. Затем scr-edit-schedule (P2 UI) → закрытие Phase 5 → Phase 6. Осталось 5 фич.

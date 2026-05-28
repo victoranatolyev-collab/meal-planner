@@ -22,6 +22,23 @@
 
 ---
 
+## 2026-05-29 — Phase 5 / шаг 4: scr-notifications (Apple Reminders CalDAV, stub-first)
+
+- **Сделано:** генерация напоминаний из расписаний → Apple Reminders. core/src/notifications/ (pure + Adapter pattern).
+  - `build.ts` — pure `buildReminderTasks(schedules, dateIso)`: активные → задачи с **детерминированным uid** `scheduleId:date` (дедуп), title=template, list=reminderList; TIME "HH:MM" → dueAt.
+  - `adapter-stub.ts` — `StubReminderAdapter` (лог + Set uid, без CalDAV). Реальный CalDAV — backlog.
+  - `service.ts` — `pushReminders(userId, dateIso, adapter?)` + `runDailyReminders(dateIso)` (все users с active schedules).
+  - `worker/src/jobs/notifications.ts` + cron **04:00 daily** в worker/src/index.ts.
+  - `backend`: POST /api/notifications/run (ручной триггер).
+- **Решение:** Adapter pattern + stub-first (как llm-service/парсеры) — реальный CalDAV (caldav npm + APPLE_ID/APPLE_APP_PASSWORD) backlog. Дедуп acceptance закрыт детерминированным UID (повторный push идемпотентен).
+- **Закрыто как done:** `scr-notifications`. 32/37.
+- **Проверки:** vitest core 113/113 (+5 build: active-filter / детерминир. uid / TIME dueAt / MEAL_RELATIVE null / дедуп), tsc core/backend/worker, eslint, next build (route /api/notifications/run). **Smoke HTTP** (seed 2 schedules): run #1 → 2 задачи с uid; run #2 (та же дата) → ТЕ ЖЕ uid (дедуп). ✓
+- **Файлы:** `core/src/notifications/{types,build,adapter-stub,service,index,build.test}.ts` (6 новых), `worker/src/jobs/notifications.ts` (новый), `worker/src/index.ts` (+cron), `backend/app/api/notifications/run/route.ts` (новый), `core/src/index.ts`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 5 / шаг 3: ent-notification-schedule (расписание уведомлений)
 
 - **Сделано:** `NotificationSchedule` (table `notification_schedules`): `triggerType` enum (TIME/EVENT/MEAL_RELATIVE), `schedule` string (cron/datetime/relative-spec "meal:lunch+30m"), `reminderList` (default "Daily"), `template`, `isActive`, note. Enum NotificationTrigger. index (userId, isActive). Relation User.notifSchedules, onDelete Cascade.

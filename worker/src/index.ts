@@ -4,6 +4,7 @@ import { runParseFiveKa } from './jobs/parse-5ka.js';
 import { runParseTseh } from './jobs/parse-tseh.js';
 import { runParseLl } from './jobs/parse-ll.js';
 import { runParseVv } from './jobs/parse-vv.js';
+import { runNotifications } from './jobs/notifications.js';
 
 // Worker entry point. См. docs/ARCHITECTURE.md §6.
 
@@ -25,7 +26,10 @@ const parseTseh = cron.schedule('15 3 * * 6', () => void runParseTseh());
 const parseLl = cron.schedule('30 3 * * 6', () => void runParseLl());
 const parseVv = cron.schedule('45 3 * * 6', () => void runParseVv());
 
-logger.info('cron jobs registered: heartbeat, parse-5ka 03:00, parse-tseh 03:15, parse-ll 03:30, parse-vv 03:45 (Sat)');
+// Push Apple Reminders — ежедневно 04:00 (scr-notifications).
+const notifications = cron.schedule('0 4 * * *', () => void runNotifications());
+
+logger.info('cron jobs registered: heartbeat, parse-5ka 03:00, parse-tseh 03:15, parse-ll 03:30, parse-vv 03:45 (Sat), notifications 04:00 (daily)');
 
 // Graceful shutdown.
 function shutdown(signal: NodeJS.Signals): void {
@@ -35,6 +39,7 @@ function shutdown(signal: NodeJS.Signals): void {
   parseTseh.stop();
   parseLl.stop();
   parseVv.stop();
+  notifications.stop();
   setTimeout(() => {
     logger.info('worker stopped');
     process.exit(0);

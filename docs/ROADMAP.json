@@ -1065,7 +1065,7 @@
       "kind": "script",
       "module": "Сопровождение",
       "phase": 5,
-      "status": "planned",
+      "status": "done",
       "priority": "P1",
       "needed_now": false,
       "stack": [
@@ -1095,7 +1095,7 @@
       ],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Альтернативный канал — Telegram-агент может проактивно писать (но это вторично). Основной канал нотификаций = Apple Reminders."
+      "notes": "Альтернативный канал — Telegram-агент может проактивно писать (но это вторично). Основной канал нотификаций = Apple Reminders. [2026-05-29: core/src/notifications/ — pure buildReminderTasks (детерминир. uid scheduleId:date → дедуп; TIME→dueAt) + Adapter pattern (StubReminderAdapter; реальный CalDAV — backlog, нужны APPLE_ID/APPLE_APP_PASSWORD) + pushReminders/runDailyReminders. Worker cron 04:00. POST /api/notifications/run (ручной). 5 unit-тестов. Smoke: run×2 → одинаковые uids (дедуп OK).]"
     },
     {
       "id": "scr-edit-rules",

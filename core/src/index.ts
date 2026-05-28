@@ -95,6 +95,20 @@ export type {
   AssembleCartRequest,
 } from './cart/index.js';
 
+// Notifications (scr-notifications: расписания → Apple Reminders CalDAV)
+export {
+  pushReminders,
+  runDailyReminders,
+  buildReminderTasks,
+  StubReminderAdapter,
+} from './notifications/index.js';
+export type {
+  PushRemindersResult,
+  ScheduleInput,
+  ReminderTask,
+  ReminderAdapter,
+} from './notifications/index.js';
+
 // Diary (scr-write-diary: запись факт-приёмов)
 export { writeDiaryEntry, listDiary, scaleMacros, diaryEntryCreateSchema } from './diary/index.js';
 export type { Macros, DiaryEntryCreate } from './diary/index.js';

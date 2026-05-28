@@ -83,7 +83,7 @@
 - [x] `scr-write-diary` — Запись в дневник (P0) ✅ 2026-05-29 (core/diary: writeDiaryEntry recipe→derived макросы / ad-hoc + listDiary; POST/GET /api/diary)
 - [ ] `scr-correct-plan` — Коррекция плана (P1)
 - [x] `ent-notification-schedule` — Расписание уведомлений (P1) ✅ 2026-05-29 (миграция notification_schedule: NotificationSchedule + enum NotificationTrigger)
-- [ ] `scr-notifications` — Push Apple Reminders (CalDAV) (P1)
+- [x] `scr-notifications` — Push Apple Reminders (CalDAV) (P1) ✅ 2026-05-29 (core/notifications: buildReminderTasks + StubReminderAdapter + pushReminders/runDailyReminders; worker cron 04:00; POST /api/notifications/run; реальный CalDAV — backlog)
 - [ ] `scr-edit-schedule` — Редактирование расписания (P2, UI)
 
 **Зависимости:** Phase 3 (план), Phase 4 (заказы для контекста).
@@ -129,10 +129,10 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 5 (Tracking). Phase 0/1/2/3 ✅ DONE; Phase 4 — все фичи ✅. **31/37.**
-**Сделано Phase 5:** `ent-food-diary` ✅, `scr-write-diary` ✅, `ent-notification-schedule` ✅.
-**Следующая задача:** `scr-notifications` (P1, deps ent-notification-schedule✅/ent-week-plan✅) — генерация задач из schedule + week_plan → push в Apple Reminders (CalDAV) через worker cron. Stub-first: логика генерации задач (pure) + worker job + CalDAV adapter (реальный Apple App-Specific Password — backlog, нужны креды). Дедупликация по UID. Затем `scr-correct-plan` (P1), `scr-edit-schedule` (P2 UI).
-**Осталось фич (6):** Phase 5 — scr-correct-plan, scr-notifications, scr-edit-schedule; Phase 6 — ent-telegram-account, ent-agent-conversations, scr-telegram-agent.
+**Фаза:** Phase 5 (Tracking). Phase 0/1/2/3 ✅ DONE; Phase 4 — все фичи ✅. **32/37.**
+**Сделано Phase 5:** `ent-food-diary` ✅, `scr-write-diary` ✅, `ent-notification-schedule` ✅, `scr-notifications` ✅.
+**Следующая задача:** `scr-correct-plan` (P1, deps ent-week-plan✅/ent-food-diary✅/ent-health-records✅/ent-nutrition-rules✅) — коррекция: пересчёт остатка дня/недели от фактических приёмов (diary) vs план (week_plan); diff КБЖУ план vs факт. Pure diff + DB-wrapper + endpoint. Затем `scr-edit-schedule` (P2, UI расписания) → закрытие Phase 5 → Phase 6 (Telegram-агент).
+**Осталось фич (5):** Phase 5 — scr-correct-plan, scr-edit-schedule; Phase 6 — ent-telegram-account, ent-agent-conversations, scr-telegram-agent.
 **Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** Phase 4 order-match + UI /cart; UI /diary, /schedule (Phase 5 в конце). Приоритет — фичи (RALPH_DONE = 37 features).
 
 ---

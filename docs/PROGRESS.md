@@ -123,3 +123,8 @@
 - **Сделал:** миграция cart — Cart (status ACTIVE/ORDERED) + CartItem (ingredient/qtyG/shop, unique cart+ingredient+shop). Smoke psql: upsert/diff-shop/cascade OK. `ent-cart` → done. 24/37.
 - **Решение:** shop на item (товар из разных магазинов = разные строки); Cart-wrapper для lifecycle. Соответствует ARCHITECTURE §7.4 (carts).
 - **Следующее:** `ent-order-history` (P0 entity, deps ent-cart✅) — архив заказов (shop/items/prices/timestamps). Затем scr-assemble-cart (план−остатки→shop-группы), scr-order-products.
+
+## Iteration 17 — 2026-05-29 — Phase 4 шаг 2: ent-order-history
+
+- **Сделал:** миграция order_history — Order (shop/status/totalRub/dates) + OrderItem (ingredient/qtyG/priceRub факт), unique order+ingredient. Smoke psql OK. `ent-order-history` → done. 25/37. Все entity Phase 4 закрыты.
+- **Следующее:** `scr-assemble-cart` (P0) — агрегация: ингредиенты плана недели (рецепты×portionFactor) − остатки → ACTIVE Cart с CartItem (shop=ingredient.source). Pure aggregation + DB-wrapper. Затем scr-order-products (cart→order_history). scr-calc-stock всё ещё ждёт ent-food-diary (Phase 5).

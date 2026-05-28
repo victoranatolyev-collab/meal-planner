@@ -79,7 +79,7 @@
 **Включает (feature):**
 - [x] `ent-cart` — Корзина (P0) ✅ 2026-05-29 (миграция cart: Cart status + CartItem ingredient/qtyG/shop, unique cart+ingredient+shop)
 - [ ] `scr-assemble-cart` — Сборка корзины (P0)
-- [ ] `ent-order-history` — История заказов (P0)
+- [x] `ent-order-history` — История заказов (P0) ✅ 2026-05-29 (миграция order_history: Order shop/status/total + OrderItem ingredient/qtyG/priceRub, unique order+ingredient)
 - [ ] `scr-order-products` — Заказ продуктов (P1)
 
 **Зависимости:** Phase 3 (нужен план + остатки).
@@ -155,8 +155,9 @@
 **Сделано:** все entity Phase 3 ✅ + `scr-calc-norms` ✅. `scr-calc-week-plan` подзадача 1/3 ✅ (calc-plan job контракт+fixture в llm-service, stub smoke OK). 21/37.
 **Сделано:** `scr-calc-week-plan` ✅, `scr-import-health` ✅, UI `/plan` ✅ (read-only + GET /api/plans list mode). 23/37. Все actionable фичи + acceptance Phase 3 закрыты.
 **Заблокировано:** `scr-calc-stock` (P0) — deps `ent-order-history` (Phase 4) + `ent-food-diary` (Phase 5). Реализуется после Phase 4/5 (кросс-фазовая зависимость). Phase 3 НЕ переносим в историю пока эта фича не done.
-**Сделано:** Phase 4 старт — `ent-cart` ✅ (миграция cart). 24/37.
-**Следующая задача:** `ent-order-history` (P0 entity, deps ent-cart✅/ingredients✅/users✅) — архив отправленных заказов (shop, items, prices, timestamps, статус доставки; источник для сверки факт vs план). Затем `scr-assemble-cart` (P0: план − остатки → группировка по магазинам → CartItem), `scr-order-products` (P1: корзина → order_history). После ent-order-history scr-calc-stock частично разблокируется (полностью — после ent-food-diary Phase 5).
+**Сделано:** Phase 4 — `ent-cart` ✅, `ent-order-history` ✅ (обе миграции + smoke). 25/37. Все entity Phase 4 done.
+**Следующая задача:** `scr-assemble-cart` (P0 script, deps ent-week-plan✅/ent-stock✅/ent-cart✅/ingredients✅) — собрать корзину: суммировать ингредиенты плана недели (рецепты × portionFactor → qty_g по ингредиенту) − остатки (stock) → создать/обновить ACTIVE Cart с CartItem (группировка по shop = ingredient.source). Чистая логика (агрегация) + DB-wrapper, паттерн validation/plan. Затем `scr-order-products` (P1: ACTIVE cart → order_history per shop, cart → ORDERED).
+**Заблокировано:** `scr-calc-stock` (Phase 3) — ent-order-history готов, но нужен ещё ent-food-diary (Phase 5).
 
 ---
 

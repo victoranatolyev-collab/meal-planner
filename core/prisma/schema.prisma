@@ -34,6 +34,7 @@ model User {
   trainingLogs    TrainingLog[]
   moodLogs        MoodLog[]
   carts           Cart[]
+  orders          Order[]
 
   @@map("users")
 }
@@ -153,6 +154,7 @@ model Ingredient {
   recipeIngredients RecipeIngredient[]
   stockItems        StockItem[]
   cartItems         CartItem[]
+  orderItems        OrderItem[]
 
   @@unique([name, source, packSize], name: "uniq_name_source_pack")
   @@index([source])
@@ -644,4 +646,51 @@ model CartItem {
   @@unique([cartId, ingredientId, shop], name: "uniq_cart_ingredient_shop")
   @@index([cartId])
   @@map("cart_items")
+}
+
+/// Статус заказа (доставка).
+enum OrderStatus {
+  PLACED
+  DELIVERED
+  CANCELLED
+}
+
+/// История заказов — архив отправленных заказов (per shop). Phase 4 / ent-order-history.
+/// Источник для сверки факт vs план. Аналог actual_orders[] из legacy plans/week_*.json.
+model Order {
+  id          String           @id @default(uuid())
+  userId      String           @map("user_id")
+  shop        IngredientSource
+  status      OrderStatus      @default(PLACED)
+  totalRub    Decimal?         @map("total_rub") @db.Decimal(10, 2)
+  orderedAt   DateTime         @default(now()) @map("ordered_at")
+  deliveredAt DateTime?        @map("delivered_at")
+  note        String?
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@index([userId, orderedAt(sort: Desc)])
+  @@map("order_history")
+}
+
+/// Позиция заказа: ингредиент + количество + фактическая цена.
+model OrderItem {
+  id           String   @id @default(uuid())
+  orderId      String   @map("order_id")
+  ingredientId String   @map("ingredient_id")
+  qtyG         Int      @map("qty_g")
+  priceRub     Decimal? @map("price_rub") @db.Decimal(10, 2)
+  note         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  order      Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, ingredientId], name: "uniq_order_ingredient")
+  @@index([orderId])
+  @@map("order_items")
 }

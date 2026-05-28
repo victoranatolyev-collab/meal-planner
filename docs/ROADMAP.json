@@ -466,7 +466,7 @@
       "kind": "entity",
       "module": "Расчёт",
       "phase": 4,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -486,7 +486,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Аналог actual_orders[] в старых plans/week_*.json."
+      "notes": "Аналог actual_orders[] в старых plans/week_*.json. [2026-05-29: миграция order_history. Order (per-user, shop IngredientSource, status PLACED/DELIVERED/CANCELLED, totalRub, orderedAt/deliveredAt) + OrderItem (ingredient FK, qtyG, priceRub факт), unique (order, ingredient). table order_history. Cascade order→items, ingredient Restrict. Smoke OK.]"
     },
     {
       "id": "ent-food-diary",

@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-29 — Phase 4 / шаг 2: ent-order-history (миграция истории заказов)
+
+- **Сделано:** `Order` (table `order_history`, per-user, `shop` IngredientSource, `status` enum PLACED/DELIVERED/CANCELLED, totalRub, orderedAt/deliveredAt) + `OrderItem` (ingredient FK, qtyG, `priceRub` фактическая цена), unique (orderId, ingredientId). onDelete Cascade(order→items, user→orders) / Restrict(ingredient). Enum OrderStatus. Relations User.orders, Ingredient.orderItems.
+- **Решение:** заказ per-shop (корзина группируется по магазинам → каждый shop-group = отдельный Order). priceRub на item = фактическая цена (для сверки факт vs план). Аналог actual_orders[] из legacy.
+- **Миграция:** migrate dev --create-only --name order_history → deploy → generate.
+- **Smoke (psql):** Order + OrderItem (total 1234.50, price 89.90) → 1 item; DELETE order → cascade items=0. ✓
+- **Закрыто как done:** `ent-order-history`. 25/37. **Все entity Phase 4 done** (ent-cart + ent-order-history).
+- **NB:** scr-calc-stock (Phase 3) частично разблокирован (ent-order-history готов), но полностью — после ent-food-diary (Phase 5).
+- **Проверки:** prisma format/validate/migrate/generate; core vitest 90/90, tsc core/backend/worker OK.
+- **Файлы:** `core/prisma/schema.prisma` (+enum OrderStatus, +Order/OrderItem, +relations), `core/prisma/migrations/*_order_history/migration.sql`, `docs/ROADMAP.json`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 4 / шаг 1: ent-cart (миграция корзины)
 
 - **Сделано:** старт Phase 4 (Procurement). Таблицы корзины: `Cart` (per-user, `status` enum ACTIVE/ORDERED) + `CartItem` (ingredient FK, qtyG, `shop` IngredientSource, note). unique (cartId, ingredientId, shop) — один товар из разных магазинов = разные строки. onDelete Cascade(cart→items, user→carts) / Restrict(ingredient). Relations User.carts, Ingredient.cartItems. Enum CartStatus.

@@ -1006,7 +1006,7 @@
       "kind": "script",
       "module": "Поиск",
       "phase": 3,
-      "status": "planned",
+      "status": "done",
       "priority": "P1",
       "needed_now": false,
       "stack": [
@@ -1025,7 +1025,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Источники: ручной ввод формы, импорт PDF анализов (OCR — позже). Apple Health / Google Fit интеграция — phase 2-3."
+      "notes": "Источники: ручной ввод формы, импорт PDF анализов (OCR — позже). Apple Health / Google Fit интеграция — phase 2-3. [2026-05-29: core/src/health/ — create+list для 4 видов (anthropometry/lab-tests/training-logs/mood-logs) + Zod create-схемы (z.coerce.date, nativeEnum). Dynamic route /api/health/[kind] GET+POST. 10 unit-тестов. Smoke: POST все 4 → 201, GET read-back, 404 unknown_kind, 400 invalid. OCR/PDF — backlog.]"
     },
     {
       "id": "scr-correct-plan",

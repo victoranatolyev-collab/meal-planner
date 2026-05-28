@@ -50,7 +50,7 @@
 
 **Включает (feature):**
 - [x] `ent-health-records` — Health records (P1) ✅ 2026-05-28 (полная нормализация + append-only: anthropometry/lab_tests/training_logs/mood_logs + enums Sex/ActivityLevel/Goal)
-- [ ] `scr-import-health` — Выгрузка здоровья (P1)
+- [x] `scr-import-health` — Выгрузка здоровья (P1) ✅ 2026-05-29 (core/health create+list ×4 + dynamic route /api/health/[kind]; OCR/PDF backlog)
 - [x] `scr-calc-norms` — Расчёт нормы (P0) ✅ 2026-05-28 (core/norms: pure Mifflin-St Jeor + activity + goal + макросы; GET /api/norms; рекомендация, не перезапись NutritionTarget)
 - [x] `ent-stock` — Остатки (P0) ✅ 2026-05-28 (миграция `stock`: StockItem, unique user+ingredient, FK cascade/restrict)
 - [x] `ent-week-plan` — План недели (P0) ✅ 2026-05-28 (миграция `week_plan`: WeekPlan→PlanDay→PlanMeal→PlanMealItem, точно как legacy; snapshot targets+budget; meal_tags[]; portionFactor)
@@ -153,10 +153,9 @@
 
 **Фаза:** Phase 3 — Plan. Phase 2 ✅ DONE 2026-05-28.
 **Сделано:** все entity Phase 3 ✅ + `scr-calc-norms` ✅. `scr-calc-week-plan` подзадача 1/3 ✅ (calc-plan job контракт+fixture в llm-service, stub smoke OK). 21/37.
-**Сделано:** `scr-calc-week-plan` ✅ (все 3 подзадачи: contract + orchestration + REST POST/GET /api/plans). 22/37.
-**Следующая задача:** `scr-import-health` (P1) — единственная READY фича Phase 3. Импорт данных в health-таблицы (anthropometry/lab_tests/training_logs/mood_logs) через REST endpoints + Zod. OCR/PDF анализов — backlog (сначала ручной ввод/JSON-импорт). Вероятно core/src/health/ CRUD service + POST endpoints на каждую таблицу.
-**Заблокировано:** `scr-calc-stock` (P0) — deps `ent-order-history` (Phase 4) + `ent-food-diary` (Phase 5) ещё не сделаны. Реализуется после Phase 4/5 (или частично inventory±plan позже). Кросс-фазовая зависимость.
-**После Phase 3:** UI `/plan` (read-only просмотр недельного плана, в конце фазы) + закрытие Phase 3 (с пометкой что scr-calc-stock перенесён). Затем Phase 4 (Procurement) — ent-cart/scr-assemble-cart/ent-order-history/scr-order-products.
+**Сделано:** `scr-calc-week-plan` ✅ + `scr-import-health` ✅. 23/37. Все READY фичи Phase 3 закрыты.
+**Заблокировано:** `scr-calc-stock` (P0) — deps `ent-order-history` (Phase 4) + `ent-food-diary` (Phase 5). Реализуется после Phase 4/5 (кросс-фазовая зависимость).
+**Следующая задача:** Phase 3 UI — `/plan` read-only страница (просмотр недельного плана: дни → приёмы → блюда, поверх `GET /api/plans`). Untitled UI + TanStack Query, как `/rules`. Это acceptance-критерий Phase 3 (§5.3 — UI в конце фазы). После неё Phase 3 закрывается (scr-calc-stock переносится в Phase 4) → старт **Phase 4 (Procurement)**: ent-cart, scr-assemble-cart, ent-order-history, scr-order-products.
 
 ---
 

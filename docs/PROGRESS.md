@@ -105,3 +105,9 @@
 
 - **Сделал:** getWeekPlan (чтение дерева) + REST POST/GET /api/plans + Zod request/query схемы. HTTP smoke: POST→201, GET→полное дерево (snapshot kcalTarget=2455, days→meals→items+recipe), 404/400/422. `scr-calc-week-plan` → **done** (все 3 подзадачи). 22/37.
 - **Следующее:** `scr-import-health` (P1) — единственная READY фича Phase 3 (импорт в health-таблицы). `scr-calc-stock` (P0) ЗАБЛОКИРОВАН — deps ent-order-history (Phase 4) + ent-food-diary (Phase 5). Кросс-фазовая зависимость → реализуется после Phase 4/5. После scr-import-health: UI /plan + закрытие Phase 3 (scr-calc-stock переносится) → Phase 4.
+
+## Iteration 14 — 2026-05-29 — scr-import-health
+
+- **Сделал:** core/src/health/ — create+list ×4 (anthropometry/lab-tests/training-logs/mood-logs) + Zod схемы (z.coerce.date, nativeEnum) + dynamic route /api/health/[kind] (GET+POST, switch). 10 unit-тестов. Smoke: POST все 4→201, GET read-back, 404/400. `scr-import-health` → done. 23/37. Все READY фичи Phase 3 закрыты.
+- **Решение:** dynamic [kind] route (1 файл, type-safe switch) вместо 4 route-файлов. OCR/PDF backlog.
+- **Следующее:** Phase 3 UI — `/plan` read-only (просмотр недельного плана поверх GET /api/plans, Untitled UI + TanStack Query, как /rules). Acceptance Phase 3 (§5.3). Затем закрыть Phase 3 (scr-calc-stock → Phase 4, заблокирован) и старт Phase 4 (Procurement).

@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-29 — Phase 3 / шаг 8: scr-import-health (импорт в health-таблицы)
+
+- **Сделано:** импорт данных здоровья — create+list для 4 видов записей. Паттерн rules/ + dynamic route.
+  - `core/src/health/schemas.ts` — Zod create-схемы: anthropometry / lab-test / training-log / mood-log (z.coerce.date для дат → default now в service; z.nativeEnum для Sex/ActivityLevel/Goal; isFlagged/symptoms defaults) + HEALTH_KINDS + healthListQuery (coerce limit).
+  - `core/src/health/service.ts` — createX/listX × 4 (8 функций, append-only, desc по дате).
+  - `backend/app/api/health/[kind]/route.ts` — dynamic route: GET(?userId&limit) + POST, switch по kind (404 unknown_kind, 400 invalid_*). Один файл на 4 ресурса.
+- **Решение:** dynamic `[kind]` route вместо 4 отдельных файлов — компактнее, switch type-safe (exhaustive по union). OCR/PDF анализов — backlog (сначала ручной/JSON ввод).
+- **Закрыто как done:** `scr-import-health`. 23/37. **Все READY фичи Phase 3 закрыты** (scr-calc-stock заблокирован Phase 4/5).
+- **Проверки:** vitest core 90/90 (+10 health schemas: required/enum/defaults/date-coerce), tsc core/backend, eslint, next build (route /api/health/[kind]). **Smoke** (docker pg + backend): POST anthropometry/lab-tests/training-logs/mood-logs → 201; GET lab-tests → read-back (hemoglobin 110 flagged); unknown kind → 404; invalid (нет sex) → 400. ✓
+- **Файлы:** `core/src/health/{schemas,service,index,schemas.test}.ts` (4 новых), `backend/app/api/health/[kind]/route.ts` (новый), `core/src/index.ts` (re-export).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 3 / шаг 7: scr-calc-week-plan подзадача 3/3 — DONE (REST endpoints)
 
 - **Сделано:** закрыл самую сложную фичу — REST-слой над orchestration.

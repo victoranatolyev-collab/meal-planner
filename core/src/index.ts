@@ -85,6 +85,32 @@ export type {
 // Users
 export { listUsers } from './users/index.js';
 
+// Health (scr-import-health: импорт anthropometry/lab_tests/training_logs/mood_logs)
+export {
+  createAnthropometry,
+  listAnthropometry,
+  createLabTest,
+  listLabTests,
+  createTrainingLog,
+  listTrainingLogs,
+  createMoodLog,
+  listMoodLogs,
+  HEALTH_KINDS,
+  anthropometryCreateSchema,
+  labTestCreateSchema,
+  trainingLogCreateSchema,
+  moodLogCreateSchema,
+  healthListQuerySchema,
+} from './health/index.js';
+export type {
+  HealthKind,
+  AnthropometryCreate,
+  LabTestCreate,
+  TrainingLogCreate,
+  MoodLogCreate,
+  HealthListQuery,
+} from './health/index.js';
+
 // Norms (scr-calc-norms: расчёт целевых КБЖУ из anthropometry)
 export { calcNorms, calcNormsForUser } from './norms/index.js';
 export type { NormsInput, NormsResult, CalcNormsForUserResult } from './norms/index.js';

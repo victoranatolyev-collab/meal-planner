@@ -22,6 +22,20 @@
 
 ---
 
+## 2026-05-28 — Phase 3 / шаг 1: ent-stock (миграция `stock`)
+
+- **Сделано:** первая фича Phase 3 — таблица остатков. Модель `StockItem` (table `stock`): `userId`+`ingredientId` FK, `qtyG Int`, `note?`, timestamps. `@@unique([userId, ingredientId])` (одна строка на ингредиент → upsert), index `userId`. onDelete: Cascade(user) / Restrict(ingredient) — как у recipe_ingredients. Relations добавлены на `User` (stockItems) и `Ingredient` (stockItems).
+- **Решение:** хранение текущего количества (одна строка на пару user-ingredient), НЕ append-only ledger — пересчёт делает scr-calc-stock (последняя инвентаризация ± план ± заказы ± дневник). qty в граммах (qtyG), consistent с recipe_ingredients и gram-based пайплайном. Структурно простая фича (estimated low) — без AskUserQuestion.
+- **Миграция:** `prisma migrate dev --create-only --name stock` (20260528190123_stock) → migrate deploy. Plain table (без GIN/extension), ручных правок SQL не требовалось.
+- **Smoke (psql):** insert qty 500 → upsert на conflict (user+ingredient) → qty 999, count пары = 1 (unique работает); insert с несуществующим ingredient_id → FK violation (constraint enforced). ✓
+- **Закрыто как done:** `ent-stock`. 18/37.
+- **Проверки:** prisma format/validate (valid 🚀), migrate deploy, generate; core vitest 68/68, tsc core/backend/worker — все зелёные.
+- **Файлы:** `core/prisma/schema.prisma` (+StockItem, +relations на User/Ingredient), `core/prisma/migrations/20260528190123_stock/migration.sql`, `docs/ROADMAP.json`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — ✅ Phase 2 закрыта: e2e acceptance (rule→recipe→normalize→validate)
 
 - **Сделано:** закрыл последний acceptance-критерий Phase 2 — e2e-тест всего пайплайна рецептов, и перенёс Phase 2 в «История фаз».

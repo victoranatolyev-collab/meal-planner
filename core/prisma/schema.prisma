@@ -27,6 +27,7 @@ model User {
   nutritionTarget NutritionTarget?
   tagRules        TagRule[]
   recipes         Recipe[]
+  stockItems      StockItem[]
 
   @@map("users")
 }
@@ -144,6 +145,7 @@ model Ingredient {
   updatedAt    DateTime         @updatedAt @map("updated_at")
 
   recipeIngredients RecipeIngredient[]
+  stockItems        StockItem[]
 
   @@unique([name, source, packSize], name: "uniq_name_source_pack")
   @@index([source])
@@ -351,4 +353,29 @@ model RecipeTag {
   @@id([recipeId, tagName])
   @@index([tagName])
   @@map("recipe_tags")
+}
+
+// ============================================================
+// Phase 3 — Plan (нормы, остатки, план недели)
+// ============================================================
+
+/// Остатки дома — что и сколько есть у пользователя сейчас.
+/// Phase 3 / ent-stock. Одна строка на (user, ingredient) — текущее количество в граммах.
+/// scr-calc-stock пересчитывает: последняя инвентаризация ± план ± заказы ± дневник.
+/// Аналог секции stock_at_home из старого plans/week_*.json.
+model StockItem {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  ingredientId String   @map("ingredient_id")
+  qtyG         Int      @map("qty_g")
+  note         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, ingredientId], name: "uniq_user_ingredient")
+  @@index([userId])
+  @@map("stock")
 }

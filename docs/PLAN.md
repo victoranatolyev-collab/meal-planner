@@ -52,7 +52,7 @@
 - [ ] `ent-health-records` — Health records (P1)
 - [ ] `scr-import-health` — Выгрузка здоровья (P1)
 - [ ] `scr-calc-norms` — Расчёт нормы (P0)
-- [ ] `ent-stock` — Остатки (P0)
+- [x] `ent-stock` — Остатки (P0) ✅ 2026-05-28 (миграция `stock`: StockItem, unique user+ingredient, FK cascade/restrict)
 - [ ] `scr-calc-stock` — Расчёт остатков (P0)
 - [ ] `ent-week-plan` — План недели (P0)
 - [ ] `scr-calc-week-plan` — Расчёт плана на неделю (P0, hybrid LLM+greedy)
@@ -151,9 +151,11 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 3 — Plan (старт). Phase 2 ✅ DONE 2026-05-28 (e2e `worker/src/cli/e2e-phase2.ts` зелёный).
-**Активная задача (по алгоритму P0→P1, entity до script):** Phase 3 содержит `ent-health-records`(P1), `scr-import-health`(P1), `scr-calc-norms`(P0), `ent-stock`(P0), `scr-calc-stock`(P0), `ent-week-plan`(P0), `scr-calc-week-plan`(P0). Кандидат на старт — `scr-calc-norms` (чистая функция profile+health+rules → targets) либо `ent-stock` (P0 entity, простая).
-**Открытый вопрос Phase 3 (требует AskUserQuestion при старте):** структура `health_records` — одна jsonb-таблица или нормализованная (anthropometry / lab_tests / mood_logs / training_logs)? Это блокирует `ent-health-records` и `scr-calc-norms`.
+**Фаза:** Phase 3 — Plan. Phase 2 ✅ DONE 2026-05-28.
+**Сделано:** `ent-stock` ✅ (миграция `stock`).
+**Следующая задача (по алгоритму P0→P1, entity до script):** `ent-week-plan` (P0 entity) — все deps теперь done (ent-recipes, ent-nutrition-rules, ent-users, ent-stock). Структура: `week_plans → days → meals → meal_items` (meal_items ссылаются на recipes + порции).
+**Затем (по deps):** `ent-health-records`(P1) разблокирует `scr-calc-norms`(P0); `scr-calc-week-plan`(P0) после ent-week-plan; `scr-calc-stock`(P0) ждёт order-history/food-diary (Phase 4/5) — частично может считать от плана.
+**Открытый вопрос Phase 3 (AskUserQuestion перед `ent-health-records`):** структура `health_records` — одна jsonb-таблица или нормализованная (anthropometry / lab_tests / mood_logs / training_logs)? Блокирует `ent-health-records` + `scr-calc-norms`.
 
 ---
 

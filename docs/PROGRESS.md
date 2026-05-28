@@ -64,3 +64,9 @@
 - **Решение:** e2e = CLI-смоук (паттерн seed-*), не vitest (не тащим БД/llm-service в unit-прогон). core unit-тесты остаются чистыми (68/68).
 - **Узнал:** service-функции с Zod `.default()` в схеме имеют output-тип параметра (обязательные defaulted-поля) — прямой вызов без parse требует их явно (createTagRule → isActive).
 - **Следующее (Phase 3):** старт. ВАЖНО: открытый вопрос — структура `health_records` (jsonb vs нормализованная) → **AskUserQuestion** перед `ent-health-records`/`scr-calc-norms`. Кандидат на первую задачу: `scr-calc-norms` (P0, чистая функция) или `ent-stock` (P0 entity).
+
+## Iteration 7 — 2026-05-28 — Phase 3 шаг 1: ent-stock
+
+- **Сделал:** миграция `stock` (StockItem: user+ingredient FK, qtyG, unique(user,ingredient) для upsert, Cascade/Restrict). Smoke psql: upsert идемпотентен + FK enforced. `ent-stock` → done. 18/37.
+- **Решение:** current-state хранение (1 строка/пара), не ledger; qtyG граммы (как recipe_ingredients). Низкая сложность — без вопросов.
+- **Следующее:** `ent-week-plan` (P0 entity, deps готовы): схема week_plans→days→meals→meal_items. Затем ent-health-records (P1, нужен AskUserQuestion по схеме) разблокирует scr-calc-norms.

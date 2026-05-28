@@ -380,7 +380,7 @@
       "kind": "entity",
       "module": "Расчёт",
       "phase": 3,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -399,7 +399,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Аналог секции stock_at_home из старого plans/week_*.json."
+      "notes": "Аналог секции stock_at_home из старого plans/week_*.json. [2026-05-28: миграция `stock` применена. Модель StockItem (user_id+ingredient_id FK, qty_g Int, note?), unique (user_id, ingredient_id) для upsert, index user_id, onDelete Cascade(user)/Restrict(ingredient). Smoke: upsert идемпотентен, FK enforced.]"
     },
     {
       "id": "ent-cart",

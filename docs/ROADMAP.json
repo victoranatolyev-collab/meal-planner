@@ -3,7 +3,7 @@
   "project": "nutrition-rework",
   "description": "Полный рерайт приложения питания с Python CLI + JSON-файлов на Next.js + PostgreSQL стек. Документ — единый источник правды о фичах, фазах внедрения, статусах и архитектурных решениях.",
   "created_at": "2026-05-24",
-  "updated_at": "2026-05-25",
+  "updated_at": "2026-05-28",
   "git": {
     "source_branch": "main",
     "target_branch": "rework/nextjs-postgres",
@@ -756,7 +756,7 @@
       "kind": "script",
       "module": "Поиск",
       "phase": 2,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -778,7 +778,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
-      "notes": "Основной канал — Claude API с подсказкой по профилю. Скрейпинг сайтов рецептов — возможно потом как дополнение."
+      "notes": "Основной канал — Claude API с подсказкой по профилю. Скрейпинг сайтов рецептов — возможно потом как дополнение. [2026-05-28: core/src/recipes/ — searchRecipes() → llm-service (POST /jobs + wait) → persist Recipe (source=LLM, is_relevant=true, rawIngredients для scr-normalize-recipe, recipe_tags из mealTags). Backend POST /api/recipes/search. Stub-first: пайплайн работает на StubAdapter, реальный AnthropicAdapter — backlog (нужен ANTHROPIC_API_KEY). Попутно фикс гонки в llm-service /wait (404 job_not_found до pickup'а воркером).]"
     },
     {
       "id": "scr-normalize-recipe",

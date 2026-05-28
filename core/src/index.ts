@@ -41,3 +41,23 @@ export type {
   NormalizationResult,
   MatchConfig,
 } from './normalization/index.js';
+
+// Recipes (scr-search-recipes: генерация через llm-service + persist)
+export {
+  searchRecipes,
+  buildRecipeCreateInput,
+  runLlmJob,
+  searchRecipesInputSchema,
+  searchRecipesOutputSchema,
+  searchRecipesRequestSchema,
+  llmRecipeSchema,
+  llmRecipeIngredientSchema,
+} from './recipes/index.js';
+export type {
+  SearchRecipesResult,
+  SearchRecipesInput,
+  SearchRecipesOutput,
+  SearchRecipesRequest,
+  LlmRecipe,
+  LlmRecipeIngredient,
+} from './recipes/index.js';

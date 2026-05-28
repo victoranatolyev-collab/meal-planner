@@ -22,6 +22,25 @@
 
 ---
 
+## 2026-05-28 — Phase 2 / шаг 5: scr-search-recipes (генерация через llm-service + persist)
+
+- **Сделано:** реализовал `scr-search-recipes` — генерация N рецептов под профиль через llm-service + сохранение с `is_relevant=true`. Новый домен `core/src/recipes/`:
+  - `schemas.ts` — Zod: `searchRecipesInputSchema` (count 1..20 default 5, mealTags?, notes?) — то, что уходит в llm-service; `searchRecipesRequestSchema` (+ userId uuid) — вход service-функции; `llmRecipeSchema` + `searchRecipesOutputSchema` — то, что core ждёт обратно. Намеренное дублирование схем llm-service: каждая сторона валидирует независимо на границе HTTP (core НЕ импортирует из llm-service).
+  - `llm-client.ts` — generic `runLlmJob<S>(...)`: `POST /jobs` → `POST /jobs/:id/wait` → Zod-валидация output. Env `LLM_SERVICE_URL` (default `http://localhost:3001`). Переиспользуем для будущих scr-calc-week-plan / scr-telegram-agent.
+  - `mapper.ts` — pure `buildRecipeCreateInput(userId, llmRecipe)` → `Prisma.RecipeCreateInput` (source=LLM, isRelevant=true, rawIngredients = ingredients[] в форме RawIngredient, recipe_tags из mealTags с дедупом). Ингредиенты НЕ маппятся на каталог здесь — это контракт с scr-normalize-recipe.
+  - `search-service.ts` — `searchRecipes(req)`: validate → user FK check → llm job → `prisma.$transaction` создаёт все рецепты атомарно → summary.
+  - `backend/app/api/recipes/search/route.ts` — POST endpoint (400 invalid_body / 502 search_failed).
+- **Столкнулся (баг в llm-service):** smoke упал на `HTTP 404 job_not_found` из `POST /jobs/:id/wait`. Причина: запись в `llm_jobs` (audit, ключ pgBossJobId) создаётся **лениво** в `handleJob` при pickup'е воркером, а wait-эндпоинт отвечал 404 на ПЕРВОЕ отсутствие записи — то есть в окне между enqueue и pickup. Я первый реальный потребитель `/wait`, поэтому гонка всплыла сейчас.
+- **Решение:** wait-loop теперь трактует `audit == null` как нормальное pending-состояние (продолжает poll до deadline), а не 404. Bogus job-id → TIMEOUT 408 (приемлемо для long-poll). Минимальный фикс, без перестройки lazy-audit lifecycle.
+- **Stub-first (как парсеры):** пайплайн работает end-to-end на StubAdapter. Реальная Claude-генерация (AnthropicAdapter + prompts/search-recipes.ts с инъекцией профиля/правил в system prompt) — backlog, нужен ANTHROPIC_API_KEY. Статус `done` потому что фича «генерация → persist с is_relevant=true → интеграция с БД» реализована (аналогия с scr-parse-5ka).
+- **Закрыто как done:** `scr-search-recipes`. 16/37 фичей.
+- **Проверки:** vitest core 56/56 (+15: 7 mapper + 8 schemas), tsc core/backend/worker/llm-service clean, eslint core/backend/llm-service clean, next build (route `/api/recipes/search` зарегистрирован). **Smoke end-to-end:** docker postgres + migrate deploy + llm-service(stub, pg-boss) + `searchRecipes({count:2})` → 2 рецепта persisted: source=LLM, is_relevant=true, is_normalized=false, rawIngredients (3 и 1 ингр. в форме RawIngredient), recipe_tags (lunch/high_protein, breakfast). `SMOKE_OK`.
+- **Файлы:** `core/src/recipes/{schemas,llm-client,mapper,search-service,index,mapper.test,schemas.test}.ts` (7 новых), `backend/app/api/recipes/search/route.ts` (новый), `core/src/index.ts` (re-export), `core/package.json` (exports map), `llm-service/src/server.ts` (фикс /wait гонки).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-25 — Ralph Loop подготовка (документы + промпт)
 
 - **Сделано:** подготовил 4 документа для запуска Ralph Loop:

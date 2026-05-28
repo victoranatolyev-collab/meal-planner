@@ -10,7 +10,9 @@
     "./db": "./src/db.ts",
     "./parsers/five-ka": "./src/parsers/five-ka/importer.ts",
     "./ingredients/schemas": "./src/ingredients/schemas.ts",
-    "./ingredients/service": "./src/ingredients/service.ts"
+    "./ingredients/service": "./src/ingredients/service.ts",
+    "./recipes/schemas": "./src/recipes/schemas.ts",
+    "./recipes/service": "./src/recipes/search-service.ts"
   },
   "scripts": {
     "test": "vitest run",

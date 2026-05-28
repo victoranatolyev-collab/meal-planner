@@ -77,10 +77,10 @@ export function createApp(): Hono {
 
     while (Date.now() < deadline) {
       const audit = await prisma.llmJob.findFirst({ where: { pgBossJobId: id } });
-      if (!audit) {
-        return c.json({ error: 'job_not_found' }, 404);
-      }
-      if (audit.status === 'COMPLETED' || audit.status === 'FAILED') {
+      // audit == null → job ещё не подхвачен воркером (запись в llm_jobs создаётся
+      // в handleJob при старте). Это нормальное pending-состояние в окне между
+      // enqueue и pickup — продолжаем ждать, а не отвечаем 404.
+      if (audit && (audit.status === 'COMPLETED' || audit.status === 'FAILED')) {
         return c.json({
           jobId: id,
           state: audit.status,

@@ -138,6 +138,12 @@ UNIQUE `(name, source, pack_size)` в `ingredients`. Парсер делает U
 ### 10. Source-таблицы append-only
 `source_5ka/tseh/ll/vv` — каждый парс = новая строка (история). Свежий снимок = `ORDER BY parsed_at DESC LIMIT 1`.
 
+### 11. llm-service `/wait` гонка: audit создаётся лениво
+Запись в `llm_jobs` (audit, ключ `pgBossJobId`) создаётся в `handleJob` при **pickup'е** job воркером, а НЕ при enqueue. Поэтому `POST /jobs/:id/wait` не должен отвечать 404 на первое отсутствие записи — в окне между enqueue и pickup `audit==null` это нормальное **pending**-состояние. Wait продолжает poll до deadline; bogus id → TIMEOUT 408. (Фикс 2026-05-28.)
+
+### 12. core → llm-service по HTTP + generic Zod-возврат
+`core` МОЖЕТ ходить в llm-service по HTTP (`core/src/recipes/llm-client.ts`) — это вызов через сеть, не импорт (llm-service зависит от core, не наоборот). Схемы дублируются на обеих сторонах границы намеренно (каждая валидирует независимо). Generic: пиши `runLlmJob<S extends ZodTypeAny>(...): Promise<z.infer<S>>`, НЕ `<T>(schema: ZodSchema<T>)` — при `.default()`/`.optional()` Input и Output типы Zod расходятся, а `ZodSchema<T>` их коллапсит и ломает вывод типа (mealTags стало бы `string[] | undefined`).
+
 ## Стратегия фаз
 
 - **Phase 0** Foundation ✅

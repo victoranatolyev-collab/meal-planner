@@ -5,7 +5,7 @@
 > История уже завершённых фаз — в конце документа в разделе «История фаз».
 
 **Текущая ветка:** `rework/nextjs-postgres`
-**Статус:** Phase 0 ✅ DONE, Phase 1 ✅ DONE (обе 2026-05-24). Активная фаза: **Phase 2 (Recipes)**.
+**Статус:** Phase 0 ✅ DONE, Phase 1 ✅ DONE (обе 2026-05-24). Активная фаза: **Phase 2 (Recipes)** — 5/6 фич done, осталась `scr-edit-rules` (UI /rules) + e2e acceptance.
 
 ---
 
@@ -45,7 +45,7 @@
 **Включает (feature):**
 - [x] `ent-nutrition-rules` — Правила питания (P0) ✅ 2026-05-25 (tag-based: tag_dictionary, nutrition_targets, tag_rules)
 - [x] `ent-recipes` — Рецепты (P0) ✅ 2026-05-25 (recipes + recipe_ingredients + recipe_tags + ingredients.tags GIN)
-- [ ] `scr-search-recipes` — Поиск рецептов (P0, через Claude API)
+- [x] `scr-search-recipes` — Поиск рецептов (P0) ✅ 2026-05-28 (core/recipes → llm-service POST /jobs+wait → persist is_relevant=true; stub-first, AnthropicAdapter в backlog)
 - [x] `scr-normalize-recipe` — Нормализация рецепта (P0) ✅ 2026-05-25 (pg_trgm fuzzy + unit_conversions + totals)
 - [x] `scr-validate-recipes` — Валидация рецептов (P0) ✅ 2026-05-25 (tag-based rule engine, §7.3 ARCHITECTURE)
 - [ ] `scr-edit-rules` — Редактирование правил (P1, UI)
@@ -173,8 +173,8 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 2 — Recipes.
-**Следующая итерация:** миграция для `ent-nutrition-rules` и `ent-recipes` (+ junction-таблица `recipe_ingredients`).
+**Фаза:** Phase 2 — Recipes (5/6 done).
+**Следующая итерация:** `scr-edit-rules` — Web UI `/rules` (CRUD правил питания: RHF + Zod + SCSS modules) + backend CRUD endpoints для `tag_rules` / `nutrition_targets`. Это закрывает последнюю фичу Phase 2; затем e2e-acceptance (правило → рецепт → нормализация → валидация через API) и закрытие фазы.
 
 ---
 

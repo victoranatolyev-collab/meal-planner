@@ -5,7 +5,16 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', 'build/**'],
+    // Vendored Untitled UI React kit (copy-paste components) — не наш код, не линтим.
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'build/**',
+      'src/components/**',
+      'src/utils/**',
+      'src/hooks/**',
+      'src/providers/**',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

@@ -68,14 +68,15 @@
 | Build tool | **Vite** | |
 | Framework | React 19+ | |
 | Язык | TypeScript | strict mode |
-| Styling | **SCSS modules** | BEM-like классы. **Без Tailwind/shadcn.** |
+| Styling | **Tailwind CSS v4** | Utility-first. **Изменено 2026-05-28** (ранее — SCSS modules; решение пользователя в пользу Untitled UI). |
+| Компонент-кит | **Untitled UI React** (Tailwind + React Aria) | Vendored copy-paste в `src/components/{base,foundations}`. Добавление компонентов — через Untitled UI **MCP** (`untitledui`, `.mcp.json`) или CLI `npx untitledui add`. |
 | Routing | React Router v7 | |
 | State (server) | TanStack Query | Все данные с API — через RQ |
 | State (client UI) | Zustand | Только UI-состояние (модалы, активный шаг, фильтры) |
 | Forms | React Hook Form + Zod | |
 | DnD | dnd-kit | accessible drag-and-drop |
 | HTTP client | fetch (нативный) | при необходимости тонкая обёртка |
-| Иконки | TBD (`lucide-react`?) | |
+| Иконки | `@untitledui/icons` | Передаются как компонент-референсы: `iconLeading={Plus}` |
 
 ### 2.3 Worker (Node.js)
 
@@ -206,32 +207,41 @@ backend/
 ```
 frontend/
 ├── src/
-│   ├── components/                   # Переиспользуемые компоненты
-│   │   └── DayCard/
-│   │       ├── DayCard.tsx
-│   │       ├── DayCard.module.scss
-│   │       └── index.ts
-│   ├── pages/                        # Route components
-│   ├── api/                          # Типизированный REST-клиент
-│   ├── hooks/                        # React hooks
-│   ├── store/                        # Zustand stores
-│   ├── styles/                       # Глобальный SCSS: variables, mixins, reset
+│   ├── components/                   # VENDORED Untitled UI React (copy-paste kit)
+│   │   ├── base/                     #   кнопки, инпуты, селекты, чекбоксы, badges…
+│   │   └── foundations/              #   иконки-обёртки, логотипы, featured-icons…
+│   ├── utils/                        # VENDORED: cx (tailwind-merge), is-react-component…
+│   ├── hooks/                        # VENDORED: use-breakpoint, use-clipboard…
+│   ├── providers/                    # VENDORED: theme-provider, router-provider
+│   ├── pages/                        # НАШИ route-компоненты (kebab-case)
+│   ├── api/                          # НАШ типизированный REST-клиент к backend
+│   ├── lib/                          # НАШИ хелперы (useCurrentUser и т.п.)
+│   ├── styles/
+│   │   ├── globals.css               # @import "tailwindcss" + плагины + @custom-variant
+│   │   ├── theme.css                 # дизайн-токены Untitled UI (CSS custom properties)
+│   │   └── typography.css
 │   ├── App.tsx
 │   └── main.tsx
 ├── public/
-├── vite.config.ts
+├── vite.config.ts                    # @tailwindcss/vite plugin + alias '@' → ./src + /api proxy
 ├── tsconfig.json
 └── package.json
 ```
 
+`@/*` алиас → `./src/*` (vite resolve.alias + tsconfig paths). Vendored kit (`components/`, `utils/`,
+`hooks/`, `providers/`) исключён из eslint — это сторонний код, не наш.
+
 ### 5.2 Принципы
 
-- **Один компонент = одна папка** (`Component/Component.tsx` + `Component.module.scss` + `index.ts`)
-- **SCSS modules** для component-level стилей (`*.module.scss`)
-- **Глобальный SCSS** только для design tokens (переменные цветов, отступов, типографики), миксинов, reset
-- **BEM-like** именование классов внутри модулей
-- **TanStack Query** для всех данных с API — никогда не используй ручной `useState` для серверных данных
-- **Zustand** только для UI state (модалы, фильтры, активный шаг wizard)
+- **Untitled UI React** — основной компонент-кит (Tailwind v4 + React Aria). Vendored copy-paste в `src/components/`. Новые компоненты добавляются через Untitled UI **MCP** (tools `search_components` / `get_component`) или CLI `npx untitledui add <name>`, НЕ пишутся вручную с нуля.
+- **Tailwind utility-классы** для стилей. **Только семантические цвета** (`text-primary`, `bg-brand-secondary`, `border-tertiary`), не сырые (`text-gray-900`). Типографика — `text-display-sm`, `text-md` и т.п. из темы.
+- **Импорты компонентов** через alias: `import { Button } from "@/components/base/buttons/button"`.
+- **react-aria-components** импортируй с префиксом `Aria*` (`import { Button as AriaButton } from "react-aria-components"`) — избегаем конфликта имён.
+- **Иконки** — компонент-референсами: `iconLeading={Plus}` (из `@untitledui/icons`), не JSX.
+- **Имена файлов — kebab-case** (`.tsx`/`.ts`/`.css`), включая наши страницы (`rules-page.tsx`). Это конвенция Untitled UI (переопределяет прежнее PascalCase для frontend, см. §11.1).
+- **TanStack Query** для всех данных с API — никогда не используй ручной `useState` для серверных данных.
+- **Zustand** только для UI state (модалы, фильтры, активный шаг wizard).
+- **Формы** — React Hook Form + Zod (resolver), поверх Untitled UI инпутов.
 
 ### 5.3 Стратегия разработки UI: backend-first
 
@@ -756,6 +766,21 @@ App/                          # репозиторий на ветке rework/ne
 ## 13. История изменений архитектуры
 
 (Append-only, кратко. Большие изменения дублируем в `HISTORY.md` с обоснованием.)
+
+### 2026-05-28 — Frontend: SCSS modules → Tailwind v4 + Untitled UI React
+
+**Обоснование:** явное решение пользователя — использовать Untitled UI React (Tailwind CSS v4 + React Aria) как компонент-кит для всего приложения + их MCP-сервер, полностью компонентный подход.
+
+**Что меняется (§2.2, §5):**
+- Styling: SCSS modules → **Tailwind CSS v4** (`@tailwindcss/vite`). Удалены `*.scss` (variables/reset/global/App.module).
+- Добавлен компонент-кит **Untitled UI React** — vendored copy-paste в `src/components/{base,foundations}` (+ `utils/`, `hooks/`, `providers/`). Это сторонний код → исключён из eslint.
+- **MCP-сервер `untitledui`** (`.mcp.json`, project scope, `https://www.untitledui.com/react/api/mcp`) — tools для поиска/добавления компонентов. Доступен со следующей сессии.
+- Иконки: `@untitledui/icons` (раньше TBD lucide).
+- Конвенция имён файлов frontend: **kebab-case** (переопределяет PascalCase из §11.1 для frontend) — требование Untitled UI.
+- `@/*` alias → `./src/*` (vite + tsconfig). frontend tsconfig.app.json выровнен под кит: `jsx: preserve`, `lib: ESNext`, убраны `noUncheckedIndexedAccess` + `noImplicitOverride` (vendored код их не проходит). `strict` сохранён.
+- Деплой §11: frontend Docker по-прежнему nginx + статика Vite — без изменений (Tailwind компилируется в build-time).
+
+**Что НЕ меняется:** backend/core/worker/llm-service стек и их strict-tsconfig; разделение frontend/backend; SPA + REST контракт.
 
 ### 2026-05-25 — LLM выделен в отдельный микросервис + очередь pg-boss
 

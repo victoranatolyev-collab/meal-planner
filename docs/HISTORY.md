@@ -22,6 +22,23 @@
 
 ---
 
+## 2026-05-28 — Frontend: миграция на Untitled UI React (Tailwind v4) [инфра]
+
+- **Сделано:** по явному запросу пользователя мигрировал frontend со SCSS modules на **Untitled UI React** (Tailwind CSS v4 + React Aria) как компонент-кит для всего приложения. Это инфра-итерация (НЕ закрывает фичу; готовит почву под UI `/rules`).
+  - **MCP:** `claude mcp add --transport http untitledui https://www.untitledui.com/react/api/mcp --scope project` → `.mcp.json` (доступен со след. сессии; tools search/get_component, page templates, icons).
+  - **Vendored kit:** скопировал из официального `untitledui-vite-starter-kit` в `frontend/src/`: `components/base` (69) + `components/foundations` (104) + `utils/` + `hooks/` + `providers/` = 173 файла. Heavy `application/` (charts/carousel/date-picker/qr) НЕ копировал — добавлю точечно через MCP/CLI по мере нужды.
+  - **Deps (frontend):** tailwindcss@4 + @tailwindcss/vite + @tailwindcss/typography + tailwindcss-animate + tailwindcss-react-aria-components + @untitledui/icons + react-aria + react-aria-components + react-stately + tailwind-merge + input-otp + @react-aria/utils + @react-stately/utils. Удалён `sass`.
+  - **Config:** vite.config (+@tailwindcss/vite plugin, +alias `@`→./src, сохранён /api proxy + порт 5173); tsconfig.app.json (jsx `preserve`, lib `ESNext`, +`@/*` paths, убраны `noUncheckedIndexedAccess`+`noImplicitOverride` — vendored код их не проходит, `strict` сохранён); main.tsx импортит `globals.css`; eslint игнорит vendored dirs; `typecheck` script → `tsc -b` (был no-op из-за files:[]). App.tsx переписан на Untitled UI Button + @untitledui/icons (проверка кита).
+- **Столкнулся:** (1) CLI `npx untitledui init` падает на нашем monorepo-layout ("Unsupported project framework") → пошёл через clone starter-kit + ручной перенос. (2) build падал: `import React` unused (нужен jsx `preserve`), `.toArray()` на SetIterator (нужен lib `ESNext`), отсутствуют `@react-aria/utils`/`@react-stately/utils` (vendored код импортит напрямую, их не было в дереве — доустановил 3.34.1/3.12.1).
+- **Решение / ARCHITECTURE:** §5 полностью переписан под Tailwind+Untitled UI; §2.2 таблица стека; §13 changelog с обоснованием (явная нужда = запрос пользователя). Это разрешённое изменение контракта (есть явная нужда + запись).
+- **Проверки:** `npm run build --workspace frontend` (tsc -b + vite build, 2481 modules, CSS 152KB/21KB gz) ✅, eslint frontend ✅, typecheck frontend ✅. Регресс не задет: core 68/68, tsc core/backend/worker/llm-service OK.
+- **НЕ проверено визуально:** рендер в браузере (dev-сервер) — пользователь может глянуть `npm run dev --workspace frontend`. Сборка зелёная, типы и Tailwind компилируются.
+- **Файлы:** `frontend/src/components/**` (173 vendored), `frontend/src/{utils,hooks,providers}/**`, `frontend/src/styles/{globals,theme,typography}.css`, `frontend/src/{App,main}.tsx`, `frontend/{package.json,vite.config.ts,tsconfig.app.json,eslint.config.mjs}`, `.mcp.json` (новый), `docs/ARCHITECTURE.md` (§2.2/§5/§13).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — Phase 2 / шаг 6: scr-edit-rules (backend CRUD nutrition rules)
 
 - **Сделано:** backend-часть `scr-edit-rules` — CRUD service + REST для управления правилами питания (`tag_rules` + `nutrition_targets`). UI `/rules` — следующая итерация (backend-first, §5.3). Новый домен `core/src/rules/`:

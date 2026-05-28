@@ -35,3 +35,11 @@
 - **Узнал:** eslint flat config НЕ игнорит `_`-префикс для unused (нет varsIgnorePattern); не используй `const {x:_unused, ...rest}` для omit в тестах — пиши объект явно.
 - **Проверки:** vitest 68/68 (+12), tsc ×3, eslint ×2, next build (3 route), HTTP smoke (next start + curl): upsert target, CRUD tag-rule, 400 на невалидный superRefine, 204/404 на delete — всё ✓.
 - **Следующее:** UI `/rules` (RHF+Zod+SCSS+TanStack Query) → закрытие scr-edit-rules + Phase 2. Это первая web-страница — поднять фронтовый слой.
+
+## Iteration 3 — 2026-05-28 — Frontend → Untitled UI React (инфра)
+
+- **Контекст:** на вопросе про first-UI пользователь редиректнул стек: использовать Untitled UI React (Tailwind v4 + React Aria) для всего приложения + их MCP, без хардкода, split /rules на 2.
+- **Сделал:** инфра-миграция frontend. MCP `untitledui` в `.mcp.json` (project scope). Vendored kit (base+foundations+utils+hooks+providers = 173 файла) из официального vite-starter-kit. Tailwind v4 + deps. ARCHITECTURE §5/§2.2/§13 переписаны (разрешённое изменение — явная нужда юзера). НЕ фича — статусы ROADMAP без изменений (16/37).
+- **Узнал (gotchas):** (1) untitledui CLI не понимает monorepo-layout ("Unsupported project framework") → clone starter + ручной перенос. (2) Untitled UI требует tsconfig: jsx `preserve` (иначе `import React` unused), lib `ESNext` (iterator `.toArray()`); vendored код НЕ проходит `noUncheckedIndexedAccess`/`noImplicitOverride` — убрал для frontend (strict оставил). (3) vendored импортит `@react-aria/utils`/`@react-stately/utils` напрямую — их не было в дереве, доустановил. (4) frontend `typecheck` script был no-op (`tsc --noEmit` при tsconfig files:[]) → `tsc -b`. Записал AGENTS gotchas #16-19.
+- **Не проверено:** визуальный рендер (dev-сервер) — только build/typecheck/lint зелёные. MCP-тулы недоступны в этой сессии (нужен reconnect) — добавлены для будущих.
+- **Следующее:** /rules — api-клиент + TanStack Query + useCurrentUser + форма nutrition-targets на Untitled UI (iter N+1), потом CRUD tag-rules (iter N+2) → закрыть scr-edit-rules + Phase 2.

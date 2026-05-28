@@ -173,9 +173,10 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 2 — Recipes (весь backend готов).
-**Следующая итерация (закрытие Phase 2):** Web UI `/rules` — форма CRUD правил питания (RHF + Zod + SCSS modules) поверх готового API (`/api/nutrition-targets`, `/api/tag-rules`). Это закрывает `scr-edit-rules` (→ done) и **всю Phase 2**. Затем (опц.) e2e-acceptance «правило → рецепт → нормализация → валидация через API», перенос Phase 2 в «Историю фаз», старт Phase 3 (Plan).
-**Замечание по UI:** это первая web-страница проекта — заодно поднять фронтовый слой (TanStack Query + RHF + api-клиент к backend) по ARCHITECTURE §5.
+**Фаза:** Phase 2 — Recipes (весь backend готов; frontend-фундамент на Untitled UI поднят 2026-05-28).
+**Сделано (инфра):** frontend мигрирован на Untitled UI React (Tailwind v4 + React Aria) + MCP `untitledui` — см. HISTORY/ARCHITECTURE §5.
+**Следующая итерация:** `/rules` шаг 1 — api-клиент к backend + TanStack Query provider + `useCurrentUser` (VITE_DEV_USER_ID) + роут `/rules` + форма nutrition-targets (RHF + Zod, Untitled UI инпуты, GET/PUT `/api/nutrition-targets`).
+**Затем:** `/rules` шаг 2 — CRUD tag-rules (список + форма add/edit/delete на `/api/tag-rules`) → закрывает `scr-edit-rules` (→ done) и **всю Phase 2**. Потом (опц.) e2e-acceptance, перенос Phase 2 в «Историю фаз», старт Phase 3.
 
 ---
 

@@ -30,7 +30,7 @@ Monorepo на npm workspaces: 5 контейнеров (postgres, backend, worke
 | Слой | Стек |
 |---|---|
 | Backend | Next.js 15 (App Router), TypeScript strict, Prisma, Zod, pino |
-| Frontend | Vite 6 + React 19 + SCSS modules + React Router v7 |
+| Frontend | Vite 6 + React 19 + **Tailwind v4 + Untitled UI React** (React Aria) + React Router v7. MCP `untitledui` для добавления компонентов. (Сменено со SCSS modules 2026-05-28.) |
 | Worker | Node 22 + node-cron + tsx (runtime, **не** tsc-bundle) |
 | LLM-service | Hono + pg-boss + Adapter pattern (Anthropic/OpenAI/Stub) |
 | DB | PostgreSQL 16 + pg_trgm + GIN индексы |
@@ -49,7 +49,9 @@ core/src/
 └── validation/              # Tag-based rule engine
 
 backend/app/api/<resource>/route.ts  # Thin Route Handlers
-frontend/src/                       # UI (Phase 2+ конец каждой фазы)
+frontend/src/components/{base,foundations}  # VENDORED Untitled UI kit (не линтим, не пишем вручную)
+frontend/src/{utils,hooks,providers}/       # VENDORED Untitled UI хелперы
+frontend/src/{pages,api,lib}/               # НАШ код (kebab-case, @/ alias)
 worker/src/{jobs,cli}/              # Cron + manual seeders
 llm-service/src/                    # Hono + pg-boss + adapters
 ```
@@ -152,6 +154,18 @@ UNIQUE `(name, source, pack_size)` в `ingredients`. Парсер делает U
 
 ### 15. Домены rules/ vs validation/
 `core/src/rules/` — CRUD **данных** правил (tag_rules + nutrition_targets, scr-edit-rules). `core/src/validation/` — **движок проверки** рецептов против правил (evaluateRules, scr-validate-recipes). Близкие имена, разные роли — не путай.
+
+### 16. Frontend — Untitled UI React kit (Tailwind v4)
+Компоненты НЕ пишутся вручную: ищи/добавляй через MCP `untitledui` (`search_components`/`get_component`) или CLI `npx untitledui add <name>`. Vendored kit в `src/components/{base,foundations}` — сторонний код, исключён из eslint, НЕ редактируй. Свой код — в `src/{pages,api,lib}/`, **kebab-case** имена файлов, импорт через `@/` alias. Стили — Tailwind utility, **только семантические цвета** (`text-primary`, `bg-brand-secondary`), иконки `@untitledui/icons` как референсы (`iconLeading={Plus}`). react-aria-components импортируй как `Aria*`.
+
+### 17. Untitled UI tsconfig-требования
+Vendored kit требует frontend `tsconfig.app.json`: `jsx: "preserve"` (иначе `import React` → TS6133 unused), `lib` включает `"ESNext"` (iterator `.toArray()`). Kit НЕ проходит `noUncheckedIndexedAccess` / `noImplicitOverride` — для frontend они убраны (`strict` сохранён). Backend/core/worker/llm-service strict-tsconfig НЕ трогаем.
+
+### 18. Untitled UI: прямые @react-aria/* импорты
+Vendored код импортит `@react-aria/utils` и `@react-stately/utils` напрямую — их нет в дереве react-aria по умолчанию, нужно ставить явно (`npm i -w frontend @react-aria/utils @react-stately/utils`). Если build падает на `Cannot find module @react-*/...` — доставь сабпакет.
+
+### 19. untitledui CLI не работает в monorepo
+`npx untitledui init/add` падает с "Unsupported project framework" в нашем npm-workspaces layout. Workaround: брать компоненты из официального `untitledui-vite-starter-kit` (clone + copy) или через MCP `get_component`. Frontend `typecheck` = `tsc -b` (НЕ `tsc --noEmit` — он no-op при tsconfig `files:[]`).
 
 ## Стратегия фаз
 

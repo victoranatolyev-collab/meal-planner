@@ -81,3 +81,6 @@ export type {
   TagRuleCreate,
   TagRuleUpdate,
 } from './rules/index.js';
+
+// Users
+export { listUsers } from './users/index.js';

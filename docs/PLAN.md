@@ -175,8 +175,8 @@
 
 **Фаза:** Phase 2 — Recipes (весь backend готов; frontend-фундамент на Untitled UI поднят 2026-05-28).
 **Сделано (инфра):** frontend мигрирован на Untitled UI React (Tailwind v4 + React Aria) + MCP `untitledui` — см. HISTORY/ARCHITECTURE §5.
-**Следующая итерация:** `/rules` шаг 1 — api-клиент к backend + TanStack Query provider + `useCurrentUser` (VITE_DEV_USER_ID) + роут `/rules` + форма nutrition-targets (RHF + Zod, Untitled UI инпуты, GET/PUT `/api/nutrition-targets`).
-**Затем:** `/rules` шаг 2 — CRUD tag-rules (список + форма add/edit/delete на `/api/tag-rules`) → закрывает `scr-edit-rules` (→ done) и **всю Phase 2**. Потом (опц.) e2e-acceptance, перенос Phase 2 в «Историю фаз», старт Phase 3.
+**Сделано (/rules шаг 1, 2026-05-28):** фронтовый data-слой (api-клиент + TanStack Query + `useCurrentUser` через `GET /api/users` — без хардкода) + форма целей КБЖУ (RHF + Untitled UI InputNumber, GET/PUT `/api/nutrition-targets`). Backend `GET /api/users` добавлен.
+**Следующая итерация (`/rules` шаг 2, закрытие Phase 2):** CRUD tag-rules на `/rules` — список правил + форма add/edit/delete на `/api/tag-rules` (ruleKind select, conditional поля quantity/mealTag). Закрывает `scr-edit-rules` (→ done) и **всю Phase 2**. Потом (опц.) e2e-acceptance, перенос Phase 2 в «Историю фаз», старт Phase 3.
 
 ---
 

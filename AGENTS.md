@@ -167,6 +167,12 @@ Vendored код импортит `@react-aria/utils` и `@react-stately/utils` �
 ### 19. untitledui CLI не работает в monorepo
 `npx untitledui init/add` падает с "Unsupported project framework" в нашем npm-workspaces layout. Workaround: брать компоненты из официального `untitledui-vite-starter-kit` (clone + copy) или через MCP `get_component`. Frontend `typecheck` = `tsc -b` (НЕ `tsc --noEmit` — он no-op при tsconfig `files:[]`).
 
+### 20. RHF + React Aria (Untitled UI инпуты) = Controller
+Untitled UI инпуты — это React Aria (value/onChange-значение, НЕ нативный event). С react-hook-form подключай через `<Controller>` (field.value/field.onChange), НЕ `register`. `InputNumber` (NumberField): пустое поле = **NaN**. Zod: required → `z.number().finite()` (NaN падает = нужная ошибка), optional → `z.union([z.number()..., z.nan()])`, в submit фильтруй `Number.isFinite`. Дефолты формы для числовых полей — NaN (чтобы input оставался controlled).
+
+### 21. Frontend НЕ импортит core (Prisma в браузере)
+`core` тянет `@prisma/client` → нельзя импортить его Zod-схемы/типы в браузерный frontend. Дублируй схему формы на клиенте (как llm-service↔core). userId на фронте — без хардкода: `GET /api/users` → `useCurrentUser` берёт первого (auth отложена). Decimal-поля backend приходят строками (Prisma Decimal → JSON string) — парсь `Number()` для prefill.
+
 ## Стратегия фаз
 
 - **Phase 0** Foundation ✅

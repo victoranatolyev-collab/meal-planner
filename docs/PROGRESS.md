@@ -43,3 +43,10 @@
 - **Узнал (gotchas):** (1) untitledui CLI не понимает monorepo-layout ("Unsupported project framework") → clone starter + ручной перенос. (2) Untitled UI требует tsconfig: jsx `preserve` (иначе `import React` unused), lib `ESNext` (iterator `.toArray()`); vendored код НЕ проходит `noUncheckedIndexedAccess`/`noImplicitOverride` — убрал для frontend (strict оставил). (3) vendored импортит `@react-aria/utils`/`@react-stately/utils` напрямую — их не было в дереве, доустановил. (4) frontend `typecheck` script был no-op (`tsc --noEmit` при tsconfig files:[]) → `tsc -b`. Записал AGENTS gotchas #16-19.
 - **Не проверено:** визуальный рендер (dev-сервер) — только build/typecheck/lint зелёные. MCP-тулы недоступны в этой сессии (нужен reconnect) — добавлены для будущих.
 - **Следующее:** /rules — api-клиент + TanStack Query + useCurrentUser + форма nutrition-targets на Untitled UI (iter N+1), потом CRUD tag-rules (iter N+2) → закрыть scr-edit-rules + Phase 2.
+
+## Iteration 4 — 2026-05-28 — /rules шаг 1: data-слой + форма КБЖУ
+
+- **Сделал:** первая web-страница `/rules` + фронтовый data-слой. Backend `GET /api/users`. Frontend: api-клиент (fetch+ApiError), TanStack Query, `useCurrentUser` (первый из /api/users, без хардкода), форма целей КБЖУ (RHF + Controller + Untitled UI InputNumber, prefill useQuery + PUT useMutation). scr-edit-rules остаётся in_progress (шаг 2 = tag-rules CRUD).
+- **Узнал (gotchas):** (1) React Aria NumberField пустое = NaN → Zod: required `.finite()`, optional `union([...,z.nan()])` + submit фильтрует `Number.isFinite`. (2) RHF + React Aria = через `Controller` (value/onChange-number), не register. (3) frontend НЕ может импортить core Zod-схемы (core тянет @prisma/client в браузер) → дублируем схему на клиенте. (4) `as typeof body` → `never`; juzaй explicit type alias. (5) zsh `UID` зарезервирована (как `status`). Записал AGENTS gotchas #20-21.
+- **Не проверено:** визуал в браузере (build/lint/types зелёные, API смоук-verified).
+- **Следующее:** /rules шаг 2 — CRUD tag-rules (список + add/edit/delete на /api/tag-rules) → закрыть scr-edit-rules + Phase 2.

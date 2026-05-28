@@ -22,6 +22,24 @@
 
 ---
 
+## 2026-05-28 — Phase 2 / scr-edit-rules UI (шаг 1/2): data-слой + форма КБЖУ
+
+- **Сделано:** первая рабочая web-страница `/rules` на Untitled UI + фронтовый data-слой. Это шаг 1 из 2 для `scr-edit-rules` (форма целей КБЖУ; CRUD tag-rules — шаг 2).
+  - **Backend:** `GET /api/users` (core `listUsers()` → id/email/createdAt) — для резолва userId без хардкода (auth отложена).
+  - **Frontend data-слой:** `src/api/client.ts` (fetch-обёртка + ApiError, 204/404), `src/api/{users,nutrition-targets}.ts` (typed endpoints; GET target 404→null), `src/lib/query-client.ts` (QueryClient), `src/lib/use-current-user.ts` (useQuery(users) → первый userId, single-user dev).
+  - **Форма:** `src/pages/rules/` — `form-schema.ts` (Zod, зеркало backend; NaN=пусто для React Aria NumberField, union с NaN для optional), `nutrition-target-form.tsx` (RHF + Controller + Untitled UI `InputNumber` + `Button`, useQuery prefill + useMutation PUT), `rules-page.tsx` (useCurrentUser → loading/empty/форма). `main.tsx` обёрнут в QueryClientProvider + роут `/rules`.
+  - **Deps (frontend):** @tanstack/react-query, react-hook-form, @hookform/resolvers, zod.
+- **Решения:** userId — **без хардкода** (требование пользователя): `GET /api/users` + первый юзер (single-user dev), заменяется при появлении auth. Своя Zod-схема на фронте (нельзя импортить core — тянет Prisma в браузер). RHF `Controller` для React Aria `InputNumber` (value:number/onChange:number). Плоский `<form>` (не AriaForm) — чтобы native-валидация не конфликтовала с RHF.
+- **Столкнулся:** (1) `as typeof body` в fetch-обёртке схлопнул тип в `never` → явный type alias. (2) NumberField пустое поле = NaN; required Zod `.finite()` отвергает NaN (нужная ошибка), optional — `union([...,z.nan()])`, submit фильтрует `Number.isFinite`. (3) zsh: `UID` — зарезервированная переменная (как `status`), сломала smoke-скрипт → переименовал.
+- **Статус:** `scr-edit-rules` остаётся **in_progress** (шаг 2 — CRUD tag-rules — закроет фичу + Phase 2). 16/37 без изменений.
+- **Проверки:** frontend build (tsc -b + vite, 2553 modules) ✅, eslint+typecheck frontend ✅; core 68/68, tsc core/backend OK; next build (route `/api/users` зарегистрирован). **Smoke HTTP** (docker pg + next start + curl): GET /api/users → 3 юзера; flow useCurrentUser: первый userId → GET target 404 → PUT (kcal 2300, 1.6 г/кг) → GET persisted. ✅
+- **НЕ проверено:** визуальный рендер формы в браузере (build/types/lint зелёные, API-контракт смоук-verified). `npm run dev --workspace frontend` → `/rules`.
+- **Файлы:** `core/src/users/{service,index}.ts`, `backend/app/api/users/route.ts`, `frontend/src/api/{client,users,nutrition-targets}.ts`, `frontend/src/lib/{query-client,use-current-user}.ts`, `frontend/src/pages/rules/{form-schema,nutrition-target-form,rules-page}.tsx`, `frontend/src/main.tsx`, `core/src/index.ts`, `frontend/package.json`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — Frontend: миграция на Untitled UI React (Tailwind v4) [инфра]
 
 - **Сделано:** по явному запросу пользователя мигрировал frontend со SCSS modules на **Untitled UI React** (Tailwind CSS v4 + React Aria) как компонент-кит для всего приложения. Это инфра-итерация (НЕ закрывает фичу; готовит почву под UI `/rules`).

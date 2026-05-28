@@ -167,3 +167,8 @@
 - **Сделал:** core/src/notifications/ — pure buildReminderTasks (детерминир. uid → дедуп) + StubReminderAdapter + pushReminders/runDailyReminders + worker cron 04:00 + POST /api/notifications/run. 5 unit-тестов. Smoke: run×2 → одинаковые uids (дедуп). `scr-notifications` → done. 32/37.
 - **Решение:** Adapter pattern + stub (реальный CalDAV — backlog, нужны APPLE creds). Дедуп через детерминированный UID.
 - **Следующее:** `scr-correct-plan` (P1) — diff план vs факт (week_plan vs food_diary), пересчёт остатка дня/недели. Затем scr-edit-schedule (P2 UI) → закрытие Phase 5 → Phase 6. Осталось 5 фич.
+
+## Iteration 25 — 2026-05-29 — scr-correct-plan
+
+- **Сделал:** core/src/correction/ — pure computeCorrection (remaining=target−факт по дню) + correctPlan(userId, weekIso) (snapshot целей week_plan vs сумма дневника) + GET /api/correction. 4 unit-теста. Smoke: 2000−1200=800. `scr-correct-plan` → done. 33/37.
+- **Следующее:** `scr-edit-schedule` (P2, последняя Phase 5) — CRUD расписания (backend REST поверх ent-notification-schedule, паттерн scr-edit-rules). Закроет Phase 5 → Phase 6 (Telegram). Осталось 4 фичи.

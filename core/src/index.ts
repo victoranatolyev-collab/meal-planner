@@ -117,6 +117,11 @@ export type { Macros, DiaryEntryCreate } from './diary/index.js';
 export { calcStock, projectStock } from './stock/index.js';
 export type { CalcStockResult, StockProjectionLine } from './stock/index.js';
 
+// Correction (scr-correct-plan: сверка факт vs план, остаток КБЖУ)
+// NB: correction.Macros НЕ ре-экспортируем (коллизия с diary.Macros) — он внутренний.
+export { correctPlan, computeCorrection } from './correction/index.js';
+export type { CorrectPlanResult, DayCorrection } from './correction/index.js';
+
 // Orders (scr-order-products: корзина → история заказов)
 export { placeOrder, listOrders, groupCartIntoOrders, placeOrderRequestSchema } from './orders/index.js';
 export type {

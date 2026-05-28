@@ -81,7 +81,7 @@
 **Включает (feature):**
 - [x] `ent-food-diary` — Дневник питания (P0) ✅ 2026-05-29 (миграция food_diary: FoodDiaryEntry recipe?/customName + макросы + eatenAt, recipe SetNull). Разблокировал scr-calc-stock.
 - [x] `scr-write-diary` — Запись в дневник (P0) ✅ 2026-05-29 (core/diary: writeDiaryEntry recipe→derived макросы / ad-hoc + listDiary; POST/GET /api/diary)
-- [ ] `scr-correct-plan` — Коррекция плана (P1)
+- [x] `scr-correct-plan` — Коррекция плана (P1) ✅ 2026-05-29 (core/correction: computeCorrection remaining=target−факт + correctPlan; GET /api/correction)
 - [x] `ent-notification-schedule` — Расписание уведомлений (P1) ✅ 2026-05-29 (миграция notification_schedule: NotificationSchedule + enum NotificationTrigger)
 - [x] `scr-notifications` — Push Apple Reminders (CalDAV) (P1) ✅ 2026-05-29 (core/notifications: buildReminderTasks + StubReminderAdapter + pushReminders/runDailyReminders; worker cron 04:00; POST /api/notifications/run; реальный CalDAV — backlog)
 - [ ] `scr-edit-schedule` — Редактирование расписания (P2, UI)
@@ -129,10 +129,10 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 5 (Tracking). Phase 0/1/2/3 ✅ DONE; Phase 4 — все фичи ✅. **32/37.**
-**Сделано Phase 5:** `ent-food-diary` ✅, `scr-write-diary` ✅, `ent-notification-schedule` ✅, `scr-notifications` ✅.
-**Следующая задача:** `scr-correct-plan` (P1, deps ent-week-plan✅/ent-food-diary✅/ent-health-records✅/ent-nutrition-rules✅) — коррекция: пересчёт остатка дня/недели от фактических приёмов (diary) vs план (week_plan); diff КБЖУ план vs факт. Pure diff + DB-wrapper + endpoint. Затем `scr-edit-schedule` (P2, UI расписания) → закрытие Phase 5 → Phase 6 (Telegram-агент).
-**Осталось фич (5):** Phase 5 — scr-correct-plan, scr-edit-schedule; Phase 6 — ent-telegram-account, ent-agent-conversations, scr-telegram-agent.
+**Фаза:** Phase 5 (Tracking). Phase 0/1/2/3 ✅ DONE; Phase 4 — все фичи ✅. **33/37.**
+**Сделано Phase 5:** `ent-food-diary`, `scr-write-diary`, `ent-notification-schedule`, `scr-notifications`, `scr-correct-plan` ✅.
+**Следующая задача:** `scr-edit-schedule` (P2, последняя фича Phase 5) — CRUD расписания уведомлений: backend service + REST (POST/GET/PATCH/DELETE /api/notification-schedules) поверх ent-notification-schedule, паттерн scr-edit-rules. (UI-форма /schedule — отложенная acceptance.) Закрывает Phase 5 → **Phase 6 (Agent)**: ent-telegram-account, ent-agent-conversations, scr-telegram-agent.
+**Осталось фич (4):** Phase 5 — scr-edit-schedule; Phase 6 — ent-telegram-account, ent-agent-conversations, scr-telegram-agent.
 **Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** Phase 4 order-match + UI /cart; UI /diary, /schedule (Phase 5 в конце). Приоритет — фичи (RALPH_DONE = 37 features).
 
 ---

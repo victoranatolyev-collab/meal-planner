@@ -1034,7 +1034,7 @@
       "kind": "script",
       "module": "Сопровождение",
       "phase": 5,
-      "status": "planned",
+      "status": "done",
       "priority": "P1",
       "needed_now": false,
       "stack": [
@@ -1056,7 +1056,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
-      "notes": "Может переиспользовать scr-calc-week-plan с дополнительными констрейнтами (зафиксированные приёмы из дневника)."
+      "notes": "Может переиспользовать scr-calc-week-plan с дополнительными констрейнтами (зафиксированные приёмы из дневника). [2026-05-29: core/src/correction/ — pure computeCorrection (remaining = dailyTarget − факт по дню) + correctPlan(userId, weekIso): snapshot целей из week_plan vs сумма дневника по датам. GET /api/correction. 4 unit-теста. Smoke: target 2000 − факт 1200 = remaining 800. Регенерация плана под остаток (greedy replace) — extension.]"
     },
     {
       "id": "scr-notifications",

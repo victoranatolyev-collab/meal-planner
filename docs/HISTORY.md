@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-29 — Phase 5 / шаг 5: scr-correct-plan (сверка факт vs план)
+
+- **Сделано:** коррекция плана = сверка факт (дневник) vs план за неделю. core/src/correction/ (pure + DB-wrapper).
+  - `compute.ts` — pure `computeCorrection({dailyTarget, dates, actualByDate})` → по дням {target, actual, remaining = target − actual}. remaining<0 = перебор.
+  - `service.ts` — `correctPlan(userId, weekIso)`: dailyTarget = snapshot целей из week_plan; actual = сумма макросов food_diary по дате (в диапазоне недели). 
+  - `backend`: GET /api/correction?userId&weekIso.
+- **Решение:** v1 = отчёт остатка (target − факт), как scr-calc-stock. «Loop: факт → регенерация плана» (greedy replace под остаток) — extension. correction.Macros НЕ ре-экспортируем из core (коллизия с diary.Macros).
+- **Закрыто как done:** `scr-correct-plan`. 33/37.
+- **Проверки:** vitest core 117/117 (+4: remaining / день без факта / перебор<0 / multi-day), tsc core/backend, eslint, next build (route /api/correction). **Smoke** (plan target 2000/150/60/200 + diary 1200/90/30/140): remaining 800/60/30/60. ✓
+- **Файлы:** `core/src/correction/{types,compute,service,index,compute.test}.ts` (5 новых), `backend/app/api/correction/route.ts` (новый), `core/src/index.ts`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 5 / шаг 4: scr-notifications (Apple Reminders CalDAV, stub-first)
 
 - **Сделано:** генерация напоминаний из расписаний → Apple Reminders. core/src/notifications/ (pure + Adapter pattern).

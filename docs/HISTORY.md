@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-29 — ✅ Phase 3 закрыта: scr-calc-stock (проекция остатков)
+
+- **Сделано:** последняя фича Phase 3 — расчёт остатков. core/src/stock/ (pure + DB-wrapper).
+  - `project.ts` — pure `projectStock({baseline, bought, consumed})` → строки {ingredientId, baselineG, boughtG, consumedG, projectedG = baseline+bought−consumed}. projectedG<0 = дефицит.
+  - `service.ts` — `calcStock(userId)`: baseline (StockItem) + куплено (order_history OrderItems) − съедено (food_diary с recipeId → recipe_ingredients × portionFactor). Ad-hoc записи не влияют. Возвращает {lines, asOf}.
+  - `backend`: GET /api/stock?userId → проекция.
+- **Решение:** scr-calc-stock = **отчёт-проекция БЕЗ мутации StockItem** (ROADMAP допускал «инкрементально или batch»; проекция избегает double-count; применение к инвентарю = отдельный manual-шаг). Forward-проекция по плану — расширение.
+- **Закрыто как done:** `scr-calc-stock`. **29/37. Phase 3 ✅ DONE ПОЛНОСТЬЮ (7/7)** — перенесена в «История фаз». Активная фаза → Phase 5.
+- **Проверки:** vitest core 102/102 (+3 project), tsc core/backend, eslint, next build (route /api/stock). **Smoke** (stock 500 + order 300 + diary recipe 100×2): calcStock → projectedG = 500+300−200 = 600. SMOKE_OK.
+- **Файлы:** `core/src/stock/{types,project,service,index,project.test}.ts` (5 новых), `backend/app/api/stock/route.ts` (новый), `core/src/index.ts`, `docs/ROADMAP.json`, `docs/PLAN.md` (Phase 3 → история).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 5 / шаг 1: ent-food-diary (дневник питания)
 
 - **Сделано:** старт Phase 5 (Tracking). `FoodDiaryEntry` (table `food_diary`): `recipeId?` (известный рецепт + portionFactor) ИЛИ `customName` (ad-hoc) + макросы (kcal/proteinG/fatG/carbsG) + `eatenAt` + `mealName` + note. recipe onDelete **SetNull** (история переживает удаление рецепта), user Cascade. index (userId, eatenAt DESC). Relations User.diaryEntries, Recipe.diaryEntries.

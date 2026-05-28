@@ -5,7 +5,7 @@
 > История уже завершённых фаз — в конце документа в разделе «История фаз».
 
 **Текущая ветка:** `rework/nextjs-postgres`
-**Статус:** Phase 0 ✅, Phase 1 ✅, Phase 2 ✅ DONE (2026-05-28, 17/37 фич). Активная фаза: **Phase 3 (Plan)** — расчёт норм, остатков, генерация плана недели.
+**Статус:** Phase 0/1/2/3 ✅ DONE; Phase 4 — все фичи ✅ (acceptance UI /cart + order-match отложены). **29/37 фич.** Активная фаза: **Phase 5 (Tracking)** — дневник, коррекция, нотификации.
 
 ---
 
@@ -44,31 +44,9 @@
 
 ---
 
-## Phase 3 — Plan
+## Phase 3 — Plan ✅ DONE 2026-05-29
 
-**Цель:** Расчёт целевых КБЖУ, остатков, генерация плана недели. Учёт health records (анемия, тренировки) в расчёте норм.
-
-**Включает (feature):**
-- [x] `ent-health-records` — Health records (P1) ✅ 2026-05-28 (полная нормализация + append-only: anthropometry/lab_tests/training_logs/mood_logs + enums Sex/ActivityLevel/Goal)
-- [x] `scr-import-health` — Выгрузка здоровья (P1) ✅ 2026-05-29 (core/health create+list ×4 + dynamic route /api/health/[kind]; OCR/PDF backlog)
-- [x] `scr-calc-norms` — Расчёт нормы (P0) ✅ 2026-05-28 (core/norms: pure Mifflin-St Jeor + activity + goal + макросы; GET /api/norms; рекомендация, не перезапись NutritionTarget)
-- [x] `ent-stock` — Остатки (P0) ✅ 2026-05-28 (миграция `stock`: StockItem, unique user+ingredient, FK cascade/restrict)
-- [x] `ent-week-plan` — План недели (P0) ✅ 2026-05-28 (миграция `week_plan`: WeekPlan→PlanDay→PlanMeal→PlanMealItem, точно как legacy; snapshot targets+budget; meal_tags[]; portionFactor)
-- [ ] `scr-calc-stock` — Расчёт остатков (P0)
-- [x] `scr-calc-week-plan` — Расчёт плана на неделю (P0, hybrid LLM+greedy) ✅ 2026-05-29 (calc-plan job + core/plan orchestration + REST POST/GET /api/plans; greedy resolve; snapshot targets)
-
-**Зависимости:** Phase 2 (нужны рецепты + правила).
-
-**Acceptance criteria:**
-- `scr-calc-norms` возвращает targets КБЖУ на день из профиля + health records + правил
-- `scr-calc-stock` считает остатки = последняя инвентаризация ± план ± заказы ± дневник
-- `scr-calc-week-plan` генерирует план: Claude API → валидатор → greedy replacement при сбоях
-- Web UI `/plan` — просмотр недельного плана (read-only на этой фазе), карточки дней, разбивка по приёмам
-- Юнит-тесты на greedy fallback с фикстурами; интеграция-тест на mini-наборе рецептов
-
-**Открытые вопросы:**
-- Структура health records: одна таблица с jsonb или несколько (anthropometry, lab_tests, mood_logs, training_logs)?
-- Стоимость токенов Claude API на план недели — оценить при первой реализации, кэшировать промпт
+См. подробности в разделе [«История фаз»](#история-фаз).
 
 ---
 
@@ -153,8 +131,9 @@
 
 **Фаза:** Phase 5 (Tracking) старт. Phase 0/1/2 ✅; Phase 3 actionable ✅ (кроме блок. scr-calc-stock); **Phase 4 — все фичи ✅**. **27/37.**
 **Осталось фич (10):** Phase 5 — ent-food-diary(P0), scr-write-diary(P0), scr-correct-plan(P1), ent-notification-schedule(P1), scr-notifications(P1), scr-edit-schedule(P2); Phase 6 — ent-telegram-account(P2), ent-agent-conversations(P2), scr-telegram-agent(P2); + scr-calc-stock(P3, ждёт ent-food-diary).
-**Сделано:** `ent-food-diary` ✅ → **разблокировал `scr-calc-stock`** (все deps теперь done). 28/37.
-**Следующая задача:** `scr-calc-stock` (P0, Phase 3 — теперь активная, т.к. первая фаза с незакрытой фичей) — пересчёт остатков: последняя инвентаризация (stock) ± план ± заказы (order_history) ∓ дневник (food_diary). Закрывает Phase 3 полностью. Затем продолжить Phase 5: scr-write-diary (P0), scr-correct-plan, ent-notification-schedule, scr-notifications, scr-edit-schedule.
+**Сделано:** `scr-calc-stock` ✅ → **Phase 3 закрыта полностью (7/7)**, перенесена в «История фаз». 29/37.
+**Следующая задача:** продолжить **Phase 5** — `scr-write-diary` (P0, deps ent-food-diary✅/ent-week-plan✅/ent-recipes✅): запись факт-приёма (предзаполнено планом, правится). core/diary service (create поверх ent-food-diary, возможно предзаполнение из plan_meal_item) + POST endpoint. Затем `scr-correct-plan` (P1), `ent-notification-schedule` (P1), `scr-notifications` (P1, CalDAV), `scr-edit-schedule` (P2).
+**Осталось фич (8):** Phase 5 — scr-write-diary, scr-correct-plan, ent-notification-schedule, scr-notifications, scr-edit-schedule; Phase 6 — ent-telegram-account, ent-agent-conversations, scr-telegram-agent.
 **Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** Phase 4 — `POST /api/orders/:id/match` (diff факт/план) + UI `/cart` (dnd-kit); UI `/diary`, `/schedule` (Phase 5 в конце). Приоритет — фичи (к RALPH_DONE = 37 features done), UI/match батчем по фазам.
 
 ---
@@ -162,6 +141,28 @@
 ## История фаз
 
 Когда фаза завершается — переносим её сюда с пометкой `✅ DONE` + датой.
+
+### Phase 3 — Plan ✅ DONE 2026-05-29
+
+**Цель:** расчёт целевых КБЖУ, остатков, генерация плана недели + health records.
+
+**Закрытые фичи (7):** ent-health-records, scr-import-health, scr-calc-norms, ent-stock, ent-week-plan, scr-calc-week-plan, scr-calc-stock.
+
+**Реализовано:**
+- **ent-health-records:** полная нормализация + append-only — anthropometry / lab_tests / training_logs / mood_logs + enums Sex/ActivityLevel/Goal (решение пользователя AskUserQuestion).
+- **scr-import-health:** core/health create+list ×4 + dynamic route `/api/health/[kind]`. OCR/PDF — backlog.
+- **scr-calc-norms:** pure Mifflin-St Jeor × activity × goal + макросы; `GET /api/norms` (рекомендация, не перезапись NutritionTarget).
+- **ent-stock / ent-week-plan:** миграции (StockItem; WeekPlan→days→meals→items точно как legacy, snapshot targets, portionFactor).
+- **scr-calc-week-plan** (самая сложная, 3 подзадачи): llm-service calc-plan job + core/plan orchestration (LLM draft → greedy resolve из approved-пула → persist дерево) + REST POST/GET `/api/plans`. UI `/plan` read-only.
+- **scr-calc-stock:** core/stock projection — baseline (StockItem) + куплено (orders) − съедено (diary) → отчёт; `GET /api/stock`.
+
+**Acceptance — все ✅:** norms из профиля+health; stock = инвентаризация ± заказы ∓ дневник; week-plan hybrid LLM+greedy; UI `/plan`; юнит-тесты (norms/resolve/stock). E2E плана — частично через smoke'и.
+
+**Backlog (не блокирует):** AnthropicAdapter для calc-plan (api-режим); week-level правила (MIN/MAX_PER_WEEK) в greedy; forward-проекция stock по плану.
+
+**Коммиты:** 9f5306e, 192473f, 58b4cf7, 1f16fc6, b82fd36, a24ab23, 3613a5f, c5f464c, d66f85f, (stock — текущий).
+
+---
 
 ### Phase 2 — Recipes ✅ DONE 2026-05-28
 

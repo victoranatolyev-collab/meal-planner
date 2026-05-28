@@ -95,6 +95,10 @@ export type {
   AssembleCartRequest,
 } from './cart/index.js';
 
+// Stock calc (scr-calc-stock: проекция остатков baseline + заказы − дневник)
+export { calcStock, projectStock } from './stock/index.js';
+export type { CalcStockResult, StockProjectionLine } from './stock/index.js';
+
 // Orders (scr-order-products: корзина → история заказов)
 export { placeOrder, listOrders, groupCartIntoOrders, placeOrderRequestSchema } from './orders/index.js';
 export type {

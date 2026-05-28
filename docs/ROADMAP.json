@@ -846,7 +846,7 @@
       "kind": "script",
       "module": "Расчёт",
       "phase": 3,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -868,7 +868,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Может работать инкрементально (на каждое событие) или batch (раз в день)."
+      "notes": "Может работать инкрементально (на каждое событие) или batch (раз в день). [2026-05-29: core/src/stock/ — pure projectStock + calcStock(userId): baseline (StockItem) + куплено (order_history) − съедено (food_diary→recipe_ingredients×portionFactor) → проекция {baselineG, boughtG, consumedG, projectedG}. GET /api/stock?userId. 3 unit-теста. Smoke: 500+300−200=600. Решение: ОТЧЁТ-проекция без мутации StockItem (избегаем double-count; применение к инвентарю — отдельный шаг). Forward-проекция по плану — расширение.]"
     },
     {
       "id": "scr-assemble-cart",

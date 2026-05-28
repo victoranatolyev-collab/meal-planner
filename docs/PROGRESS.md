@@ -145,3 +145,9 @@
 
 - **Сделал:** миграция food_diary — FoodDiaryEntry (recipe?/customName + макросы + eatenAt + mealName), recipe SetNull. Smoke: recipe+ad-hoc + SetNull. `ent-food-diary` → done. 28/37. **Разблокировал scr-calc-stock** (Phase 3).
 - **Следующее:** `scr-calc-stock` (P0, Phase 3 снова активна как первая фаза с незакрытой фичей) — пересчёт остатков (stock ± план ± order_history ∓ food_diary). Закроет Phase 3. Потом Phase 5: scr-write-diary, scr-correct-plan, notifications.
+
+## Iteration 21 — 2026-05-29 — ✅ Phase 3 закрыта: scr-calc-stock
+
+- **Сделал:** core/src/stock/ — pure projectStock + calcStock (baseline + orders − diary→recipe×portion) + GET /api/stock. 3 unit-теста. Smoke: 500+300−200=600. `scr-calc-stock` → done. **29/37. Phase 3 ✅ 7/7** — в «История фаз».
+- **Решение:** проекция-отчёт без мутации StockItem (избегаем double-count).
+- **Следующее:** Phase 5 — `scr-write-diary` (P0): запись факт-приёма поверх ent-food-diary (предзаполнение из плана). Затем scr-correct-plan, ent-notification-schedule, scr-notifications, scr-edit-schedule. Осталось 8 фич (Phase 5: 5, Phase 6: 3).

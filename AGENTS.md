@@ -144,6 +144,15 @@ UNIQUE `(name, source, pack_size)` в `ingredients`. Парсер делает U
 ### 12. core → llm-service по HTTP + generic Zod-возврат
 `core` МОЖЕТ ходить в llm-service по HTTP (`core/src/recipes/llm-client.ts`) — это вызов через сеть, не импорт (llm-service зависит от core, не наоборот). Схемы дублируются на обеих сторонах границы намеренно (каждая валидирует независимо). Generic: пиши `runLlmJob<S extends ZodTypeAny>(...): Promise<z.infer<S>>`, НЕ `<T>(schema: ZodSchema<T>)` — при `.default()`/`.optional()` Input и Output типы Zod расходятся, а `ZodSchema<T>` их коллапсит и ломает вывод типа (mealTags стало бы `string[] | undefined`).
 
+### 13. Next.js 15 — `params` это Promise
+В dynamic route handler (`app/api/x/[id]/route.ts`) второй аргумент — `{ params: Promise<{ id: string }> }`. Нужно `const { id } = await ctx.params;`. Без await получишь Promise вместо строки.
+
+### 14. eslint flat config не игнорит `_`-префикс
+Нет `varsIgnorePattern` в конфиге — `const { x: _unused, ...rest } = obj` падает на `_unused is assigned but never used`. Для omit-паттерна в тестах пиши объект явно, без destructure-выкидывания.
+
+### 15. Домены rules/ vs validation/
+`core/src/rules/` — CRUD **данных** правил (tag_rules + nutrition_targets, scr-edit-rules). `core/src/validation/` — **движок проверки** рецептов против правил (evaluateRules, scr-validate-recipes). Близкие имена, разные роли — не путай.
+
 ## Стратегия фаз
 
 - **Phase 0** Foundation ✅

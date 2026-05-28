@@ -22,6 +22,23 @@
 
 ---
 
+## 2026-05-28 — Phase 2 / шаг 6: scr-edit-rules (backend CRUD nutrition rules)
+
+- **Сделано:** backend-часть `scr-edit-rules` — CRUD service + REST для управления правилами питания (`tag_rules` + `nutrition_targets`). UI `/rules` — следующая итерация (backend-first, §5.3). Новый домен `core/src/rules/`:
+  - `schemas.ts` — Zod: `nutritionTargetUpsertSchema`, `tagRuleCreateSchema` (с `superRefine`: quantity обязателен для MIN/MAX_PER_WEEK, mealTag для *_IN_MEAL), `tagRuleUpdateSchema` (partial, nullable-поля для очистки, отвергает пустой patch), `userIdQuerySchema`. `z.nativeEnum(RuleKind)` — синхрон с Prisma enum.
+  - `nutrition-target-service.ts` — `getNutritionTarget(userId)`, `upsertNutritionTarget(input)` (1:1 upsert; Decimal принимает number).
+  - `tag-rule-service.ts` — `listTagRules / createTagRule / updateTagRule / deleteTagRule`. update/delete → null/false если не найдено (route отдаёт 404 без Prisma-кодов).
+  - Backend routes: `GET/PUT /api/nutrition-targets`, `GET/POST /api/tag-rules`, `PATCH/DELETE /api/tag-rules/[id]`.
+- **Решение:** домен назван `rules/` (управление ДАННЫМИ правил), отдельно от `validation/` (движок ПРОВЕРКИ рецептов). Зафиксировал различие в barrel-комментариях. nutrition_targets через upsert (1:1), tag_rules через полный REST. Тонкие routes — вся логика в core (переиспользует Telegram-агент).
+- **Столкнулся:** (1) eslint: `const {x: _omit, ...rest}` — `_omit` считается unused даже с подчёркиванием; переписал тест без destructure-omit. (2) Next.js 15: `params` в dynamic route `[id]` — это Promise, надо `await ctx.params`.
+- **Статус:** `scr-edit-rules` → **in_progress** (backend готов; UI-форма `/rules` закроет фичу). Фичи done: 16/37 без изменений (in_progress ≠ done).
+- **Проверки:** vitest core 68/68 (+12 rules schemas), tsc core/backend/worker clean, eslint core/backend clean, next build (3 новых route: /api/nutrition-targets, /api/tag-rules, /api/tag-rules/[id]). **Smoke end-to-end HTTP** (docker pg + next start + curl): PUT target (create→200, update kcal 2200→2400 upsert), GET 2400, POST BAN_TAG (201), POST MIN_PER_WEEK без quantity → **400** (superRefine через route), list total:1, PATCH isActive=false (200, Next15 async params), DELETE 204, повторный DELETE 404, list total:0. Всё ✓.
+- **Файлы:** `core/src/rules/{schemas,nutrition-target-service,tag-rule-service,index,schemas.test}.ts` (5 новых), `backend/app/api/nutrition-targets/route.ts`, `backend/app/api/tag-rules/route.ts`, `backend/app/api/tag-rules/[id]/route.ts` (3 новых), `core/src/index.ts` (re-export), `core/package.json` (exports map).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — Phase 2 / шаг 5: scr-search-recipes (генерация через llm-service + persist)
 
 - **Сделано:** реализовал `scr-search-recipes` — генерация N рецептов под профиль через llm-service + сохранение с `is_relevant=true`. Новый домен `core/src/recipes/`:

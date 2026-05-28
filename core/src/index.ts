@@ -61,3 +61,23 @@ export type {
   LlmRecipe,
   LlmRecipeIngredient,
 } from './recipes/index.js';
+
+// Rules (scr-edit-rules: CRUD данных правил — tag_rules + nutrition_targets)
+export {
+  getNutritionTarget,
+  upsertNutritionTarget,
+  listTagRules,
+  createTagRule,
+  updateTagRule,
+  deleteTagRule,
+  userIdQuerySchema,
+  nutritionTargetUpsertSchema,
+  tagRuleCreateSchema,
+  tagRuleUpdateSchema,
+} from './rules/index.js';
+export type {
+  UserIdQuery,
+  NutritionTargetUpsert,
+  TagRuleCreate,
+  TagRuleUpdate,
+} from './rules/index.js';

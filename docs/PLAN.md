@@ -5,7 +5,7 @@
 > История уже завершённых фаз — в конце документа в разделе «История фаз».
 
 **Текущая ветка:** `rework/nextjs-postgres`
-**Статус:** Phase 0 ✅ DONE, Phase 1 ✅ DONE (обе 2026-05-24). Активная фаза: **Phase 2 (Recipes)** — 5/6 фич done, осталась `scr-edit-rules` (UI /rules) + e2e acceptance.
+**Статус:** Phase 0 ✅ DONE, Phase 1 ✅ DONE (обе 2026-05-24). Активная фаза: **Phase 2 (Recipes)** — backend всех 6 фич готов (`scr-edit-rules` backend ✅, осталась только UI-форма `/rules`) + e2e acceptance.
 
 ---
 
@@ -48,7 +48,7 @@
 - [x] `scr-search-recipes` — Поиск рецептов (P0) ✅ 2026-05-28 (core/recipes → llm-service POST /jobs+wait → persist is_relevant=true; stub-first, AnthropicAdapter в backlog)
 - [x] `scr-normalize-recipe` — Нормализация рецепта (P0) ✅ 2026-05-25 (pg_trgm fuzzy + unit_conversions + totals)
 - [x] `scr-validate-recipes` — Валидация рецептов (P0) ✅ 2026-05-25 (tag-based rule engine, §7.3 ARCHITECTURE)
-- [ ] `scr-edit-rules` — Редактирование правил (P1, UI)
+- [~] `scr-edit-rules` — Редактирование правил (P1) — backend ✅ 2026-05-28 (core/rules + REST /api/nutrition-targets, /api/tag-rules[/:id]); UI `/rules` ⏳
 
 **Зависимости:** Phase 1 (нужен каталог ингредиентов для маппинга).
 
@@ -173,8 +173,9 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 2 — Recipes (5/6 done).
-**Следующая итерация:** `scr-edit-rules` — Web UI `/rules` (CRUD правил питания: RHF + Zod + SCSS modules) + backend CRUD endpoints для `tag_rules` / `nutrition_targets`. Это закрывает последнюю фичу Phase 2; затем e2e-acceptance (правило → рецепт → нормализация → валидация через API) и закрытие фазы.
+**Фаза:** Phase 2 — Recipes (весь backend готов).
+**Следующая итерация (закрытие Phase 2):** Web UI `/rules` — форма CRUD правил питания (RHF + Zod + SCSS modules) поверх готового API (`/api/nutrition-targets`, `/api/tag-rules`). Это закрывает `scr-edit-rules` (→ done) и **всю Phase 2**. Затем (опц.) e2e-acceptance «правило → рецепт → нормализация → валидация через API», перенос Phase 2 в «Историю фаз», старт Phase 3 (Plan).
+**Замечание по UI:** это первая web-страница проекта — заодно поднять фронтовый слой (TanStack Query + RHF + api-клиент к backend) по ARCHITECTURE §5.
 
 ---
 

@@ -26,3 +26,12 @@
 - **Узнал (паттерн):** core МОЖЕТ ходить в llm-service по HTTP (это не импорт). `runLlmJob<S extends ZodTypeAny>` generic возвращает `z.infer<S>` — важно из-за `.default()`: `ZodSchema<T>` коллапсит Input/Output, ломая тип. Записал gotcha #12.
 - **Не делал:** AnthropicAdapter + prompts/search-recipes.ts (инъекция профиля/правил в system prompt) — backlog, нужен ANTHROPIC_API_KEY. Stub-first как у парсеров.
 - **Проверки:** vitest 56/56, tsc ×4 ws, eslint ×3 ws, next build, smoke end-to-end (docker pg + llm-service stub) = SMOKE_OK.
+
+## Iteration 2 — 2026-05-28 — scr-edit-rules (backend CRUD)
+
+- **Сделал:** backend-часть `scr-edit-rules` (Phase 2, P1). Новый домен `core/src/rules/` (schemas + nutrition-target-service + tag-rule-service) + REST: GET/PUT /api/nutrition-targets, GET/POST /api/tag-rules, PATCH/DELETE /api/tag-rules/[id]. scr-edit-rules → **in_progress** (UI /rules закроет). 16/37 done без изменений.
+- **Решение:** домен `rules/` (управление ДАННЫМИ) ≠ `validation/` (движок проверки). Зафиксировал в barrel. tag_rules Zod superRefine: quantity↔MIN/MAX_PER_WEEK, mealTag↔*_IN_MEAL — реальная доменная валидация, ловится юнит-тестами.
+- **Узнал (gotcha):** Next.js 15 — `params` в `app/api/x/[id]/route.ts` это **Promise**, надо `await ctx.params`. Записал AGENTS.md gotcha #13.
+- **Узнал:** eslint flat config НЕ игнорит `_`-префикс для unused (нет varsIgnorePattern); не используй `const {x:_unused, ...rest}` для omit в тестах — пиши объект явно.
+- **Проверки:** vitest 68/68 (+12), tsc ×3, eslint ×2, next build (3 route), HTTP smoke (next start + curl): upsert target, CRUD tag-rule, 400 на невалидный superRefine, 204/404 на delete — всё ✓.
+- **Следующее:** UI `/rules` (RHF+Zod+SCSS+TanStack Query) → закрытие scr-edit-rules + Phase 2. Это первая web-страница — поднять фронтовый слой.

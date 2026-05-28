@@ -12,7 +12,9 @@
     "./ingredients/schemas": "./src/ingredients/schemas.ts",
     "./ingredients/service": "./src/ingredients/service.ts",
     "./recipes/schemas": "./src/recipes/schemas.ts",
-    "./recipes/service": "./src/recipes/search-service.ts"
+    "./recipes/service": "./src/recipes/search-service.ts",
+    "./rules/schemas": "./src/rules/schemas.ts",
+    "./rules/service": "./src/rules/index.ts"
   },
   "scripts": {
     "test": "vitest run",

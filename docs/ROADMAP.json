@@ -1103,7 +1103,7 @@
       "kind": "script",
       "module": "Валидация",
       "phase": 2,
-      "status": "planned",
+      "status": "in_progress",
       "priority": "P1",
       "needed_now": false,
       "stack": [
@@ -1123,7 +1123,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "По сути UI-форма + REST endpoint. Доступно из web UI и из Telegram-агента (через tool-use)."
+      "notes": "По сути UI-форма + REST endpoint. Доступно из web UI и из Telegram-агента (через tool-use). [2026-05-28: BACKEND готов — core/src/rules/ (CRUD service для tag_rules + nutrition_targets с Zod superRefine) + REST GET/PUT /api/nutrition-targets, GET/POST/PATCH/DELETE /api/tag-rules[/:id]. UI-форма /rules (RHF+Zod+SCSS) — в итерации закрытия Phase 2. status=in_progress пока нет UI.]"
     },
     {
       "id": "scr-edit-schedule",

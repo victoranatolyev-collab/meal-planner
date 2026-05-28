@@ -189,3 +189,19 @@ export type {
   GenerateWeekPlanRequest,
   GetWeekPlanQuery,
 } from './plan/index.js';
+
+// Agent (scr-telegram-agent: LLM-агент с tool-use через llm-service agent-reply)
+export {
+  handleAgentMessage,
+  AGENT_TOOLS,
+  toolList,
+  agentReplyOutputSchema,
+  agentMessageRequestSchema,
+} from './agent/index.js';
+export type {
+  HandleAgentMessageResult,
+  AgentToolResult,
+  AgentTool,
+  AgentReplyOutput,
+  AgentMessageRequest,
+} from './agent/index.js';

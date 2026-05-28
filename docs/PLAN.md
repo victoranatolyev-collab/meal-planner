@@ -87,7 +87,7 @@
 **Включает (feature):**
 - [x] `ent-telegram-account` — Telegram-аккаунт пользователя (P2) ✅ 2026-05-29 (миграция telegram_agent: TelegramAccount 1:1 + linking token)
 - [x] `ent-agent-conversations` — История чатов с агентом (P2) ✅ 2026-05-29 (миграция telegram_agent: AgentConversation + enum AgentRole, index last-N)
-- [ ] `scr-telegram-agent` — Telegram-агент (LLM) (P2)
+- [~] `scr-telegram-agent` — Telegram-агент (LLM) (P2) — подзадача 1/2 ✅ (мозг: agent-reply + core/src/agent/ + POST /api/agent/message); осталась 2/2 (grammY webhook + линковка)
 
 **Зависимости:** Все предыдущие фазы (агент должен уметь дёргать любой `scr-*`).
 
@@ -107,9 +107,10 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 6 (Agent) — последняя. Phase 0/1/2/3/5 ✅ DONE; Phase 4 фичи ✅. **36/37.**
-**Сделано Phase 6:** `ent-telegram-account` ✅, `ent-agent-conversations` ✅ (миграция telegram_agent).
-**Следующая (ПОСЛЕДНЯЯ) задача:** `scr-telegram-agent` (P2, самая сложная) — grammY-бот: webhook → identify user по chatId (telegram_accounts) → load last-N (agent_conversations) → Claude API tool-use через llm-service `agent-reply` job → выполнить выбранный scr-* core-сервис → ответ + запись в agent_conversations. Tool definitions из существующих scr-* (Zod-схемы). Разбить (правило Ralph): (1) agent-reply контракт в llm-service + tool registry; (2) grammY webhook + linking + conversation loop в backend; (3) e2e. После — **RALPH_DONE (37/37)**.
+**Фаза:** Phase 6 (Agent) — последняя. Phase 0/1/2/3/5 ✅ DONE; Phase 4 фичи ✅. **36/37** (scr-telegram-agent — in_progress).
+**Сделано Phase 6:** `ent-telegram-account` ✅, `ent-agent-conversations` ✅, `scr-telegram-agent` подзадача **1/2 ✅** (мозг, transport-agnostic).
+**Подзадача 1/2 ✅ (мозг):** llm-service job `agent-reply` (input userId/message/history/tools → output reply/intent/toolCalls) + фикстура. `core/src/agent/`: реестр `AGENT_TOOLS` (5 scr-* инструментов) + `handleAgentMessage` (history→agent-reply→диспатч→append-only снимок USER+ASSISTANT). `POST /api/agent/message`. Smoke OK: get_stock через stub, 2 строки в agent_conversations.
+**Следующая (ПОСЛЕДНЯЯ) подзадача 2/2:** grammY webhook в backend (`POST /api/telegram/webhook`, verify secret) → /start `<token>` линковка (token→chatId в telegram_accounts) → обычное сообщение: identify user по chatId → `handleAgentMessage` → reply в чат. Реальный бот нужен TELEGRAM_BOT_TOKEN (backlog) — smoke симуляцией update. После — `scr-telegram-agent` → done → **RALPH_DONE (37/37)**.
 **Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** UI /cart, /diary, /schedule + order-match endpoint. Можно добить после 37 фич.
 
 ---

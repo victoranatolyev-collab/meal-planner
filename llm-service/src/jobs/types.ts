@@ -106,16 +106,34 @@ export const calcPlanOutputSchema = z.object({
 export type CalcPlanOutput = z.infer<typeof calcPlanOutputSchema>;
 
 // ============================================================
-// agent-reply (Phase 6 — placeholder)
+// agent-reply (Phase 6 — scr-telegram-agent, Claude tool-use)
 // ============================================================
 
-export const agentReplyInputSchema = z.object({
-  chatId: z.string(),
-  message: z.string(),
+/** Сообщение истории диалога (короткая память агента). */
+const agentHistoryMessageSchema = z.object({
+  role: z.enum(['USER', 'ASSISTANT']),
+  content: z.string(),
 });
+
+/** Доступный агенту инструмент (= scr-* core-сервис). */
+const agentToolSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+});
+
+export const agentReplyInputSchema = z.object({
+  userId: z.string().uuid(),
+  message: z.string().min(1),
+  history: z.array(agentHistoryMessageSchema).default([]),
+  tools: z.array(agentToolSchema).default([]),
+});
+
 export const agentReplyOutputSchema = z.object({
   reply: z.string(),
-  toolCalls: z.array(z.unknown()).default([]),
+  intent: z.string().optional(),
+  toolCalls: z
+    .array(z.object({ tool: z.string(), input: z.record(z.unknown()).default({}) }))
+    .default([]),
 });
 
 // ============================================================

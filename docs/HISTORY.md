@@ -22,6 +22,18 @@
 
 ---
 
+## 2026-05-29 — Phase 6 / шаг 2: scr-telegram-agent — мозг агента (подзадача 1/2)
+
+- **Сделано:** transport-agnostic «мозг» агента (tool-use оркестрация), без Telegram-транспорта.
+  - `llm-service`: дополнил job `agent-reply` (input: userId/message/history/tools; output: reply/intent/toolCalls[{tool,input}]) + фикстура `fixtures/agent-reply.json` (stub: reply + toolCall `get_stock`).
+  - `core/src/agent/`: `tools.ts` — реестр `AGENT_TOOLS` (5 инструментов = scr-* сервисы: get_week_plan→getWeekPlan, calc_norms→calcNormsForUser, get_stock→calcStock, correct_plan→correctPlan, write_diary→writeDiaryEntry). `service.ts` — `handleAgentMessage`: load last-12 диалога → `runLlmJob('agent-reply')` → диспатч toolCalls по реестру → append-only снимок (строки USER+ASSISTANT). `schemas.ts` — зеркало output + `agentMessageRequestSchema`.
+  - `backend`: `POST /api/agent/message` { userId, message } → 200 { reply, intent, toolResults }.
+- **Проверка:** core tsc + lint ✅, 125 unit (3 новых tools.test) ✅, llm/backend tsc ✅, next build ✅. Smoke HTTP: POST → reply «остатки» + `get_stock` ok:true (lines:[]) + 2 строки в agent_conversations (intent=show_stock, action_taken=get_stock, success=t).
+- **Решение:** мозг отделён от транспорта — та же `handleAgentMessage` обслужит и REST, и Telegram-webhook (подзадача 2). Реестр инструментов расширяется одной записью.
+- **Следующее (подзадача 2/2):** grammY webhook + /start-линковка (token→chatId) → `handleAgentMessage` → ответ в чат. Закроет `scr-telegram-agent` → **37/37 → RALPH_DONE**.
+
+---
+
 ## 2026-05-29 — Phase 6 / шаг 1: ent-telegram-account + ent-agent-conversations (2 сущности)
 
 - **Сделано:** старт Phase 6 (Agent). Две связанные сущности агента в одной миграции (обе trivial, нужны до scr-telegram-agent).

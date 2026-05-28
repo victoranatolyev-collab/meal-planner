@@ -183,3 +183,9 @@
 - **Сделал:** миграция telegram_agent — TelegramAccount (1:1 user, chatId?/linkToken? unique, linking flow) + AgentConversation (role enum, message, intent/actionTaken/success, index last-N) + enum AgentRole. Smoke psql: token→chatId линковка, 2 сообщения. Обе сущности → done. **36/37.**
 - **Решение:** обе trivial-сущности одной миграцией (Phase 6 schema, tightly coupled).
 - **Следующее (ПОСЛЕДНЯЯ фича):** `scr-telegram-agent` — grammY webhook + Claude tool-use через llm-service agent-reply + tool registry из scr-* core. Разбить на 2-3 подзадачи. После → **RALPH_DONE 37/37**.
+
+## Iteration 28 — 2026-05-29 — scr-telegram-agent подзадача 1/2: мозг агента (transport-agnostic)
+
+- **Сделал:** llm-service job `agent-reply` (input userId/message/history/tools → output reply/intent/toolCalls[{tool,input}]) + фикстура agent-reply.json. `core/src/agent/`: реестр `AGENT_TOOLS` (5 scr-* инструментов: get_week_plan/calc_norms/get_stock/correct_plan/write_diary) + `handleAgentMessage` (load last-12 → runLlmJob('agent-reply') → диспатч toolCalls → append-only снимок USER+ASSISTANT) + schemas. `POST /api/agent/message`. 3 новых unit (tools.test), 125 всего. Smoke HTTP: POST → reply + get_stock ok:true + 2 строки agent_conversations (intent=show_stock, action_taken=get_stock, success=t).
+- **Решение:** мозг отделён от Telegram-транспорта — `handleAgentMessage` переиспользуется REST'ом и будущим webhook'ом. scr-telegram-agent → **in_progress** (не done: webhook ещё нет). **36/37.**
+- **Следующее (подзадача 2/2, ЗАКРОЕТ фичу):** grammY webhook `POST /api/telegram/webhook` (verify secret) + /start `<token>` линковка (token→chatId) → identify user по chatId → `handleAgentMessage` → reply. Реальный бот → TELEGRAM_BOT_TOKEN (backlog), smoke симуляцией update. После → `scr-telegram-agent` done → **RALPH_DONE 37/37**.

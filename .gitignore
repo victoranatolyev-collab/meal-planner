@@ -37,6 +37,7 @@ dist/
 docs/.iteration-plan.md
 
 # Legacy Python-app artifacts (only on main branch — see policy clean-slate)
-plans/
+# Anchored to repo root: НЕ матчить backend/app/api/plans/ и т.п.
+/plans/
 
 

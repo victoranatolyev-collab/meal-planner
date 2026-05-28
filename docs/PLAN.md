@@ -55,7 +55,7 @@
 - [x] `ent-stock` — Остатки (P0) ✅ 2026-05-28 (миграция `stock`: StockItem, unique user+ingredient, FK cascade/restrict)
 - [x] `ent-week-plan` — План недели (P0) ✅ 2026-05-28 (миграция `week_plan`: WeekPlan→PlanDay→PlanMeal→PlanMealItem, точно как legacy; snapshot targets+budget; meal_tags[]; portionFactor)
 - [ ] `scr-calc-stock` — Расчёт остатков (P0)
-- [~] `scr-calc-week-plan` — Расчёт плана на неделю (P0, hybrid LLM+greedy) — 1/3 ✅ (calc-plan контракт) + 2/3 ✅ (core/plan orchestration: LLM→greedy resolve→persist tree); осталось 3/3 endpoint + e2e
+- [x] `scr-calc-week-plan` — Расчёт плана на неделю (P0, hybrid LLM+greedy) ✅ 2026-05-29 (calc-plan job + core/plan orchestration + REST POST/GET /api/plans; greedy resolve; snapshot targets)
 
 **Зависимости:** Phase 2 (нужны рецепты + правила).
 
@@ -153,8 +153,10 @@
 
 **Фаза:** Phase 3 — Plan. Phase 2 ✅ DONE 2026-05-28.
 **Сделано:** все entity Phase 3 ✅ + `scr-calc-norms` ✅. `scr-calc-week-plan` подзадача 1/3 ✅ (calc-plan job контракт+fixture в llm-service, stub smoke OK). 21/37.
-**Следующая задача:** `scr-calc-week-plan` подзадача **3/3** (закрывает фичу) — backend endpoint `POST /api/plans` (body: userId, weekIso, startDate, dayCount?/dayTypes?) → `generateWeekPlan` → 201 summary; `GET /api/plans?userId&weekIso` (просмотр дерева). + (опц.) интеграционный e2e в worker/cli, как e2e-phase2 (seed target+approved recipe → generateWeekPlan → assert дерево). Закрывает `scr-calc-week-plan` → done.
-**Затем:** `scr-import-health` (P1); `scr-calc-stock` (P0, частично — ждёт order-history/food-diary). После — Phase 3 close + UI /plan (read-only, в конце фазы).
+**Сделано:** `scr-calc-week-plan` ✅ (все 3 подзадачи: contract + orchestration + REST POST/GET /api/plans). 22/37.
+**Следующая задача:** `scr-import-health` (P1) — единственная READY фича Phase 3. Импорт данных в health-таблицы (anthropometry/lab_tests/training_logs/mood_logs) через REST endpoints + Zod. OCR/PDF анализов — backlog (сначала ручной ввод/JSON-импорт). Вероятно core/src/health/ CRUD service + POST endpoints на каждую таблицу.
+**Заблокировано:** `scr-calc-stock` (P0) — deps `ent-order-history` (Phase 4) + `ent-food-diary` (Phase 5) ещё не сделаны. Реализуется после Phase 4/5 (или частично inventory±plan позже). Кросс-фазовая зависимость.
+**После Phase 3:** UI `/plan` (read-only просмотр недельного плана, в конце фазы) + закрытие Phase 3 (с пометкой что scr-calc-stock перенесён). Затем Phase 4 (Procurement) — ent-cart/scr-assemble-cart/ent-order-history/scr-order-products.
 
 ---
 

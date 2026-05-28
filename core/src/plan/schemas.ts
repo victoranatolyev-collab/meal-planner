@@ -34,3 +34,20 @@ export type DraftItem = z.infer<typeof draftItemSchema>;
 export type DraftMeal = z.infer<typeof draftMealSchema>;
 export type DraftDay = z.infer<typeof draftDaySchema>;
 export type DraftPlan = z.infer<typeof calcPlanOutputSchema>;
+
+/** Запрос на генерацию плана недели (REST `POST /api/plans` / агент). */
+export const generateWeekPlanRequestSchema = z.object({
+  userId: z.string().uuid(),
+  weekIso: z.string().regex(/^\d{4}-W\d{2}$/),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  dayCount: z.number().int().min(1).max(7).optional(),
+  dayTypes: z.array(z.string().min(1)).max(7).optional(),
+});
+export type GenerateWeekPlanRequest = z.infer<typeof generateWeekPlanRequestSchema>;
+
+/** Query для просмотра плана (`GET /api/plans?userId&weekIso`). */
+export const getWeekPlanQuerySchema = z.object({
+  userId: z.string().uuid(),
+  weekIso: z.string().regex(/^\d{4}-W\d{2}$/),
+});
+export type GetWeekPlanQuery = z.infer<typeof getWeekPlanQuerySchema>;

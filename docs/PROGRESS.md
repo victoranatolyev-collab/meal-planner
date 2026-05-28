@@ -100,3 +100,8 @@
 - **Сделал:** core/src/plan/ — generateWeekPlan: NutritionTarget→targets snapshot, approved-пул, buildDays → runLlmJob('calc-plan') → pure resolveDraftToApproved (greedy round-robin для unknown recipeId) → persist дерево week_plans (tx deleteMany+nested create, регенерация по userId+weekIso). 4 unit-теста resolve. Smoke: 2дн/6приёмов/6поз, 6 substitutions, regenerate→1 план. SMOKE_OK. scr-calc-week-plan in_progress (2/3). 80 тестов.
 - **Решение:** greedy = подстановка из approved-пула (уже recipe-level валидны). Week-level (MIN/MAX_PER_WEEK) — refinement. Date доступен в core (ограничение Date — только Workflow-скрипты).
 - **Следующее:** подзадача 3/3 — endpoint POST/GET /api/plans + (опц.) e2e в worker/cli → закрывает scr-calc-week-plan.
+
+## Iteration 13 — 2026-05-29 — scr-calc-week-plan подзадача 3/3 — DONE
+
+- **Сделал:** getWeekPlan (чтение дерева) + REST POST/GET /api/plans + Zod request/query схемы. HTTP smoke: POST→201, GET→полное дерево (snapshot kcalTarget=2455, days→meals→items+recipe), 404/400/422. `scr-calc-week-plan` → **done** (все 3 подзадачи). 22/37.
+- **Следующее:** `scr-import-health` (P1) — единственная READY фича Phase 3 (импорт в health-таблицы). `scr-calc-stock` (P0) ЗАБЛОКИРОВАН — deps ent-order-history (Phase 4) + ent-food-diary (Phase 5). Кросс-фазовая зависимость → реализуется после Phase 4/5. После scr-import-health: UI /plan + закрытие Phase 3 (scr-calc-stock переносится) → Phase 4.

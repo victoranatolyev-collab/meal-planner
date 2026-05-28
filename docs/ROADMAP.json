@@ -908,7 +908,7 @@
       "kind": "script",
       "module": "Расчёт",
       "phase": 3,
-      "status": "in_progress",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -938,7 +938,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
-      "notes": "Самая сложная фича. Стоимость токенов Claude API — учесть в стоимости эксплуатации. [2026-05-28: in_progress, разбита на 3 подзадачи. ✅ Подзадача 1: контракт LLM-job calc-plan в llm-service — calcPlanInputSchema (weekIso/dates/targets/days[]/recipes[] пул) + calcPlanOutputSchema (days→meals→items{recipeId,portionFactor,fromStock,tail}, зеркало ent-week-plan) + fixture. Stub smoke: enqueue→wait→валидный draft. ✅ Подзадача 2: core/src/plan/ — generateWeekPlan (targets snapshot + approved-пул → calc-plan job → pure resolveDraftToApproved greedy → persist дерево week_plans, регенерация по userId+weekIso). Smoke: 2дн/6приёмов/6поз, greedy substitution. Осталось: (3) endpoint POST/GET /api/plans + e2e.]"
+      "notes": "Самая сложная фича. Стоимость токенов Claude API — учесть в стоимости эксплуатации. [2026-05-28: in_progress, разбита на 3 подзадачи. ✅ Подзадача 1: контракт LLM-job calc-plan в llm-service — calcPlanInputSchema (weekIso/dates/targets/days[]/recipes[] пул) + calcPlanOutputSchema (days→meals→items{recipeId,portionFactor,fromStock,tail}, зеркало ent-week-plan) + fixture. Stub smoke: enqueue→wait→валидный draft. ✅ Подзадача 2: core/src/plan/ — generateWeekPlan (targets snapshot + approved-пул → calc-plan job → pure resolveDraftToApproved greedy → persist дерево week_plans, регенерация по userId+weekIso). Smoke: 2дн/6приёмов/6поз, greedy substitution. ✅ Подзадача 3: getWeekPlan (чтение дерева) + REST POST /api/plans (генерация, 201) + GET /api/plans?userId&weekIso (дерево, 404). HTTP smoke: POST→201, GET→полное дерево (snapshot kcalTarget=2455, days→meals→items+recipe), 404/400/422. DONE. Backlog: week-level правила (MIN/MAX_PER_WEEK) в greedy, реальный AnthropicAdapter (calc-plan в api-режиме).]"
     },
     {
       "id": "scr-order-products",

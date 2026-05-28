@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-29 — Phase 3 / шаг 7: scr-calc-week-plan подзадача 3/3 — DONE (REST endpoints)
+
+- **Сделано:** закрыл самую сложную фичу — REST-слой над orchestration.
+  - `core/src/plan/service.ts` +`getWeekPlan(userId, weekIso)` — читает полное дерево (days→meals→items + recipe-инфо), null если нет. findUnique по uniq_user_week.
+  - `core/src/plan/schemas.ts` +`generateWeekPlanRequestSchema` (userId/weekIso/startDate/dayCount?/dayTypes?) + `getWeekPlanQuerySchema`.
+  - `backend/app/api/plans/route.ts` — POST (generate → 201 summary; 422 generate_failed) + GET (?userId&weekIso → дерево; 404).
+- **Проверки:** tsc core/backend, vitest 80/80, eslint, next build (route /api/plans). **HTTP smoke** (docker pg + llm-service stub + backend, seed target+approved recipe): POST /api/plans → 201 {2дн/6приёмов/6поз/6 substitutions}; GET /api/plans → полное дерево (status DRAFT, snapshot kcalTarget=2455, days→meals→items с recipe.name); GET несуществующей недели → 404; POST без startDate → 400; POST для юзера без рецептов → 422. ✓
+- **Закрыто как done:** `scr-calc-week-plan` (все 3 подзадачи). 22/37.
+- **Backlog (не блокирует):** week-level правила (MIN/MAX_PER_WEEK) в greedy; реальный AnthropicAdapter (calc-plan в api-режиме — сейчас stub).
+- **Файлы:** `core/src/plan/{service,schemas,index}.ts`, `core/src/index.ts`, `backend/app/api/plans/route.ts` (новый).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 3 / шаг 6: scr-calc-week-plan подзадача 2/3 (orchestration)
 
 - **Сделано:** оркестрация генерации плана в `core/src/plan/` (паттерн pure + DB-wrapper).

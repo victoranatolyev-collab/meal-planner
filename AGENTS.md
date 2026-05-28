@@ -131,8 +131,8 @@ Backend (Next.js) не понимает `.js` imports из core. Нужен `tra
 ### 7. .iteration-plan.md одноразовый
 Создаётся в начале каждой итерации, удаляется **перед коммитом**. В .gitignore.
 
-### 8. Plans/ legacy — gitignored
-Старые `plans/week_*.json` от Python-app не нужны в rework-ветке. В .gitignore.
+### 8. Plans/ legacy — gitignored (АНКОРИРОВАН!)
+Старые `plans/week_*.json` от Python-app не нужны. В .gitignore — но паттерн **`/plans/`** (с ведущим слешем, anchored к корню), НЕ `plans/`. Без анкора `plans/` матчит и `backend/app/api/plans/` → новые route-файлы молча не коммитятся. (Фикс 2026-05-29: добавил `/`.)
 
 ### 9. Идемпотентность парсеров через DB
 UNIQUE `(name, source, pack_size)` в `ingredients`. Парсер делает UPSERT. Повторный запуск не дублирует.

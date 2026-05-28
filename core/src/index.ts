@@ -90,7 +90,14 @@ export { calcNorms, calcNormsForUser } from './norms/index.js';
 export type { NormsInput, NormsResult, CalcNormsForUserResult } from './norms/index.js';
 
 // Plan (scr-calc-week-plan: генерация плана недели через llm-service + greedy)
-export { generateWeekPlan, resolveDraftToApproved, calcPlanOutputSchema } from './plan/index.js';
+export {
+  generateWeekPlan,
+  getWeekPlan,
+  resolveDraftToApproved,
+  calcPlanOutputSchema,
+  generateWeekPlanRequestSchema,
+  getWeekPlanQuerySchema,
+} from './plan/index.js';
 export type {
   GenerateWeekPlanArgs,
   GenerateWeekPlanResult,
@@ -98,4 +105,6 @@ export type {
   ResolvedPlan,
   DraftPlan,
   DraftDay,
+  GenerateWeekPlanRequest,
+  GetWeekPlanQuery,
 } from './plan/index.js';

@@ -170,6 +170,43 @@ export async function generateWeekPlan(args: GenerateWeekPlanArgs): Promise<Gene
   };
 }
 
+/**
+ * Чтение плана недели с полным деревом (days → meals → items + рецепт-инфо).
+ * Возвращает null, если плана нет. Для REST `GET /api/plans` и агента.
+ */
+export async function getWeekPlan(userId: string, weekIso: string) {
+  return prisma.weekPlan.findUnique({
+    where: { uniq_user_week: { userId, weekIso } },
+    include: {
+      days: {
+        orderBy: { date: 'asc' },
+        include: {
+          meals: {
+            orderBy: { sortOrder: 'asc' },
+            include: {
+              items: {
+                orderBy: { sortOrder: 'asc' },
+                include: {
+                  recipe: {
+                    select: {
+                      id: true,
+                      name: true,
+                      totalKcal: true,
+                      totalProteinG: true,
+                      totalFatG: true,
+                      totalCarbsG: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 /** Последовательные `count` дат от startDate (ISO `YYYY-MM-DD`). */
 function buildDays(
   startDate: string,

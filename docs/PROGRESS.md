@@ -172,3 +172,8 @@
 
 - **Сделал:** core/src/correction/ — pure computeCorrection (remaining=target−факт по дню) + correctPlan(userId, weekIso) (snapshot целей week_plan vs сумма дневника) + GET /api/correction. 4 unit-теста. Smoke: 2000−1200=800. `scr-correct-plan` → done. 33/37.
 - **Следующее:** `scr-edit-schedule` (P2, последняя Phase 5) — CRUD расписания (backend REST поверх ent-notification-schedule, паттерн scr-edit-rules). Закроет Phase 5 → Phase 6 (Telegram). Осталось 4 фичи.
+
+## Iteration 26 — 2026-05-29 — ✅ Phase 5 закрыта: scr-edit-schedule
+
+- **Сделал:** core/src/notifications/ schedule CRUD (schemas + service) + REST /api/notification-schedules[/:id]. 5 unit-тестов. Smoke HTTP: create→list→PATCH→400→204→404. `scr-edit-schedule` → done. **34/37. Phase 5 ✅ 6/6** → «История фаз».
+- **Следующее: Phase 6 (Agent) — ПОСЛЕДНЯЯ.** `ent-telegram-account` (P2) → `ent-agent-conversations` (P2) → `scr-telegram-agent` (P2, самая сложная: grammY webhook + Claude tool-use через llm-service agent-reply). После 3 фич → RALPH_DONE (37/37).

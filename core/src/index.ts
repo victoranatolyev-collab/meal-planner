@@ -101,12 +101,20 @@ export {
   runDailyReminders,
   buildReminderTasks,
   StubReminderAdapter,
+  listSchedules,
+  createSchedule,
+  updateSchedule,
+  deleteSchedule,
+  scheduleCreateSchema,
+  scheduleUpdateSchema,
 } from './notifications/index.js';
 export type {
   PushRemindersResult,
   ScheduleInput,
   ReminderTask,
   ReminderAdapter,
+  ScheduleCreate,
+  ScheduleUpdate,
 } from './notifications/index.js';
 
 // Diary (scr-write-diary: запись факт-приёмов)

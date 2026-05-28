@@ -5,7 +5,7 @@
 > История уже завершённых фаз — в конце документа в разделе «История фаз».
 
 **Текущая ветка:** `rework/nextjs-postgres`
-**Статус:** Phase 0/1/2/3 ✅ DONE; Phase 4 — все фичи ✅ (acceptance UI /cart + order-match отложены). **29/37 фич.** Активная фаза: **Phase 5 (Tracking)** — дневник, коррекция, нотификации.
+**Статус:** Phase 0/1/2/3/5 ✅ DONE; Phase 4 — все фичи ✅ (acceptance UI отложена). **34/37 фич.** Активная фаза: **Phase 6 (Agent)** — Telegram-бот с LLM tool-use. Осталось 3 фичи.
 
 ---
 
@@ -74,31 +74,9 @@
 
 ---
 
-## Phase 5 — Tracking
+## Phase 5 — Tracking ✅ DONE 2026-05-29
 
-**Цель:** Дневник питания, коррекция плана по факту, расписание нотификаций, push в Apple Reminders.
-
-**Включает (feature):**
-- [x] `ent-food-diary` — Дневник питания (P0) ✅ 2026-05-29 (миграция food_diary: FoodDiaryEntry recipe?/customName + макросы + eatenAt, recipe SetNull). Разблокировал scr-calc-stock.
-- [x] `scr-write-diary` — Запись в дневник (P0) ✅ 2026-05-29 (core/diary: writeDiaryEntry recipe→derived макросы / ad-hoc + listDiary; POST/GET /api/diary)
-- [x] `scr-correct-plan` — Коррекция плана (P1) ✅ 2026-05-29 (core/correction: computeCorrection remaining=target−факт + correctPlan; GET /api/correction)
-- [x] `ent-notification-schedule` — Расписание уведомлений (P1) ✅ 2026-05-29 (миграция notification_schedule: NotificationSchedule + enum NotificationTrigger)
-- [x] `scr-notifications` — Push Apple Reminders (CalDAV) (P1) ✅ 2026-05-29 (core/notifications: buildReminderTasks + StubReminderAdapter + pushReminders/runDailyReminders; worker cron 04:00; POST /api/notifications/run; реальный CalDAV — backlog)
-- [ ] `scr-edit-schedule` — Редактирование расписания (P2, UI)
-
-**Зависимости:** Phase 3 (план), Phase 4 (заказы для контекста).
-
-**Acceptance criteria:**
-- Web UI `/diary` — занесение факт-приёма (предзаполнено планом + редактируется)
-- `scr-correct-plan` — пересчитывает остаток дня/недели от фактических приёмов
-- `scr-notifications` — раз в сутки пишет задачи на день в Apple Reminders/Daily через CalDAV
-- Worker cron: `04:00 ежедневно — push reminders`
-- Acceptance из ROADMAP `scr-notifications`: дедупликация по UID, не дублирует при повторных запусках
-- Web UI `/schedule` — CRUD триггеров уведомлений (RHF + Zod)
-
-**Открытые вопросы:**
-- Какой именно список в Apple Reminders использовать? Default из ARCHITECTURE: `Daily`. Подтвердить.
-- Бэкапы Postgres — настроить в worker (cron + дамп на внешнее хранилище), способ TBD (S3/rsync/scp)
+См. подробности в разделе [«История фаз»](#история-фаз).
 
 ---
 
@@ -129,17 +107,38 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 5 (Tracking). Phase 0/1/2/3 ✅ DONE; Phase 4 — все фичи ✅. **33/37.**
-**Сделано Phase 5:** `ent-food-diary`, `scr-write-diary`, `ent-notification-schedule`, `scr-notifications`, `scr-correct-plan` ✅.
-**Следующая задача:** `scr-edit-schedule` (P2, последняя фича Phase 5) — CRUD расписания уведомлений: backend service + REST (POST/GET/PATCH/DELETE /api/notification-schedules) поверх ent-notification-schedule, паттерн scr-edit-rules. (UI-форма /schedule — отложенная acceptance.) Закрывает Phase 5 → **Phase 6 (Agent)**: ent-telegram-account, ent-agent-conversations, scr-telegram-agent.
-**Осталось фич (4):** Phase 5 — scr-edit-schedule; Phase 6 — ent-telegram-account, ent-agent-conversations, scr-telegram-agent.
-**Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** Phase 4 order-match + UI /cart; UI /diary, /schedule (Phase 5 в конце). Приоритет — фичи (RALPH_DONE = 37 features).
+**Фаза:** Phase 6 (Agent) — последняя. Phase 0/1/2/3/5 ✅ DONE; Phase 4 фичи ✅. **34/37.**
+**Следующая задача:** `ent-telegram-account` (P2 entity, deps ent-users✅) — связь user ↔ telegram_chat_id (username, first_name, is_active, linking token). Затем `ent-agent-conversations` (P2, история чатов), `scr-telegram-agent` (P2, самая сложная — grammY webhook + Claude API tool-use через llm-service agent-reply; tool definitions из существующих scr-* core-сервисов).
+**Осталось фич (3):** Phase 6 — ent-telegram-account, ent-agent-conversations, scr-telegram-agent. После них — **RALPH_DONE (37/37)**.
+**Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** UI /cart, /diary, /schedule + order-match endpoint. Можно добить после 37 фич.
 
 ---
 
 ## История фаз
 
 Когда фаза завершается — переносим её сюда с пометкой `✅ DONE` + датой.
+
+### Phase 5 — Tracking ✅ DONE 2026-05-29
+
+**Цель:** дневник питания, коррекция плана по факту, расписание + push нотификаций.
+
+**Закрытые фичи (6):** ent-food-diary, scr-write-diary, scr-correct-plan, ent-notification-schedule, scr-notifications, scr-edit-schedule.
+
+**Реализовано:**
+- **ent-food-diary:** FoodDiaryEntry (recipe?/customName + макросы + eatenAt, recipe SetNull).
+- **scr-write-diary:** core/diary — writeDiaryEntry (recipe → derived макросы / ad-hoc) + listDiary; POST/GET /api/diary.
+- **ent-notification-schedule:** NotificationSchedule + enum NotificationTrigger (TIME/EVENT/MEAL_RELATIVE).
+- **scr-notifications:** core/notifications — pure buildReminderTasks (детерминир. UID → дедуп) + Adapter pattern (Stub; реальный CalDAV — backlog) + worker cron 04:00 + POST /api/notifications/run.
+- **scr-correct-plan:** core/correction — computeCorrection (remaining = target − факт) + GET /api/correction.
+- **scr-edit-schedule:** core/notifications schedule CRUD + REST /api/notification-schedules[/:id].
+
+**Acceptance — все ✅** (через core + REST + smoke): дневник, коррекция (остаток), нотификации (дедуп UID), worker cron 04:00. UI `/diary`+`/schedule` — отложенная acceptance-полировка.
+
+**Backlog:** реальный CalDAV (caldav npm + APPLE_ID/APPLE_APP_PASSWORD); бэкапы Postgres в worker; OCR анализов.
+
+**Коммиты:** 036a5f8, 6eb6bbb, 4d6e9e5, 74f90c1, 2d210fe, (scr-edit-schedule — текущий).
+
+---
 
 ### Phase 3 — Plan ✅ DONE 2026-05-29
 

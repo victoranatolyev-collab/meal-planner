@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-29 — ✅ Phase 5 закрыта: scr-edit-schedule (CRUD расписания)
+
+- **Сделано:** последняя фича Phase 5 — backend CRUD расписания уведомлений. Паттерн scr-edit-rules.
+  - `core/src/notifications/schedule-schemas.ts` — scheduleCreateSchema (triggerType nativeEnum, schedule, reminderList default Daily, template, isActive default true) + scheduleUpdateSchema (partial, non-empty).
+  - `core/src/notifications/schedule-service.ts` — list/create/update(null если нет)/delete(bool).
+  - `backend`: GET/POST /api/notification-schedules + PATCH/DELETE /api/notification-schedules/[id].
+- **Решение:** schedule CRUD в домене notifications/ (рядом с push-логикой). UI /schedule — отложенная acceptance.
+- **Закрыто как done:** `scr-edit-schedule`. **34/37. Phase 5 ✅ DONE (6/6)** — перенесена в «История фаз». Активная фаза → Phase 6 (Agent, последняя).
+- **Проверки:** vitest core 122/122 (+5 schedule schemas), tsc core/backend, eslint, next build (routes /api/notification-schedules[/:id]). **Smoke HTTP**: create→GET list(1)→PATCH isActive=false→POST 400 (нет template)→DELETE 204→DELETE 404. ✓
+- **Файлы:** `core/src/notifications/{schedule-schemas,schedule-service,schedule-schemas.test}.ts` (3 новых), `core/src/notifications/index.ts`, `backend/app/api/notification-schedules/route.ts` + `/[id]/route.ts` (новые), `core/src/index.ts`, `docs/PLAN.md` (Phase 5 → история).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 5 / шаг 5: scr-correct-plan (сверка факт vs план)
 
 - **Сделано:** коррекция плана = сверка факт (дневник) vs план за неделю. core/src/correction/ (pure + DB-wrapper).

@@ -1133,7 +1133,7 @@
       "kind": "script",
       "module": "Сопровождение",
       "phase": 5,
-      "status": "planned",
+      "status": "done",
       "priority": "P2",
       "needed_now": false,
       "stack": [
@@ -1153,7 +1153,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Аналогично scr-edit-rules — UI + API + доступно агенту."
+      "notes": "Аналогично scr-edit-rules — UI + API + доступно агенту. [2026-05-29: backend CRUD — core/src/notifications/schedule-service + schedule-schemas (create/update Zod) + REST GET/POST /api/notification-schedules, PATCH/DELETE /[id]. 5 unit-тестов. Smoke HTTP: create→list→PATCH→400→204→404. UI-форма /schedule — отложенная acceptance.]"
     },
     {
       "id": "scr-telegram-agent",

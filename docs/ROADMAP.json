@@ -976,7 +976,7 @@
       "kind": "script",
       "module": "Сопровождение",
       "phase": 5,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -997,7 +997,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Канал ввода: web UI или Telegram-агент."
+      "notes": "Канал ввода: web UI или Telegram-агент. [2026-05-29: core/src/diary/ — writeDiaryEntry (recipe → макросы из recipe totals × portionFactor, ad-hoc → макросы вручную; снимок в запись) + listDiary + pure scaleMacros. POST/GET /api/diary. 6 unit-тестов. Smoke: recipe ×2 → kcal 1200/P90/F30/C140 (derived), ad-hoc 201, 400 без recipe/custom.]"
     },
     {
       "id": "scr-import-health",

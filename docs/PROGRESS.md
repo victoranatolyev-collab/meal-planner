@@ -151,3 +151,8 @@
 - **Сделал:** core/src/stock/ — pure projectStock + calcStock (baseline + orders − diary→recipe×portion) + GET /api/stock. 3 unit-теста. Smoke: 500+300−200=600. `scr-calc-stock` → done. **29/37. Phase 3 ✅ 7/7** — в «История фаз».
 - **Решение:** проекция-отчёт без мутации StockItem (избегаем double-count).
 - **Следующее:** Phase 5 — `scr-write-diary` (P0): запись факт-приёма поверх ent-food-diary (предзаполнение из плана). Затем scr-correct-plan, ent-notification-schedule, scr-notifications, scr-edit-schedule. Осталось 8 фич (Phase 5: 5, Phase 6: 3).
+
+## Iteration 22 — 2026-05-29 — scr-write-diary
+
+- **Сделал:** core/src/diary/ — writeDiaryEntry (recipe→derived макросы из totals×portionFactor / ad-hoc вручную) + listDiary + pure scaleMacros + POST/GET /api/diary. 6 unit-тестов. Smoke: recipe ×2 → 1200/90/30/140, ad-hoc 201, 400 без recipe/custom. `scr-write-diary` → done. 30/37.
+- **Следующее:** `ent-notification-schedule` (P1 entity) — расписание уведомлений (trigger_type/schedule/reminder_list/template). Затем scr-notifications (CalDAV), scr-correct-plan, scr-edit-schedule. Осталось 7 фич.

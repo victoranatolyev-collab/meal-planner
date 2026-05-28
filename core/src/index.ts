@@ -95,6 +95,10 @@ export type {
   AssembleCartRequest,
 } from './cart/index.js';
 
+// Diary (scr-write-diary: запись факт-приёмов)
+export { writeDiaryEntry, listDiary, scaleMacros, diaryEntryCreateSchema } from './diary/index.js';
+export type { Macros, DiaryEntryCreate } from './diary/index.js';
+
 // Stock calc (scr-calc-stock: проекция остатков baseline + заказы − дневник)
 export { calcStock, projectStock } from './stock/index.js';
 export type { CalcStockResult, StockProjectionLine } from './stock/index.js';

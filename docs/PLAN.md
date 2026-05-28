@@ -80,7 +80,7 @@
 
 **Включает (feature):**
 - [x] `ent-food-diary` — Дневник питания (P0) ✅ 2026-05-29 (миграция food_diary: FoodDiaryEntry recipe?/customName + макросы + eatenAt, recipe SetNull). Разблокировал scr-calc-stock.
-- [ ] `scr-write-diary` — Запись в дневник (P0)
+- [x] `scr-write-diary` — Запись в дневник (P0) ✅ 2026-05-29 (core/diary: writeDiaryEntry recipe→derived макросы / ad-hoc + listDiary; POST/GET /api/diary)
 - [ ] `scr-correct-plan` — Коррекция плана (P1)
 - [ ] `ent-notification-schedule` — Расписание уведомлений (P1)
 - [ ] `scr-notifications` — Push Apple Reminders (CalDAV) (P1)
@@ -129,12 +129,11 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 5 (Tracking) старт. Phase 0/1/2 ✅; Phase 3 actionable ✅ (кроме блок. scr-calc-stock); **Phase 4 — все фичи ✅**. **27/37.**
-**Осталось фич (10):** Phase 5 — ent-food-diary(P0), scr-write-diary(P0), scr-correct-plan(P1), ent-notification-schedule(P1), scr-notifications(P1), scr-edit-schedule(P2); Phase 6 — ent-telegram-account(P2), ent-agent-conversations(P2), scr-telegram-agent(P2); + scr-calc-stock(P3, ждёт ent-food-diary).
-**Сделано:** `scr-calc-stock` ✅ → **Phase 3 закрыта полностью (7/7)**, перенесена в «История фаз». 29/37.
-**Следующая задача:** продолжить **Phase 5** — `scr-write-diary` (P0, deps ent-food-diary✅/ent-week-plan✅/ent-recipes✅): запись факт-приёма (предзаполнено планом, правится). core/diary service (create поверх ent-food-diary, возможно предзаполнение из plan_meal_item) + POST endpoint. Затем `scr-correct-plan` (P1), `ent-notification-schedule` (P1), `scr-notifications` (P1, CalDAV), `scr-edit-schedule` (P2).
-**Осталось фич (8):** Phase 5 — scr-write-diary, scr-correct-plan, ent-notification-schedule, scr-notifications, scr-edit-schedule; Phase 6 — ent-telegram-account, ent-agent-conversations, scr-telegram-agent.
-**Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** Phase 4 — `POST /api/orders/:id/match` (diff факт/план) + UI `/cart` (dnd-kit); UI `/diary`, `/schedule` (Phase 5 в конце). Приоритет — фичи (к RALPH_DONE = 37 features done), UI/match батчем по фазам.
+**Фаза:** Phase 5 (Tracking). Phase 0/1/2/3 ✅ DONE; Phase 4 — все фичи ✅. **30/37.**
+**Сделано Phase 5:** `ent-food-diary` ✅, `scr-write-diary` ✅.
+**Следующая задача:** `ent-notification-schedule` (P1 entity, deps ent-users✅/ent-week-plan✅) — расписание уведомлений: trigger_type (time/event/meal_relative), schedule (cron/datetime/relative), reminder_list, template. Затем `scr-notifications` (P1, CalDAV push в worker cron), `scr-correct-plan` (P1, пересчёт остатка дня/недели от дневника), `scr-edit-schedule` (P2 UI).
+**Осталось фич (7):** Phase 5 — ent-notification-schedule, scr-correct-plan, scr-notifications, scr-edit-schedule; Phase 6 — ent-telegram-account, ent-agent-conversations, scr-telegram-agent.
+**Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** Phase 4 order-match + UI /cart; UI /diary, /schedule (Phase 5 в конце). Приоритет — фичи (RALPH_DONE = 37 features).
 
 ---
 

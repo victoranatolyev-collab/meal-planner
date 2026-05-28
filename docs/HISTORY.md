@@ -22,6 +22,22 @@
 
 ---
 
+## 2026-05-29 — Phase 5 / шаг 2: scr-write-diary (запись факт-приёмов)
+
+- **Сделано:** запись в дневник питания. core/src/diary/ (pure + DB-wrapper).
+  - `macros.ts` — pure `scaleMacros(totals, factor)` (null-safe) — КБЖУ рецепта × portionFactor.
+  - `schemas.ts` — `diaryEntryCreateSchema` (recipeId? | customName + макросы? + portionFactor + eatenAt? + mealName?), superRefine: recipeId ИЛИ customName обязателен.
+  - `service.ts` — `writeDiaryEntry`: если recipeId и макросы не заданы → derive из recipe totals × portionFactor (снимок в запись). `listDiary(userId)`.
+  - `backend`: POST /api/diary (201) + GET /api/diary?userId.
+- **Решение:** макросы — снимок в запись (derive из рецепта или вручную для ad-hoc), переживает удаление рецепта (FoodDiaryEntry.recipe SetNull). Сравнение с планом (deviation) — в scr-correct-plan.
+- **Закрыто как done:** `scr-write-diary`. 30/37.
+- **Проверки:** vitest core 108/108 (+6: scaleMacros + schema refine), tsc core/backend, eslint, next build (route /api/diary). **Smoke HTTP** (seed user+recipe totals 600/45/15/70): POST recipe ×2 → derived kcal 1200/P90/F30/C140; ad-hoc → 201; без recipe/custom → 400; GET total 2. ✓
+- **Файлы:** `core/src/diary/{macros,schemas,service,index,macros.test}.ts` (5 новых), `backend/app/api/diary/route.ts` (новый), `core/src/index.ts`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — ✅ Phase 3 закрыта: scr-calc-stock (проекция остатков)
 
 - **Сделано:** последняя фича Phase 3 — расчёт остатков. core/src/stock/ (pure + DB-wrapper).

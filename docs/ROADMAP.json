@@ -160,7 +160,7 @@
       "kind": "entity",
       "module": "Сопровождение",
       "phase": 3,
-      "status": "planned",
+      "status": "done",
       "priority": "P1",
       "needed_now": false,
       "stack": [
@@ -178,7 +178,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Подумать: одна таблица с jsonb-полем или нормализовать (anthropometry, lab_tests, mood_logs, training_logs как отдельные таблицы)."
+      "notes": "Подумать: одна таблица с jsonb-полем или нормализовать (anthropometry, lab_tests, mood_logs, training_logs как отдельные таблицы). [2026-05-28: РЕШЕНО (AskUserQuestion) — полная нормализация + append-only снимки. Миграция health_records: 4 таблицы (anthropometry: sex/age/height/weight/bodyFat/ffmi/activityLevel/stepsPerDay/goal — входы scr-calc-norms; lab_tests: analyte/value/unit/ref/isFlagged; training_logs: kind/durationMin; mood_logs: mood/energy/sleep/symptoms[]) + enums Sex/ActivityLevel/Goal. Все с measured_at + index (userId, ...At DESC), onDelete Cascade. Smoke: latest-snapshot query OK.]"
     },
     {
       "id": "ent-source-5ka",

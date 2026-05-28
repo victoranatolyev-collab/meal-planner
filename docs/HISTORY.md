@@ -22,6 +22,25 @@
 
 ---
 
+## 2026-05-28 — Phase 3 / шаг 3: ent-health-records (4 нормализованные таблицы)
+
+- **Сделано:** сущность здоровья — полная нормализация + append-only (решение пользователя via AskUserQuestion, grounded в reference user_profile.json / ABCDEFG framework). 4 таблицы + 3 enum.
+  - `anthropometry`: measured_at + sex/age/height/weight/bodyFat/leanMass/bmi/ffmi/waist + **activityLevel/stepsPerDay/goal** — снимок «входов норм» для scr-calc-norms. index (userId, measured_at DESC).
+  - `lab_tests`: analyte/value/unit + reference_low/high + status + **isFlagged** (напр. anemia при Hb<норма). 1 строка/анализ. index (userId, analyte, measured_at DESC).
+  - `training_logs`: performed_at + kind + durationMin + intensity.
+  - `mood_logs`: logged_at + mood/energy/sleepHours + symptoms[].
+  - Enums: Sex, ActivityLevel (SEDENTARY..VERY_ACTIVE), Goal (CUT/MAINTAIN/GAIN). Все таблицы append-only, per-user FK Cascade.
+- **Решение (AskUserQuestion):** (1) полная нормализация (отдельные таблицы), НЕ jsonb — максимально queryable/типизировано; (2) append-only снимки с measured_at — тренды (вес, динамика Hb при анемии, лог тренировок). scr-calc-norms берёт последний снимок anthropometry. activityLevel/goal положены на anthropometry (снимок метаболич. состояния) — без 5-й таблицы. authoritative targets уже в NutritionTarget (редактируется через /rules), поэтому scr-calc-norms = вычисление-предложение → туда.
+- **Миграция:** migrate dev --create-only --name health_records (20260528195225) → deploy → generate.
+- **Smoke (psql):** insert по строке в каждую таблицу с reference-данными (male/24/190/86/11%/FFMI21.2; Hb 110 flagged anemia; strength 90мин; mood 7). Latest-snapshot query (как scr-calc-norms): weight=86, Hb=110 flagged=true. ✓
+- **Закрыто как done:** `ent-health-records`. 20/37. **Все entity Phase 3 done** (ent-stock/ent-week-plan/ent-health-records).
+- **Проверки:** prisma format/validate (valid 🚀)/migrate/generate; core vitest 68/68, tsc core/backend/worker OK.
+- **Файлы:** `core/prisma/schema.prisma` (+3 enum, +4 модели, +relations User), `core/prisma/migrations/20260528195225_health_records/migration.sql`, `docs/ROADMAP.json`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — Phase 3 / шаг 2: ent-week-plan (миграция `week_plan`, 4 таблицы)
 
 - **Сделано:** центральная сущность планирования — недельный план. 4 таблицы + enum (точно как legacy plans/week_*.json, по решению пользователя через AskUserQuestion).

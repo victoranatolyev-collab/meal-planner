@@ -49,7 +49,7 @@
 **Цель:** Расчёт целевых КБЖУ, остатков, генерация плана недели. Учёт health records (анемия, тренировки) в расчёте норм.
 
 **Включает (feature):**
-- [ ] `ent-health-records` — Health records (P1)
+- [x] `ent-health-records` — Health records (P1) ✅ 2026-05-28 (полная нормализация + append-only: anthropometry/lab_tests/training_logs/mood_logs + enums Sex/ActivityLevel/Goal)
 - [ ] `scr-import-health` — Выгрузка здоровья (P1)
 - [ ] `scr-calc-norms` — Расчёт нормы (P0)
 - [x] `ent-stock` — Остатки (P0) ✅ 2026-05-28 (миграция `stock`: StockItem, unique user+ingredient, FK cascade/restrict)
@@ -152,10 +152,10 @@
 ## Текущий шаг
 
 **Фаза:** Phase 3 — Plan. Phase 2 ✅ DONE 2026-05-28.
-**Сделано:** `ent-stock` ✅, `ent-week-plan` ✅ (обе миграции применены, smoke OK). 19/37.
-**Следующая задача:** `ent-health-records` (P1 entity) — разблокирует `scr-calc-norms` (P0). Порядок по зависимостям: health-records → scr-calc-norms (targets из profile+health+rules) → scr-calc-week-plan (hybrid LLM+greedy, самая сложная). `scr-calc-stock` ждёт order-history (Phase 4)/food-diary (Phase 5) — частично может считать от плана.
-**⚠️ Открытый вопрос (AskUserQuestion ПЕРЕД `ent-health-records`):** структура `health_records` — одна jsonb-таблица или нормализованная (anthropometry / lab_tests / mood_logs / training_logs)? Блокирует `ent-health-records` + `scr-calc-norms`. Также: какие именно поля для scr-calc-norms (вес/рост/возраст/активность/Hb/ферритин)?
-**Альтернатива (P0 ready):** `scr-calc-week-plan` deps все готовы, но это «самая сложная фича» (нужна реализация calc-plan job в llm-service) — логичнее после scr-calc-norms.
+**Сделано:** `ent-stock` ✅, `ent-week-plan` ✅, `ent-health-records` ✅ (миграции + smoke OK). 20/37. Все entity Phase 3 done.
+**Следующая задача:** `scr-calc-norms` (P0) — теперь разблокирована (ent-health-records готов). Чистая функция: последний снимок anthropometry (sex/age/height/weight/activity/goal) → BMR (Mifflin-St Jeor) × activity-множитель → kcal → макросы (белок г/кг из nutrition_targets.proteinGPerKgMin, жир %, остальное углеводы). Записывает/возвращает targets; NutritionTarget уже редактируется через /rules (override). Сослаться на reference nutrition_norms.json (P26/F33/C41, 2455 kcal — пример).
+**Затем:** `scr-calc-week-plan` (P0, hybrid LLM+greedy, самая сложная — нужна реализация calc-plan job в llm-service); `scr-import-health` (P1); `scr-calc-stock` (P0, частично — ждёт order-history/food-diary из Phase 4/5).
+**Структура health (готова):** anthropometry (входы норм), lab_tests, training_logs, mood_logs — все append-only с measured_at.
 
 ---
 

@@ -76,3 +76,9 @@
 - **Сделал:** миграция `week_plan` — 4 таблицы (WeekPlan→PlanDay→PlanMeal→PlanMealItem) + enum WeekPlanStatus. По AskUserQuestion: точно как legacy (day_type/meal time+tags/from_stock+tail), snapshot targets+budget в план, portionFactor (предрасч. 0.8/1/2, одна ссылка). Smoke: дерево + cascade-delete через 4 уровня OK. `ent-week-plan` → done. 19/37.
 - **Узнал (gotcha):** Prisma `String @default(uuid())` → колонка TEXT (не uuid-тип) в postgres. В psql DO-блоках: переменные `text`, `gen_random_uuid()::text`.
 - **Следующее:** `ent-health-records` (P1) — РАЗБЛОКИРУЕТ scr-calc-norms (P0). ⚠️ Перед ним **AskUserQuestion**: структура health_records (jsonb vs нормализ.) + какие поля нужны scr-calc-norms (вес/рост/возраст/активность/Hb/ферритин). Альтернатива: scr-calc-week-plan (P0 ready, но самая сложная — нужен calc-plan job в llm-service).
+
+## Iteration 9 — 2026-05-28 — Phase 3 шаг 3: ent-health-records
+
+- **Сделал:** миграция health_records — полная нормализация (AskUserQuestion): 4 append-only таблицы (anthropometry/lab_tests/training_logs/mood_logs) + enums Sex/ActivityLevel/Goal. anthropometry = снимок входов норм (sex/age/height/weight/activity/goal). Все с measured_at + index DESC. Smoke: latest-snapshot OK. `ent-health-records` → done. 20/37. Все entity Phase 3 закрыты.
+- **Решение:** нормализация + append-only (тренды важны: вес, Hb-динамика при анемии). authoritative targets остаются в NutritionTarget (через /rules); scr-calc-norms = вычисление-предложение.
+- **Следующее:** `scr-calc-norms` (P0, разблокирован) — чистая функция: latest anthropometry → BMR (Mifflin-St Jeor) × activity → kcal → макросы (proteinGPerKgMin из nutrition_targets). Без вопросов (формула стандартная, reference nutrition_norms.json). Скорее всего core/src/norms/ pure + DB-wrapper.

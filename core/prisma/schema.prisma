@@ -29,6 +29,10 @@ model User {
   recipes         Recipe[]
   stockItems      StockItem[]
   weekPlans       WeekPlan[]
+  anthropometry   Anthropometry[]
+  labTests        LabTest[]
+  trainingLogs    TrainingLog[]
+  moodLogs        MoodLog[]
 
   @@map("users")
 }
@@ -476,4 +480,120 @@ model PlanMealItem {
   @@index([planMealId])
   @@index([recipeId])
   @@map("plan_meal_items")
+}
+
+// ============================================================
+// Phase 3 — Health records (ent-health-records)
+// Полная нормализация + append-only снимки (решение пользователя 2026-05-28).
+// Антропометрия из user_profile.json (ABCDEFG framework). История важна:
+// тренд веса, динамика Hb (анемия), лог тренировок.
+// ============================================================
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+/// Уровень активности для расчёта TDEE (множитель к BMR).
+enum ActivityLevel {
+  SEDENTARY
+  LIGHT
+  MODERATE
+  ACTIVE
+  VERY_ACTIVE
+}
+
+/// Цель по массе/композиции — влияет на калорийную поправку.
+enum Goal {
+  CUT
+  MAINTAIN
+  GAIN
+}
+
+/// Антропометрия — снимок состава тела + контекст активности на момент measuredAt.
+/// Это входы scr-calc-norms: sex, age, height, weight, activity, goal. Append-only (тренд веса).
+model Anthropometry {
+  id             String         @id @default(uuid())
+  userId         String         @map("user_id")
+  measuredAt     DateTime       @map("measured_at")
+  sex            Sex
+  ageYears       Int            @map("age_years")
+  heightCm       Decimal        @map("height_cm") @db.Decimal(5, 1)
+  weightKg       Decimal        @map("weight_kg") @db.Decimal(5, 1)
+  bodyFatPercent Decimal?       @map("body_fat_percent") @db.Decimal(4, 1)
+  leanMassKg     Decimal?       @map("lean_mass_kg") @db.Decimal(5, 1)
+  bmi            Decimal?       @db.Decimal(4, 1)
+  ffmi           Decimal?       @db.Decimal(4, 1)
+  waistCm        Decimal?       @map("waist_cm") @db.Decimal(5, 1)
+  activityLevel  ActivityLevel? @map("activity_level")
+  stepsPerDay    Int?           @map("steps_per_day")
+  goal           Goal?
+  note           String?
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, measuredAt(sort: Desc)])
+  @@map("anthropometry")
+}
+
+/// Анализ — одна строка на аналит на дату. Примеры analyte: hemoglobin, ferritin, b12,
+/// glucose, vitamin_d. isFlagged — клинический флаг (напр. anemia при Hb<норма).
+model LabTest {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  measuredAt    DateTime @map("measured_at")
+  analyte       String
+  value         Decimal  @db.Decimal(12, 4)
+  unit          String
+  referenceLow  Decimal? @map("reference_low") @db.Decimal(12, 4)
+  referenceHigh Decimal? @map("reference_high") @db.Decimal(12, 4)
+  status        String?
+  isFlagged     Boolean  @default(false) @map("is_flagged")
+  note          String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, analyte, measuredAt(sort: Desc)])
+  @@map("lab_tests")
+}
+
+/// Тренировка — одна сессия. kind: strength / cardio / mobility / ...
+model TrainingLog {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  performedAt DateTime @map("performed_at")
+  kind        String
+  durationMin Int      @map("duration_min")
+  intensity   String?
+  note        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, performedAt(sort: Desc)])
+  @@map("training_logs")
+}
+
+/// Субъективное состояние — настроение, энергия, сон, симптомы. Append-only.
+model MoodLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  loggedAt   DateTime @map("logged_at")
+  mood       Int? // 1..10
+  energy     Int? // 1..10
+  sleepHours Decimal? @map("sleep_hours") @db.Decimal(3, 1)
+  symptoms   String[] @default([])
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, loggedAt(sort: Desc)])
+  @@map("mood_logs")
 }

@@ -207,6 +207,15 @@ export async function getWeekPlan(userId: string, weekIso: string) {
   });
 }
 
+/** Список планов пользователя (без дерева) — для выбора недели в UI. */
+export async function listWeekPlans(userId: string) {
+  return prisma.weekPlan.findMany({
+    where: { userId },
+    orderBy: { weekIso: 'desc' },
+    select: { id: true, weekIso: true, status: true, startDate: true, endDate: true },
+  });
+}
+
 /** Последовательные `count` дат от startDate (ISO `YYYY-MM-DD`). */
 function buildDays(
   startDate: string,

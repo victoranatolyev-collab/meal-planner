@@ -3,13 +3,16 @@ import { ZodError } from 'zod';
 import {
   generateWeekPlanRequestSchema,
   getWeekPlanQuerySchema,
+  userIdQuerySchema,
   generateWeekPlan,
   getWeekPlan,
+  listWeekPlans,
 } from 'core';
 
 /**
- * GET /api/plans?userId=<uuid>&weekIso=YYYY-Www
- * Просмотр плана недели (дерево days → meals → items + рецепт-инфо). 404 если нет.
+ * GET /api/plans?userId=<uuid>[&weekIso=YYYY-Www]
+ *  - без weekIso → список планов пользователя { items, total }
+ *  - с weekIso   → дерево плана (days → meals → items + рецепт-инфо); 404 если нет
  *
  * POST /api/plans
  * Body: { userId, weekIso, startDate (YYYY-MM-DD), dayCount?, dayTypes? }
@@ -19,6 +22,23 @@ import {
  */
 export async function GET(request: NextRequest) {
   const raw = Object.fromEntries(request.nextUrl.searchParams.entries());
+
+  // Список планов (без weekIso).
+  if (raw.weekIso === undefined) {
+    let q;
+    try {
+      q = userIdQuerySchema.parse(raw);
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return NextResponse.json({ error: 'invalid_query', details: err.flatten() }, { status: 400 });
+      }
+      throw err;
+    }
+    const items = await listWeekPlans(q.userId);
+    return NextResponse.json({ items, total: items.length });
+  }
+
+  // Детальное дерево (с weekIso).
   let query;
   try {
     query = getWeekPlanQuerySchema.parse(raw);

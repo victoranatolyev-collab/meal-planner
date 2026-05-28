@@ -119,6 +119,7 @@ export type { NormsInput, NormsResult, CalcNormsForUserResult } from './norms/in
 export {
   generateWeekPlan,
   getWeekPlan,
+  listWeekPlans,
   resolveDraftToApproved,
   calcPlanOutputSchema,
   generateWeekPlanRequestSchema,

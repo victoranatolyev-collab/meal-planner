@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-29 — Phase 3 / шаг 9: UI /plan (read-only) + GET /api/plans list mode
+
+- **Сделано:** acceptance-критерий Phase 3 — страница просмотра недельного плана.
+  - **Backend:** `listWeekPlans(userId)` (core/plan) + `GET /api/plans?userId` БЕЗ weekIso → список планов {items, total}; с weekIso → дерево (как было). collection-vs-item на одном endpoint.
+  - **Frontend:** `src/api/plans.ts` (fetchPlans list + fetchPlan tree, 404→null) + `src/pages/plan/plan-page.tsx` — useCurrentUser → fetchPlans → Untitled UI Select недели (default = последняя) → fetchPlan → дерево (DayCard: дата+day_type → приёмы name/time/meal_tags → позиции recipe.name × portionFactor + from_stock/хвост). Read-only, TanStack Query, как /rules. Роут `/plan` в main.tsx.
+- **Столкнулся:** smoke list-режима сначала упал (weekIso Required) — `next start` отдавал СТАРЫЙ build (в этой итерации сначала собрал только frontend). Пересобрал backend → list заработал. (Урок: после правки route.ts нужен `npm run build --workspace backend` перед `next start`.)
+- **Проверки:** vitest core 90/90, tsc core/backend, eslint backend/frontend, frontend build (2573 modules), next build (route /api/plans). **Smoke**: GET /api/plans?userId → list total 1 (2026-W23/DRAFT); user без планов → total 0; GET с weekIso → 200 дерево; bad userId → 400. ✓
+- **Phase 3:** все actionable фичи + acceptance (/plan UI) закрыты. Остался только `scr-calc-stock` — ЗАБЛОКИРОВАН (deps ent-order-history Phase 4 + ent-food-diary Phase 5). Активная работа → Phase 4. 23/37 (UI — acceptance, не ROADMAP-фича).
+- **НЕ проверено:** визуальный рендер /plan в браузере (build/types/lint зелёные, API smoke-verified).
+- **Файлы:** `core/src/plan/{service,index}.ts`, `core/src/index.ts`, `backend/app/api/plans/route.ts`, `frontend/src/api/plans.ts` (новый), `frontend/src/pages/plan/plan-page.tsx` (новый), `frontend/src/main.tsx`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 3 / шаг 8: scr-import-health (импорт в health-таблицы)
 
 - **Сделано:** импорт данных здоровья — create+list для 4 видов записей. Паттерн rules/ + dynamic route.

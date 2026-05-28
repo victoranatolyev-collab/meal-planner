@@ -153,9 +153,9 @@
 
 **Фаза:** Phase 3 — Plan. Phase 2 ✅ DONE 2026-05-28.
 **Сделано:** все entity Phase 3 ✅ + `scr-calc-norms` ✅. `scr-calc-week-plan` подзадача 1/3 ✅ (calc-plan job контракт+fixture в llm-service, stub smoke OK). 21/37.
-**Сделано:** `scr-calc-week-plan` ✅ + `scr-import-health` ✅. 23/37. Все READY фичи Phase 3 закрыты.
-**Заблокировано:** `scr-calc-stock` (P0) — deps `ent-order-history` (Phase 4) + `ent-food-diary` (Phase 5). Реализуется после Phase 4/5 (кросс-фазовая зависимость).
-**Следующая задача:** Phase 3 UI — `/plan` read-only страница (просмотр недельного плана: дни → приёмы → блюда, поверх `GET /api/plans`). Untitled UI + TanStack Query, как `/rules`. Это acceptance-критерий Phase 3 (§5.3 — UI в конце фазы). После неё Phase 3 закрывается (scr-calc-stock переносится в Phase 4) → старт **Phase 4 (Procurement)**: ent-cart, scr-assemble-cart, ent-order-history, scr-order-products.
+**Сделано:** `scr-calc-week-plan` ✅, `scr-import-health` ✅, UI `/plan` ✅ (read-only + GET /api/plans list mode). 23/37. Все actionable фичи + acceptance Phase 3 закрыты.
+**Заблокировано:** `scr-calc-stock` (P0) — deps `ent-order-history` (Phase 4) + `ent-food-diary` (Phase 5). Реализуется после Phase 4/5 (кросс-фазовая зависимость). Phase 3 НЕ переносим в историю пока эта фича не done.
+**Следующая задача:** старт **Phase 4 (Procurement)**. По алгоритму первая READY P0-entity — `ent-cart` (deps ent-ingredients✅ + ent-users✅): миграция корзины (товары + qty + магазин-источник, до отправки заказа). Затем `ent-order-history` (после ent-cart), `scr-assemble-cart` (план − остатки → группировка по магазинам), `scr-order-products` (P1). После ent-order-history разблокируется частично scr-calc-stock (но полностью — после ent-food-diary в Phase 5).
 
 ---
 

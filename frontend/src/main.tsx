@@ -5,6 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/query-client';
 import App from './App';
 import RulesPage from './pages/rules/rules-page';
+import PlanPage from './pages/plan/plan-page';
 import './styles/globals.css';
 
 const router = createBrowserRouter([
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
   {
     path: '/rules',
     element: <RulesPage />,
+  },
+  {
+    path: '/plan',
+    element: <PlanPage />,
   },
 ]);
 

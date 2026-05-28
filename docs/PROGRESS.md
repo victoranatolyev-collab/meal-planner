@@ -111,3 +111,9 @@
 - **Сделал:** core/src/health/ — create+list ×4 (anthropometry/lab-tests/training-logs/mood-logs) + Zod схемы (z.coerce.date, nativeEnum) + dynamic route /api/health/[kind] (GET+POST, switch). 10 unit-тестов. Smoke: POST все 4→201, GET read-back, 404/400. `scr-import-health` → done. 23/37. Все READY фичи Phase 3 закрыты.
 - **Решение:** dynamic [kind] route (1 файл, type-safe switch) вместо 4 route-файлов. OCR/PDF backlog.
 - **Следующее:** Phase 3 UI — `/plan` read-only (просмотр недельного плана поверх GET /api/plans, Untitled UI + TanStack Query, как /rules). Acceptance Phase 3 (§5.3). Затем закрыть Phase 3 (scr-calc-stock → Phase 4, заблокирован) и старт Phase 4 (Procurement).
+
+## Iteration 15 — 2026-05-29 — UI /plan (read-only) + GET /api/plans list
+
+- **Сделал:** listWeekPlans + GET /api/plans без weekIso → список; frontend /plan (Untitled UI Select недели + дерево DayCard, TanStack Query). Smoke list: total 1. Все actionable+acceptance Phase 3 закрыты. 23/37.
+- **Урок:** после правки backend route.ts нужен `npm run build --workspace backend` перед `next start` (иначе next start отдаёт старый build — list-режим сначала упал на этом).
+- **Следующее:** Phase 4 (Procurement) старт → `ent-cart` (P0 entity, deps готовы): миграция корзины. Затем ent-order-history, scr-assemble-cart, scr-order-products. scr-calc-stock (Phase 3) остаётся заблокирован до Phase 5 (ent-food-diary).

@@ -1162,7 +1162,7 @@
       "kind": "script",
       "module": "Сопровождение",
       "phase": 6,
-      "status": "in_progress",
+      "status": "done",
       "priority": "P2",
       "needed_now": false,
       "stack": [
@@ -1212,7 +1212,7 @@
       ],
       "estimated_complexity": "high",
       "touch_existing": false,
-      "notes": "Архитектурно: webhook endpoint в Next.js Route Handler. Авторизация юзера — по telegram_chat_id, FK на ent-telegram-account → ent-users. Linking бота к юзеру при первом /start через одноразовый токен. ПОДЗАДАЧА 1/2 ✅ (мозг, transport-agnostic): llm-service job agent-reply + core/src/agent/ (реестр AGENT_TOOLS из 5 scr-* + handleAgentMessage: history→agent-reply→диспатч→append-only снимок) + POST /api/agent/message. Smoke OK (get_stock через stub). ПОДЗАДАЧА 2/2 (осталось): grammY webhook + /start-линковка → handleAgentMessage. status=done только после webhook."
+      "notes": "Архитектурно: webhook endpoint в Next.js Route Handler. Авторизация юзера — по telegram_chat_id, FK на ent-telegram-account → ent-users. Linking бота к юзеру при первом /start через одноразовый токен. DONE (stub-first, как остальные LLM-фичи). Подзадача 1/2: llm-service job agent-reply + core/src/agent/ (AGENT_TOOLS из 5 scr-* + handleAgentMessage: history→agent-reply→диспатч→append-only снимок) + POST /api/agent/message. Подзадача 2/2: core/src/telegram/ linking (createLinkToken/linkTelegramAccount/resolveUserIdByChatId) + backend/lib/telegram-bot.ts (grammY: /start linking + message:text→handleAgentMessage→reply) + POST /api/telegram/{webhook,link}. Webhook = grammY 'std/http' adapter + secret-проверка. Offline-stub (botInfo + API-transformer) → смоук без реального бота. Smoke 5 кейсов ✅ (link, /start linking, агент-ответ +2 в agent_conversations, scope для непривязанного, 401 на неверный secret). Backlog (нужны ключи): реальный Anthropic-адаптер (LLM_MODE=api) + TELEGRAM_BOT_TOKEN + setWebhook."
     }
   ]
 }

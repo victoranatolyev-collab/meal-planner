@@ -205,3 +205,13 @@ export type {
   AgentReplyOutput,
   AgentMessageRequest,
 } from './agent/index.js';
+
+// Telegram (scr-telegram-agent: linking chatId ↔ user + авторизация)
+export {
+  createLinkToken,
+  linkTelegramAccount,
+  resolveUserIdByChatId,
+  buildStartDeepLink,
+  telegramLinkRequestSchema,
+} from './telegram/index.js';
+export type { TelegramLinkRequest } from './telegram/index.js';

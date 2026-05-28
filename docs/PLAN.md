@@ -5,7 +5,7 @@
 > История уже завершённых фаз — в конце документа в разделе «История фаз».
 
 **Текущая ветка:** `rework/nextjs-postgres`
-**Статус:** Phase 0/1/2/3/5 ✅ DONE; Phase 4 — все фичи ✅ (acceptance UI отложена). **34/37 фич.** Активная фаза: **Phase 6 (Agent)** — Telegram-бот с LLM tool-use. Осталось 3 фичи.
+**Статус:** 🎉 **ВСЕ ФАЗЫ ✅ DONE. 37/37 фич. RALPH_DONE.** Phase 0/1/2/3/4/5/6 закрыты (все — «История фаз»). Backlog (не ROADMAP-фичи, нужны ключи/credentials): реальные адаптеры Anthropic (LLM_MODE=api), Telegram bot token + setWebhook, CalDAV (Apple Reminders); acceptance-UI /cart /diary /schedule; order-match endpoint.
 
 ---
 
@@ -80,44 +80,34 @@
 
 ---
 
-## Phase 6 — Agent
-
-**Цель:** Telegram-бот с LLM-агентом (Claude API + tool-use) с полным CRUD-доступом ко всей системе.
-
-**Включает (feature):**
-- [x] `ent-telegram-account` — Telegram-аккаунт пользователя (P2) ✅ 2026-05-29 (миграция telegram_agent: TelegramAccount 1:1 + linking token)
-- [x] `ent-agent-conversations` — История чатов с агентом (P2) ✅ 2026-05-29 (миграция telegram_agent: AgentConversation + enum AgentRole, index last-N)
-- [~] `scr-telegram-agent` — Telegram-агент (LLM) (P2) — подзадача 1/2 ✅ (мозг: agent-reply + core/src/agent/ + POST /api/agent/message); осталась 2/2 (grammY webhook + линковка)
-
-**Зависимости:** Все предыдущие фазы (агент должен уметь дёргать любой `scr-*`).
-
-**Acceptance criteria (из ROADMAP scr-telegram-agent):**
-- Linking чат-айди к пользователю через `/start <token>`
-- «покажи план на сегодня» → агент возвращает текстовый план
-- «замени ужин на main_b» → агент меняет план и подтверждает
-- «я съел snickers вместо плана» → пишет в дневник + предлагает коррекцию
-- Контекст агента = последние N сообщений из `agent_conversations`
-- Авторизация: входящий chat_id → telegram_accounts → user_id → действия только в его scope
-
-**Открытые вопросы:**
-- N сообщений в контексте: предварительно 10-20, уточнить при первой реализации.
-- System prompt для агента — отдельный артефакт в `backend/lib/agent/system_prompt.ts`.
-
----
-
 ## Текущий шаг
 
-**Фаза:** Phase 6 (Agent) — последняя. Phase 0/1/2/3/5 ✅ DONE; Phase 4 фичи ✅. **36/37** (scr-telegram-agent — in_progress).
-**Сделано Phase 6:** `ent-telegram-account` ✅, `ent-agent-conversations` ✅, `scr-telegram-agent` подзадача **1/2 ✅** (мозг, transport-agnostic).
-**Подзадача 1/2 ✅ (мозг):** llm-service job `agent-reply` (input userId/message/history/tools → output reply/intent/toolCalls) + фикстура. `core/src/agent/`: реестр `AGENT_TOOLS` (5 scr-* инструментов) + `handleAgentMessage` (history→agent-reply→диспатч→append-only снимок USER+ASSISTANT). `POST /api/agent/message`. Smoke OK: get_stock через stub, 2 строки в agent_conversations.
-**Следующая (ПОСЛЕДНЯЯ) подзадача 2/2:** grammY webhook в backend (`POST /api/telegram/webhook`, verify secret) → /start `<token>` линковка (token→chatId в telegram_accounts) → обычное сообщение: identify user по chatId → `handleAgentMessage` → reply в чат. Реальный бот нужен TELEGRAM_BOT_TOKEN (backlog) — smoke симуляцией update. После — `scr-telegram-agent` → done → **RALPH_DONE (37/37)**.
-**Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** UI /cart, /diary, /schedule + order-match endpoint. Можно добить после 37 фич.
+🎉 **ПРОЕКТ-RERWORK ЗАВЕРШЁН ПО ROADMAP: 37/37 фич `done` → RALPH_DONE.**
+
+Все 7 фаз (0–6) закрыты — см. «История фаз». Дальнейшая работа — **backlog вне ROADMAP-фич** (требует ключей/credentials или это отложенная UI-полировка):
+- Реальные адаптеры: Anthropic (`LLM_MODE=api`, нужен `ANTHROPIC_API_KEY`), Telegram (`TELEGRAM_BOT_TOKEN` + `setWebhook`), Apple Reminders/CalDAV (`APPLE_*`). Сейчас всё на stub-адаптерах (архитектура §10 — Adapter pattern, swap = смена env).
+- Acceptance-UI: страницы /cart, /diary, /schedule (фронт), order-match endpoint.
 
 ---
 
 ## История фаз
 
 Когда фаза завершается — переносим её сюда с пометкой `✅ DONE` + датой.
+
+### Phase 6 — Agent ✅ DONE 2026-05-29
+
+**Цель:** Telegram-бот с LLM-агентом (Claude tool-use) с CRUD-доступом ко всей системе.
+
+- [x] `ent-telegram-account` ✅ (миграция telegram_agent: TelegramAccount 1:1 + linking token)
+- [x] `ent-agent-conversations` ✅ (миграция telegram_agent: AgentConversation + enum AgentRole, index last-N)
+- [x] `scr-telegram-agent` ✅ (stub-first):
+  - **Мозг (transport-agnostic):** llm-service job `agent-reply` + `core/src/agent/` (реестр `AGENT_TOOLS` из 5 scr-* + `handleAgentMessage`: history→agent-reply→диспатч→append-only снимок) + `POST /api/agent/message`.
+  - **Транспорт:** `core/src/telegram/` linking (createLinkToken/linkTelegramAccount/resolveUserIdByChatId) + `backend/lib/telegram-bot.ts` (grammY: `/start <token>` линковка + `message:text`→`handleAgentMessage`→reply) + `POST /api/telegram/{webhook,link}` (webhook = grammY `std/http` + secret-проверка).
+  - **Offline-stub:** `botInfo` (нет getMe) + API-transformer короткозамыкает исходящие → смоук без реального бота. Smoke 5 кейсов ✅ (link, /start linking, агент-ответ +2 в agent_conversations, scope непривязанного=200 без записей, 401 на неверный secret).
+
+**Acceptance (ROADMAP):** linking через `/start <token>` ✅; NL-сообщение → агент → tool → ответ ✅ (intent-маппинг — на реальном LLM, backlog); контекст last-N ✅; авторизация по chat_id→user scope ✅.
+
+---
 
 ### Phase 5 — Tracking ✅ DONE 2026-05-29
 

@@ -22,6 +22,20 @@
 
 ---
 
+## 2026-05-29 — ✅ Phase 6 ЗАКРЫТА: scr-telegram-agent — grammY webhook + linking (подзадача 2/2). **37/37 → RALPH_DONE**
+
+- **Сделано:** Telegram-транспорт поверх «мозга» из подзадачи 1 — **последняя фича проекта**.
+  - `core/src/telegram/`: linking-сервис — `createLinkToken` (одноразовый uuid-токен, upsert TelegramAccount, isActive=false до /start), `linkTelegramAccount` (token→chatId, гасит токен, isActive=true), `resolveUserIdByChatId` (авторизация), pure `buildStartDeepLink` + unit-тест.
+  - `backend/lib/telegram-bot.ts`: grammY `Bot` — хендлеры `/start <token>` (линковка) и `message:text` (resolve chatId→userId → `handleAgentMessage` → `ctx.reply`).
+  - `backend/app/api/telegram/webhook/route.ts`: `webhookCallback(bot,'std/http',{secretToken})` (проверка `X-Telegram-Bot-Api-Secret-Token`). `.../link/route.ts`: POST {userId}→{linkToken, deepLink}.
+- **Столкнулся:** (1) grammY `new Bot('')` бросает на пустом токене, а реальный бот нужен credentials (backlog). Решение — **offline-stub**: фиксированный `botInfo` (бот не зовёт getMe) + API-transformer короткозамыкает исходящие вызовы. Webhook смоук-тестится симулированными update без сети. (2) grammY `command('start')` матчит по `entities:bot_command`, не по тексту → в симулированном /start update обязателен `entities:[{type:'bot_command',offset:0,length:6}]`. (3) App Router → адаптер `std/http` (один arg `Request`→`Promise<Response>`), не `next-js` (тот для Pages API).
+- **Решение:** stub-first (как scr-search-recipes/scr-calc-week-plan): полный pipeline (webhook→авторизация→агент→tool→ответ→персист) работает на stub; реальный Anthropic-адаптер (`LLM_MODE=api`) + `TELEGRAM_BOT_TOKEN` + setWebhook — backlog (нужны ключи). Это и есть проектный «done» для LLM-фич.
+- **Проверка:** core tsc+lint+test (126 unit, +1 deeplink), backend tsc + `next build` (+2 route), lint ✅. Smoke HTTP (5 кейсов): link→token; /start<token>+secret → telegram_accounts привязан (chat_id, token cleared, active); text от привязанного → agent_conversations +2 (action_taken=get_stock); text от непривязанного → 200 без записей (scope); неверный secret → 401.
+- **Файлы:** core/src/telegram/*, core/src/index.ts, backend/lib/telegram-bot.ts, backend/app/api/telegram/{webhook,link}/route.ts, backend/package.json (grammy).
+- **Итог:** `scr-telegram-agent` → **done**. **Phase 6 ✅ 3/3 → История фаз. 37/37 фич done → RALPH_DONE.**
+
+---
+
 ## 2026-05-29 — Phase 6 / шаг 2: scr-telegram-agent — мозг агента (подзадача 1/2)
 
 - **Сделано:** transport-agnostic «мозг» агента (tool-use оркестрация), без Telegram-транспорта.

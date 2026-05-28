@@ -173,6 +173,13 @@ Untitled UI инпуты — это React Aria (value/onChange-значение,
 ### 21. Frontend НЕ импортит core (Prisma в браузере)
 `core` тянет `@prisma/client` → нельзя импортить его Zod-схемы/типы в браузерный frontend. Дублируй схему формы на клиенте (как llm-service↔core). userId на фронте — без хардкода: `GET /api/users` → `useCurrentUser` берёт первого (auth отложена). Decimal-поля backend приходят строками (Prisma Decimal → JSON string) — парсь `Number()` для prefill.
 
+### 22. grammY offline-stub + webhook в App Router
+Telegram-агент (scr-telegram-agent) — stub-first, без реального бота. Гочи grammY:
+- `new Bot('')` бросает на пустом токене. Реальный токен — backlog (credentials). Решение — **offline-stub**: `new Bot(realToken ?? 'STUB', { botInfo: {...} })` — фиксированный `botInfo` отключает getMe-вызов при `handleUpdate`; плюс при отсутствии токена ставим API-transformer `bot.api.config.use(async () => ({ ok: true, result: undefined as never }))` — короткозамыкает исходящие вызовы, `ctx.reply` не ходит в сеть. Так webhook смоук-тестится симулированными update.
+- `bot.command('start')` матчит по `message.entities` типа `bot_command` (offset 0), **не по тексту**. В симулированном update обязателен `entities:[{type:'bot_command',offset:0,length:6}]` для `/start`.
+- Next.js App Router (Route Handler) → адаптер `webhookCallback(bot, 'std/http', {secretToken})` (один arg `Request`→`Promise<Response>`). НЕ `next-js` (тот для Pages API `(req,res)`). Secret-проверка (`X-Telegram-Bot-Api-Secret-Token`) встроена в webhookCallback.
+- Linking: токен генерим `createLinkToken` (upsert TelegramAccount, isActive=false), `/start <token>` → `linkTelegramAccount` (token→chatId, гасит токен, isActive=true). Авторизация каждого сообщения — `resolveUserIdByChatId`. chatId/linkToken nullable+unique (несколько NULL в PG OK).
+
 ## Стратегия фаз
 
 - **Phase 0** Foundation ✅

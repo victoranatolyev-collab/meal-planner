@@ -140,3 +140,8 @@
 - **Осталось 10 фич:** Phase 5 (6: ent-food-diary, scr-write-diary, scr-correct-plan, ent-notification-schedule, scr-notifications, scr-edit-schedule) + Phase 6 (3: telegram) + scr-calc-stock (P3, ждёт ent-food-diary).
 - **Отложено (acceptance, не блок. RALPH_DONE):** match endpoint, UI /cart, /diary, /schedule. Приоритет — фичи.
 - **Следующее:** `ent-food-diary` (P0, Phase 5) — журнал факт-приёмов. Разблокирует scr-calc-stock.
+
+## Iteration 20 — 2026-05-29 — Phase 5 шаг 1: ent-food-diary
+
+- **Сделал:** миграция food_diary — FoodDiaryEntry (recipe?/customName + макросы + eatenAt + mealName), recipe SetNull. Smoke: recipe+ad-hoc + SetNull. `ent-food-diary` → done. 28/37. **Разблокировал scr-calc-stock** (Phase 3).
+- **Следующее:** `scr-calc-stock` (P0, Phase 3 снова активна как первая фаза с незакрытой фичей) — пересчёт остатков (stock ± план ± order_history ∓ food_diary). Закроет Phase 3. Потом Phase 5: scr-write-diary, scr-correct-plan, notifications.

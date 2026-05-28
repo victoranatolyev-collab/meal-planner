@@ -22,6 +22,20 @@
 
 ---
 
+## 2026-05-29 — Phase 5 / шаг 1: ent-food-diary (дневник питания)
+
+- **Сделано:** старт Phase 5 (Tracking). `FoodDiaryEntry` (table `food_diary`): `recipeId?` (известный рецепт + portionFactor) ИЛИ `customName` (ad-hoc) + макросы (kcal/proteinG/fatG/carbsG) + `eatenAt` + `mealName` + note. recipe onDelete **SetNull** (история переживает удаление рецепта), user Cascade. index (userId, eatenAt DESC). Relations User.diaryEntries, Recipe.diaryEntries.
+- **Решение:** одна таблица (не wrapper) — запись = один приём. recipe? + customName покрывают «съел рецепт из плана» и «съел snickers». Макросы хранятся (для ad-hoc / снимок). Связь с планом (факт vs план) — логика в scr-correct-plan, без жёсткого FK на plan_meal_items (меньше связности). SetNull, не Restrict — дневник это история, переживает удаление рецепта.
+- **Миграция:** migrate dev --create-only --name food_diary → deploy → generate.
+- **Smoke (psql):** 2 записи (recipe-based + ad-hoc Snickers); DELETE рецепта → recipe_id записи = NULL (SetNull). ✓
+- **Закрыто как done:** `ent-food-diary`. 28/37. **РАЗБЛОКИРОВАЛ `scr-calc-stock`** (Phase 3) — все его deps (stock/order-history/food-diary/week-plan) теперь done.
+- **Проверки:** prisma format/validate/migrate/generate; core vitest 99/99, tsc core/backend/worker OK.
+- **Файлы:** `core/prisma/schema.prisma` (+FoodDiaryEntry, +relations), `core/prisma/migrations/*_food_diary/migration.sql`, `docs/ROADMAP.json`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 4 / шаг 4: scr-order-products — Phase 4 фичи ВСЕ done
 
 - **Сделано:** корзина → история заказов (последняя фича Phase 4). Pure + DB-wrapper.

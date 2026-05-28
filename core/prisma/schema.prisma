@@ -35,6 +35,7 @@ model User {
   moodLogs        MoodLog[]
   carts           Cart[]
   orders          Order[]
+  diaryEntries    FoodDiaryEntry[]
 
   @@map("users")
 }
@@ -272,10 +273,11 @@ model Recipe {
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
 
-  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ingredients RecipeIngredient[]
-  tags        RecipeTag[]
-  planItems   PlanMealItem[]
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredients  RecipeIngredient[]
+  tags         RecipeTag[]
+  planItems    PlanMealItem[]
+  diaryEntries FoodDiaryEntry[]
 
   @@index([userId])
   @@index([userId, isApproved])
@@ -693,4 +695,35 @@ model OrderItem {
   @@unique([orderId, ingredientId], name: "uniq_order_ingredient")
   @@index([orderId])
   @@map("order_items")
+}
+
+// ============================================================
+// Phase 5 — Tracking (дневник, нотификации)
+// ============================================================
+
+/// Дневник питания — факт-журнал. Phase 5 / ent-food-diary.
+/// Запись = съеденное: известный рецепт (recipeId + portionFactor) ИЛИ ad-hoc (customName + макросы).
+/// Источник для сравнения факт vs план (scr-correct-plan) и пересчёта остатков (scr-calc-stock).
+/// recipe onDelete SetNull — запись истории переживает удаление рецепта.
+model FoodDiaryEntry {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  eatenAt       DateTime @map("eaten_at")
+  recipeId      String?  @map("recipe_id")
+  customName    String?  @map("custom_name")
+  portionFactor Decimal  @default(1.0) @map("portion_factor") @db.Decimal(4, 2)
+  kcal          Decimal? @db.Decimal(8, 2)
+  proteinG      Decimal? @map("protein_g") @db.Decimal(7, 2)
+  fatG          Decimal? @map("fat_g") @db.Decimal(7, 2)
+  carbsG        Decimal? @map("carbs_g") @db.Decimal(7, 2)
+  mealName      String?  @map("meal_name")
+  note          String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe? @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, eatenAt(sort: Desc)])
+  @@map("food_diary")
 }

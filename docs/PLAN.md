@@ -101,7 +101,7 @@
 **Цель:** Дневник питания, коррекция плана по факту, расписание нотификаций, push в Apple Reminders.
 
 **Включает (feature):**
-- [ ] `ent-food-diary` — Дневник питания (P0)
+- [x] `ent-food-diary` — Дневник питания (P0) ✅ 2026-05-29 (миграция food_diary: FoodDiaryEntry recipe?/customName + макросы + eatenAt, recipe SetNull). Разблокировал scr-calc-stock.
 - [ ] `scr-write-diary` — Запись в дневник (P0)
 - [ ] `scr-correct-plan` — Коррекция плана (P1)
 - [ ] `ent-notification-schedule` — Расписание уведомлений (P1)
@@ -153,7 +153,8 @@
 
 **Фаза:** Phase 5 (Tracking) старт. Phase 0/1/2 ✅; Phase 3 actionable ✅ (кроме блок. scr-calc-stock); **Phase 4 — все фичи ✅**. **27/37.**
 **Осталось фич (10):** Phase 5 — ent-food-diary(P0), scr-write-diary(P0), scr-correct-plan(P1), ent-notification-schedule(P1), scr-notifications(P1), scr-edit-schedule(P2); Phase 6 — ent-telegram-account(P2), ent-agent-conversations(P2), scr-telegram-agent(P2); + scr-calc-stock(P3, ждёт ent-food-diary).
-**Следующая задача:** `ent-food-diary` (P0 entity, deps ent-recipes✅/ent-week-plan✅/users✅) — журнал факт-приёмов (что/когда съел). Разблокирует scr-calc-stock. Затем scr-write-diary, scr-correct-plan, нотификации.
+**Сделано:** `ent-food-diary` ✅ → **разблокировал `scr-calc-stock`** (все deps теперь done). 28/37.
+**Следующая задача:** `scr-calc-stock` (P0, Phase 3 — теперь активная, т.к. первая фаза с незакрытой фичей) — пересчёт остатков: последняя инвентаризация (stock) ± план ± заказы (order_history) ∓ дневник (food_diary). Закрывает Phase 3 полностью. Затем продолжить Phase 5: scr-write-diary (P0), scr-correct-plan, ent-notification-schedule, scr-notifications, scr-edit-schedule.
 **Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** Phase 4 — `POST /api/orders/:id/match` (diff факт/план) + UI `/cart` (dnd-kit); UI `/diary`, `/schedule` (Phase 5 в конце). Приоритет — фичи (к RALPH_DONE = 37 features done), UI/match батчем по фазам.
 
 ---

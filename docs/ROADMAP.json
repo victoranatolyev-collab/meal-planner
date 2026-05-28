@@ -495,7 +495,7 @@
       "kind": "entity",
       "module": "Сопровождение",
       "phase": 5,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -515,7 +515,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Запись может быть полу-автоматической: предзаполнена планом, пользователь правит факт (через web UI или Telegram-агента)."
+      "notes": "Запись может быть полу-автоматической: предзаполнена планом, пользователь правит факт (через web UI или Telegram-агента). [2026-05-29: миграция food_diary. FoodDiaryEntry — recipeId? (известный рецепт) ИЛИ customName (ad-hoc) + portionFactor + макросы kcal/protein/fat/carbs + eatenAt + mealName. recipe onDelete SetNull (история переживает удаление рецепта). index (userId, eatenAt DESC). Smoke: recipe+ad-hoc записи, SetNull при удалении рецепта. РАЗБЛОКИРОВАЛ scr-calc-stock.]"
     },
     {
       "id": "ent-notification-schedule",

@@ -22,6 +22,20 @@
 
 ---
 
+## 2026-05-29 — Phase 5 / шаг 3: ent-notification-schedule (расписание уведомлений)
+
+- **Сделано:** `NotificationSchedule` (table `notification_schedules`): `triggerType` enum (TIME/EVENT/MEAL_RELATIVE), `schedule` string (cron/datetime/relative-spec "meal:lunch+30m"), `reminderList` (default "Daily"), `template`, `isActive`, note. Enum NotificationTrigger. index (userId, isActive). Relation User.notifSchedules, onDelete Cascade.
+- **Решение:** schedule как строка (полиморфно по triggerType) — гибко, парсится в scr-notifications. reminderList по умолчанию "Daily" (ARCHITECTURE §8.3).
+- **Миграция:** migrate dev --create-only --name notification_schedule → deploy → generate.
+- **Smoke (psql):** insert MEAL_RELATIVE правило ("Iron-окно: без кофе") → active schedules ≥1. ✓
+- **Закрыто как done:** `ent-notification-schedule`. 31/37.
+- **Проверки:** prisma format/validate/migrate/generate; core vitest 108/108, tsc core/backend/worker OK.
+- **Файлы:** `core/prisma/schema.prisma` (+enum NotificationTrigger, +NotificationSchedule, +relation), `core/prisma/migrations/*_notification_schedule/migration.sql`, `docs/ROADMAP.json`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 5 / шаг 2: scr-write-diary (запись факт-приёмов)
 
 - **Сделано:** запись в дневник питания. core/src/diary/ (pure + DB-wrapper).

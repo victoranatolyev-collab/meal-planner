@@ -524,7 +524,7 @@
       "kind": "entity",
       "module": "Сопровождение",
       "phase": 5,
-      "status": "planned",
+      "status": "done",
       "priority": "P1",
       "needed_now": false,
       "stack": [
@@ -543,7 +543,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Поля: trigger_type (time | event | meal_relative), schedule (cron|datetime|relative), reminder_list (Daily/...), template (текст для Reminders)."
+      "notes": "Поля: trigger_type (time | event | meal_relative), schedule (cron|datetime|relative), reminder_list (Daily/...), template (текст для Reminders). [2026-05-29: миграция notification_schedule. NotificationSchedule (triggerType enum TIME/EVENT/MEAL_RELATIVE, schedule string, reminderList default Daily, template, isActive) + enum NotificationTrigger. index (userId, isActive). Smoke OK.]"
     },
     {
       "id": "ent-telegram-account",

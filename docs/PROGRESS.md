@@ -156,3 +156,8 @@
 
 - **Сделал:** core/src/diary/ — writeDiaryEntry (recipe→derived макросы из totals×portionFactor / ad-hoc вручную) + listDiary + pure scaleMacros + POST/GET /api/diary. 6 unit-тестов. Smoke: recipe ×2 → 1200/90/30/140, ad-hoc 201, 400 без recipe/custom. `scr-write-diary` → done. 30/37.
 - **Следующее:** `ent-notification-schedule` (P1 entity) — расписание уведомлений (trigger_type/schedule/reminder_list/template). Затем scr-notifications (CalDAV), scr-correct-plan, scr-edit-schedule. Осталось 7 фич.
+
+## Iteration 23 — 2026-05-29 — ent-notification-schedule
+
+- **Сделал:** миграция notification_schedule — NotificationSchedule (triggerType enum, schedule string, reminderList default Daily, template, isActive) + enum NotificationTrigger. Smoke OK. `ent-notification-schedule` → done. 31/37.
+- **Следующее:** `scr-notifications` (P1) — генерация задач из schedule+week_plan → Apple Reminders (CalDAV) через worker cron. Stub-first (реальный CalDAV нужны Apple creds — backlog). Дедуп по UID. Затем scr-correct-plan, scr-edit-schedule. Осталось 6 фич.

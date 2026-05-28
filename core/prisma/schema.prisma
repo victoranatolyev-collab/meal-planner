@@ -36,6 +36,7 @@ model User {
   carts           Cart[]
   orders          Order[]
   diaryEntries    FoodDiaryEntry[]
+  notifSchedules  NotificationSchedule[]
 
   @@map("users")
 }
@@ -726,4 +727,32 @@ model FoodDiaryEntry {
 
   @@index([userId, eatenAt(sort: Desc)])
   @@map("food_diary")
+}
+
+/// Тип триггера уведомления.
+enum NotificationTrigger {
+  TIME // абсолютное время (cron / datetime)
+  EVENT // привязка к событию (тренировка, заказ)
+  MEAL_RELATIVE // относительно приёма пищи (±N мин)
+}
+
+/// Расписание уведомлений. Phase 5 / ent-notification-schedule.
+/// Каждая запись → задача в Apple Reminders через CalDAV (scr-notifications).
+/// schedule: cron-выражение / ISO datetime / relative-spec ("meal:lunch+30m") по triggerType.
+model NotificationSchedule {
+  id           String              @id @default(uuid())
+  userId       String              @map("user_id")
+  triggerType  NotificationTrigger @map("trigger_type")
+  schedule     String
+  reminderList String              @default("Daily") @map("reminder_list")
+  template     String
+  isActive     Boolean             @default(true) @map("is_active")
+  note         String?
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@map("notification_schedules")
 }

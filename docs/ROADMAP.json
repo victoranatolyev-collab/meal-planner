@@ -408,7 +408,7 @@
       "kind": "entity",
       "module": "Расчёт",
       "phase": 4,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -427,7 +427,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "После отправки корзина превращается в запись Истории заказов (или копируется туда)."
+      "notes": "После отправки корзина превращается в запись Истории заказов (или копируется туда). [2026-05-29: миграция cart. Cart (per-user, status ACTIVE/ORDERED) + CartItem (ingredient FK, qtyG, shop IngredientSource, note), unique (cart, ingredient, shop) — один товар из разных магазинов = разные строки. Cascade cart→items, ingredient onDelete Restrict. Smoke: upsert + diff-shop + cascade OK.]"
     },
     {
       "id": "ent-week-plan",

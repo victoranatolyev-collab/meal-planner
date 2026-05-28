@@ -77,7 +77,7 @@
 **Цель:** Сборка корзины, отправка заказа, история заказов. Diff факт/план для последующей коррекции.
 
 **Включает (feature):**
-- [ ] `ent-cart` — Корзина (P0)
+- [x] `ent-cart` — Корзина (P0) ✅ 2026-05-29 (миграция cart: Cart status + CartItem ingredient/qtyG/shop, unique cart+ingredient+shop)
 - [ ] `scr-assemble-cart` — Сборка корзины (P0)
 - [ ] `ent-order-history` — История заказов (P0)
 - [ ] `scr-order-products` — Заказ продуктов (P1)
@@ -155,7 +155,8 @@
 **Сделано:** все entity Phase 3 ✅ + `scr-calc-norms` ✅. `scr-calc-week-plan` подзадача 1/3 ✅ (calc-plan job контракт+fixture в llm-service, stub smoke OK). 21/37.
 **Сделано:** `scr-calc-week-plan` ✅, `scr-import-health` ✅, UI `/plan` ✅ (read-only + GET /api/plans list mode). 23/37. Все actionable фичи + acceptance Phase 3 закрыты.
 **Заблокировано:** `scr-calc-stock` (P0) — deps `ent-order-history` (Phase 4) + `ent-food-diary` (Phase 5). Реализуется после Phase 4/5 (кросс-фазовая зависимость). Phase 3 НЕ переносим в историю пока эта фича не done.
-**Следующая задача:** старт **Phase 4 (Procurement)**. По алгоритму первая READY P0-entity — `ent-cart` (deps ent-ingredients✅ + ent-users✅): миграция корзины (товары + qty + магазин-источник, до отправки заказа). Затем `ent-order-history` (после ent-cart), `scr-assemble-cart` (план − остатки → группировка по магазинам), `scr-order-products` (P1). После ent-order-history разблокируется частично scr-calc-stock (но полностью — после ent-food-diary в Phase 5).
+**Сделано:** Phase 4 старт — `ent-cart` ✅ (миграция cart). 24/37.
+**Следующая задача:** `ent-order-history` (P0 entity, deps ent-cart✅/ingredients✅/users✅) — архив отправленных заказов (shop, items, prices, timestamps, статус доставки; источник для сверки факт vs план). Затем `scr-assemble-cart` (P0: план − остатки → группировка по магазинам → CartItem), `scr-order-products` (P1: корзина → order_history). После ent-order-history scr-calc-stock частично разблокируется (полностью — после ent-food-diary Phase 5).
 
 ---
 

@@ -33,6 +33,7 @@ model User {
   labTests        LabTest[]
   trainingLogs    TrainingLog[]
   moodLogs        MoodLog[]
+  carts           Cart[]
 
   @@map("users")
 }
@@ -151,6 +152,7 @@ model Ingredient {
 
   recipeIngredients RecipeIngredient[]
   stockItems        StockItem[]
+  cartItems         CartItem[]
 
   @@unique([name, source, packSize], name: "uniq_name_source_pack")
   @@index([source])
@@ -596,4 +598,50 @@ model MoodLog {
 
   @@index([userId, loggedAt(sort: Desc)])
   @@map("mood_logs")
+}
+
+// ============================================================
+// Phase 4 — Procurement (корзина, заказы)
+// ============================================================
+
+/// Статус корзины: ACTIVE — собирается; ORDERED — отправлена (→ order_history).
+enum CartStatus {
+  ACTIVE
+  ORDERED
+}
+
+/// Корзина для следующего заказа. Phase 4 / ent-cart.
+/// Собирается scr-assemble-cart (план − остатки), отправляется scr-order-products.
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @map("user_id")
+  status    CartStatus @default(ACTIVE)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@index([userId, status])
+  @@map("carts")
+}
+
+/// Позиция корзины: ингредиент + количество + магазин-источник.
+/// shop может отличаться от ingredient.source (один товар можно купить в разных магазинах).
+model CartItem {
+  id           String           @id @default(uuid())
+  cartId       String           @map("cart_id")
+  ingredientId String           @map("ingredient_id")
+  qtyG         Int              @map("qty_g")
+  shop         IngredientSource
+  note         String?
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  cart       Cart       @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, ingredientId, shop], name: "uniq_cart_ingredient_shop")
+  @@index([cartId])
+  @@map("cart_items")
 }

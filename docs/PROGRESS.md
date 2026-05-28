@@ -117,3 +117,9 @@
 - **Сделал:** listWeekPlans + GET /api/plans без weekIso → список; frontend /plan (Untitled UI Select недели + дерево DayCard, TanStack Query). Smoke list: total 1. Все actionable+acceptance Phase 3 закрыты. 23/37.
 - **Урок:** после правки backend route.ts нужен `npm run build --workspace backend` перед `next start` (иначе next start отдаёт старый build — list-режим сначала упал на этом).
 - **Следующее:** Phase 4 (Procurement) старт → `ent-cart` (P0 entity, deps готовы): миграция корзины. Затем ent-order-history, scr-assemble-cart, scr-order-products. scr-calc-stock (Phase 3) остаётся заблокирован до Phase 5 (ent-food-diary).
+
+## Iteration 16 — 2026-05-29 — Phase 4 шаг 1: ent-cart
+
+- **Сделал:** миграция cart — Cart (status ACTIVE/ORDERED) + CartItem (ingredient/qtyG/shop, unique cart+ingredient+shop). Smoke psql: upsert/diff-shop/cascade OK. `ent-cart` → done. 24/37.
+- **Решение:** shop на item (товар из разных магазинов = разные строки); Cart-wrapper для lifecycle. Соответствует ARCHITECTURE §7.4 (carts).
+- **Следующее:** `ent-order-history` (P0 entity, deps ent-cart✅) — архив заказов (shop/items/prices/timestamps). Затем scr-assemble-cart (план−остатки→shop-группы), scr-order-products.

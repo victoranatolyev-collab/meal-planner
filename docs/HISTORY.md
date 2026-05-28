@@ -22,6 +22,20 @@
 
 ---
 
+## 2026-05-29 — Phase 4 / шаг 1: ent-cart (миграция корзины)
+
+- **Сделано:** старт Phase 4 (Procurement). Таблицы корзины: `Cart` (per-user, `status` enum ACTIVE/ORDERED) + `CartItem` (ingredient FK, qtyG, `shop` IngredientSource, note). unique (cartId, ingredientId, shop) — один товар из разных магазинов = разные строки. onDelete Cascade(cart→items, user→carts) / Restrict(ingredient). Relations User.carts, Ingredient.cartItems. Enum CartStatus.
+- **Решение:** Cart-wrapper + items (соответствует `carts` в ARCHITECTURE §7.4; паттерн week_plans wrapper+items). shop на item (не только ingredient.source) — один товар можно купить в разных магазинах, scr-assemble-cart группирует по shop. status для lifecycle (ACTIVE собирается → ORDERED после scr-order-products).
+- **Миграция:** migrate dev --create-only --name cart (20260528221206) → deploy → generate.
+- **Smoke (psql):** upsert по (cart,ingredient,shop) → 1 строка; та же пара другой shop → 2 строки; DELETE cart → cascade items=0. ✓
+- **Закрыто как done:** `ent-cart`. 24/37.
+- **Проверки:** prisma format/validate/migrate/generate; core vitest 90/90, tsc core/backend/worker OK.
+- **Файлы:** `core/prisma/schema.prisma` (+enum CartStatus, +Cart/CartItem, +relations), `core/prisma/migrations/20260528221206_cart/migration.sql`, `docs/ROADMAP.json`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 3 / шаг 9: UI /plan (read-only) + GET /api/plans list mode
 
 - **Сделано:** acceptance-критерий Phase 3 — страница просмотра недельного плана.

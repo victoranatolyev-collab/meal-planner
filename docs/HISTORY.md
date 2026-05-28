@@ -22,6 +22,23 @@
 
 ---
 
+## 2026-05-28 — Phase 2 / scr-edit-rules UI (шаг 2/2): tag-rules CRUD → scr-edit-rules DONE
+
+- **Сделано:** секция CRUD правил-тегов на `/rules` — закрывает `scr-edit-rules`. Все 6 фич Phase 2 теперь done (17/37).
+  - `src/api/tag-rules.ts` — TagRuleDto + list/create/update/delete (типизированные обёртки над `/api/tag-rules[/:id]`).
+  - `src/pages/rules/tag-rule-schema.ts` — Zod форма (enum ruleKind, tagName, conditional superRefine: quantity для MIN/MAX_PER_WEEK, mealTag для *_IN_MEAL) + RULE_KIND_LABELS (ru).
+  - `src/pages/rules/tag-rules-section.tsx` — список правил (useQuery) с toggle isActive (PATCH) + delete (DELETE), форма добавления (RHF + Untitled UI `Select` ruleKind + `Input`/`InputNumber`, conditional поля по `watch('ruleKind')`, POST). invalidate + reset на успехе.
+  - `rules-page.tsx` — добавлена `<TagRulesSection>` под формой КБЖУ.
+- **Решения:** `Select` (React Aria) — items + render `Select.Item`, `selectedKey`/`onSelectionChange` через Controller. Кнопки toggle/delete через нативный `onClick` (RAC Button форвардит на DOM в v1.16; `onPress` не в типах ButtonProps). MVP edit = delete + re-add (PATCH задействован для isActive-toggle) — полноценный inline-edit не делал (не нужен для acceptance). color `tertiary-destructive` валиден.
+- **Закрыто:** `scr-edit-rules` → **done**. Phase 2: все 6 фич (ent-recipes, ent-nutrition-rules, scr-search-recipes, scr-normalize-recipe, scr-validate-recipes, scr-edit-rules) done.
+- **Осталось по Phase 2:** единственный незакрытый acceptance-критерий — e2e-тест «правило → рецепт → нормализация → валидация через API». Делаю следующей итерацией, затем переношу Phase 2 в «История фаз».
+- **Проверки:** frontend build (tsc -b + vite, 2571 modules) ✅, eslint + typecheck frontend ✅. Backend tag-rules CRUD API уже был smoke-verified curl'ом (итерация scr-edit-rules backend: POST/GET/PATCH/DELETE + 400 на невалидный superRefine). Визуал в браузере не авто-проверялся (build/types/lint зелёные, API-контракт smoke-verified) — `npm run dev --workspace frontend` → `/rules`.
+- **Файлы:** `frontend/src/api/tag-rules.ts`, `frontend/src/pages/rules/{tag-rule-schema.ts,tag-rules-section.tsx,rules-page.tsx}`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — Phase 2 / scr-edit-rules UI (шаг 1/2): data-слой + форма КБЖУ
 
 - **Сделано:** первая рабочая web-страница `/rules` на Untitled UI + фронтовый data-слой. Это шаг 1 из 2 для `scr-edit-rules` (форма целей КБЖУ; CRUD tag-rules — шаг 2).

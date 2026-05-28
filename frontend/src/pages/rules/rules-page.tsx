@@ -1,5 +1,6 @@
 import { useCurrentUser } from '@/lib/use-current-user';
 import { NutritionTargetForm } from './nutrition-target-form';
+import { TagRulesSection } from './tag-rules-section';
 
 // Страница /rules — управление правилами питания.
 // Шаг 1 (эта итерация): целевые КБЖУ + бюджет. Шаг 2: CRUD tag-rules.
@@ -27,10 +28,13 @@ export default function RulesPage() {
       )}
 
       {hasUser && userId && (
-        <section className="flex flex-col gap-4 rounded-xl border border-secondary bg-primary p-6">
-          <h2 className="text-lg font-semibold text-primary">Целевые КБЖУ</h2>
-          <NutritionTargetForm userId={userId} />
-        </section>
+        <>
+          <section className="flex flex-col gap-4 rounded-xl border border-secondary bg-primary p-6">
+            <h2 className="text-lg font-semibold text-primary">Целевые КБЖУ</h2>
+            <NutritionTargetForm userId={userId} />
+          </section>
+          <TagRulesSection userId={userId} />
+        </>
       )}
     </main>
   );

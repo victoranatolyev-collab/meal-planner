@@ -5,7 +5,7 @@
 > История уже завершённых фаз — в конце документа в разделе «История фаз».
 
 **Текущая ветка:** `rework/nextjs-postgres`
-**Статус:** Phase 0 ✅ DONE, Phase 1 ✅ DONE (обе 2026-05-24). Активная фаза: **Phase 2 (Recipes)** — backend всех 6 фич готов (`scr-edit-rules` backend ✅, осталась только UI-форма `/rules`) + e2e acceptance.
+**Статус:** Phase 0 ✅ DONE, Phase 1 ✅ DONE (обе 2026-05-24). Активная фаза: **Phase 2 (Recipes)** — **все 6 фич done** (17/37). Остался единственный незакрытый acceptance-критерий: e2e-тест «правило → рецепт → нормализация → валидация через API». После него Phase 2 → «История фаз», старт Phase 3.
 
 ---
 
@@ -48,7 +48,7 @@
 - [x] `scr-search-recipes` — Поиск рецептов (P0) ✅ 2026-05-28 (core/recipes → llm-service POST /jobs+wait → persist is_relevant=true; stub-first, AnthropicAdapter в backlog)
 - [x] `scr-normalize-recipe` — Нормализация рецепта (P0) ✅ 2026-05-25 (pg_trgm fuzzy + unit_conversions + totals)
 - [x] `scr-validate-recipes` — Валидация рецептов (P0) ✅ 2026-05-25 (tag-based rule engine, §7.3 ARCHITECTURE)
-- [~] `scr-edit-rules` — Редактирование правил (P1) — backend ✅ 2026-05-28 (core/rules + REST /api/nutrition-targets, /api/tag-rules[/:id]); UI `/rules` ⏳
+- [x] `scr-edit-rules` — Редактирование правил (P1) ✅ 2026-05-28 (backend core/rules + REST; UI `/rules` на Untitled UI — форма КБЖУ + секция tag-rules CRUD)
 
 **Зависимости:** Phase 1 (нужен каталог ингредиентов для маппинга).
 
@@ -175,8 +175,9 @@
 
 **Фаза:** Phase 2 — Recipes (весь backend готов; frontend-фундамент на Untitled UI поднят 2026-05-28).
 **Сделано (инфра):** frontend мигрирован на Untitled UI React (Tailwind v4 + React Aria) + MCP `untitledui` — см. HISTORY/ARCHITECTURE §5.
-**Сделано (/rules шаг 1, 2026-05-28):** фронтовый data-слой (api-клиент + TanStack Query + `useCurrentUser` через `GET /api/users` — без хардкода) + форма целей КБЖУ (RHF + Untitled UI InputNumber, GET/PUT `/api/nutrition-targets`). Backend `GET /api/users` добавлен.
-**Следующая итерация (`/rules` шаг 2, закрытие Phase 2):** CRUD tag-rules на `/rules` — список правил + форма add/edit/delete на `/api/tag-rules` (ruleKind select, conditional поля quantity/mealTag). Закрывает `scr-edit-rules` (→ done) и **всю Phase 2**. Потом (опц.) e2e-acceptance, перенос Phase 2 в «Историю фаз», старт Phase 3.
+**Сделано (/rules шаг 1, 2026-05-28):** фронтовый data-слой (api-клиент + TanStack Query + `useCurrentUser` через `GET /api/users` — без хардкода) + форма целей КБЖУ (RHF + Untitled UI InputNumber, GET/PUT `/api/nutrition-targets`).
+**Сделано (/rules шаг 2, 2026-05-28):** секция tag-rules CRUD на `/rules` (Select ruleKind + conditional quantity/mealTag + список с toggle isActive/delete, POST/PATCH/DELETE `/api/tag-rules`). `scr-edit-rules` → **done**. Все 6 фич Phase 2 закрыты.
+**Следующая итерация (закрытие Phase 2):** e2e-acceptance тест «правило → рецепт → нормализация → валидация через API» (integration: seed user+rules+ingredients → searchRecipes stub → normalizeRecipe → validateRecipe → assert). Затем перенос Phase 2 в «История фаз» + Активная фаза → **Phase 3 (Plan)**.
 
 ---
 

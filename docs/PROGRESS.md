@@ -50,3 +50,10 @@
 - **Узнал (gotchas):** (1) React Aria NumberField пустое = NaN → Zod: required `.finite()`, optional `union([...,z.nan()])` + submit фильтрует `Number.isFinite`. (2) RHF + React Aria = через `Controller` (value/onChange-number), не register. (3) frontend НЕ может импортить core Zod-схемы (core тянет @prisma/client в браузер) → дублируем схему на клиенте. (4) `as typeof body` → `never`; juzaй explicit type alias. (5) zsh `UID` зарезервирована (как `status`). Записал AGENTS gotchas #20-21.
 - **Не проверено:** визуал в браузере (build/lint/types зелёные, API смоук-verified).
 - **Следующее:** /rules шаг 2 — CRUD tag-rules (список + add/edit/delete на /api/tag-rules) → закрыть scr-edit-rules + Phase 2.
+
+## Iteration 5 — 2026-05-28 — /rules шаг 2: tag-rules CRUD → scr-edit-rules DONE
+
+- **Сделал:** секция CRUD tag-rules на `/rules` (api/tag-rules + tag-rule-schema + tag-rules-section). Список с toggle isActive (PATCH) + delete (DELETE), форма добавления (Untitled UI Select ruleKind + conditional quantity/mealTag, POST). `scr-edit-rules` → **done**. 17/37; все 6 фич Phase 2 закрыты.
+- **Узнал:** Untitled UI `Select` = `items` + render `Select.Item`, React Aria `selectedKey`/`onSelectionChange` через RHF Controller. Кнопки-действия — нативный `onClick` (RAC Button v1.16 форвардит; onPress не в типах). Conditional поля формы — через `watch('ruleKind')`.
+- **Не проверено:** визуал в браузере (build/lint/types зелёные; backend tag-rules CRUD уже curl-smoke-verified).
+- **Следующее:** ЕДИНСТВЕННЫЙ незакрытый Phase-2 acceptance — e2e-тест rule→recipe→normalize→validate через API (integration test). Потом Phase 2 → история, старт Phase 3.

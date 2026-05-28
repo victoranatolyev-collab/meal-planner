@@ -80,7 +80,7 @@
 - [x] `ent-cart` — Корзина (P0) ✅ 2026-05-29 (миграция cart: Cart status + CartItem ingredient/qtyG/shop, unique cart+ingredient+shop)
 - [x] `scr-assemble-cart` — Сборка корзины (P0) ✅ 2026-05-29 (core/cart: pure assembleCartLines план−остатки→shop + assembleCart/getActiveCart; POST /api/cart/assemble, GET /api/cart)
 - [x] `ent-order-history` — История заказов (P0) ✅ 2026-05-29 (миграция order_history: Order shop/status/total + OrderItem ingredient/qtyG/priceRub, unique order+ingredient)
-- [ ] `scr-order-products` — Заказ продуктов (P1)
+- [x] `scr-order-products` — Заказ продуктов (P1) ✅ 2026-05-29 (core/orders: pure groupCartIntoOrders + placeOrder ACTIVE Cart→order_history per shop, cart ORDERED; POST/GET /api/orders)
 
 **Зависимости:** Phase 3 (нужен план + остатки).
 
@@ -151,10 +151,10 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 4 (Procurement). Phase 0/1/2 ✅; Phase 3 — actionable + acceptance закрыты (кроме заблокированного `scr-calc-stock`). **26/37.**
-**Сделано Phase 4:** `ent-cart` ✅, `ent-order-history` ✅, `scr-assemble-cart` ✅.
-**Следующая задача:** `scr-order-products` (P1, последняя фича Phase 4) — ACTIVE Cart → order_history (группы по shop → Order на магазин + OrderItem с ценами из ingredient.pricePer100g), Cart → ORDERED. + Phase 4 acceptance: `POST /api/orders/:id/match` (сверка факт vs план — diff). После — Phase 4 закрывается (+ опц. UI /cart) → **Phase 5 (Tracking)**: ent-food-diary, scr-write-diary, scr-correct-plan, notifications. Phase 5 разблокирует `scr-calc-stock` (Phase 3, ждёт ent-food-diary).
-**Заблокировано:** `scr-calc-stock` (Phase 3, P0) — ждёт `ent-food-diary` (Phase 5). После Phase 5 доделать + закрыть Phase 3.
+**Фаза:** Phase 5 (Tracking) старт. Phase 0/1/2 ✅; Phase 3 actionable ✅ (кроме блок. scr-calc-stock); **Phase 4 — все фичи ✅**. **27/37.**
+**Осталось фич (10):** Phase 5 — ent-food-diary(P0), scr-write-diary(P0), scr-correct-plan(P1), ent-notification-schedule(P1), scr-notifications(P1), scr-edit-schedule(P2); Phase 6 — ent-telegram-account(P2), ent-agent-conversations(P2), scr-telegram-agent(P2); + scr-calc-stock(P3, ждёт ent-food-diary).
+**Следующая задача:** `ent-food-diary` (P0 entity, deps ent-recipes✅/ent-week-plan✅/users✅) — журнал факт-приёмов (что/когда съел). Разблокирует scr-calc-stock. Затем scr-write-diary, scr-correct-plan, нотификации.
+**Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** Phase 4 — `POST /api/orders/:id/match` (diff факт/план) + UI `/cart` (dnd-kit); UI `/diary`, `/schedule` (Phase 5 в конце). Приоритет — фичи (к RALPH_DONE = 37 features done), UI/match батчем по фазам.
 
 ---
 

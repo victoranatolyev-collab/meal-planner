@@ -22,6 +22,22 @@
 
 ---
 
+## 2026-05-29 — Phase 4 / шаг 4: scr-order-products — Phase 4 фичи ВСЕ done
+
+- **Сделано:** корзина → история заказов (последняя фича Phase 4). Pure + DB-wrapper.
+  - `core/src/orders/group.ts` — pure `groupCartIntoOrders(items)`: группирует по shop, priceRub = pricePer100g × qtyG / 100 (null если цены нет), totalRub = сумма известных.
+  - `core/src/orders/service.ts` — `placeOrder(userId)`: ACTIVE Cart → Order на каждый shop (PLACED) + OrderItems, cart → ORDERED (tx). `listOrders(userId)`.
+  - `backend`: POST /api/orders (place, 201 {orders}) + GET /api/orders?userId (история).
+- **Решение:** заказ per-shop. Реальный API магазина (5ka.ru и т.д.) — backlog (stub-first, как парсеры). order_match (сверка факт/план) — отложенная Phase-4 acceptance.
+- **Закрыто как done:** `scr-order-products`. **27/37. Все фичи Phase 4 done** (ent-cart, ent-order-history, scr-assemble-cart, scr-order-products).
+- **Проверки:** vitest core 99/99 (+4 group: shop-группировка / цена / null / total), tsc core/backend, eslint, next build (route /api/orders). **Smoke end-to-end** (assemble→placeOrder): cart (250г FIVEKA, 100г VV) → 2 заказа (FIVEKA 200₽, VV 30₽), cart → ORDERED, order_history заполнен. SMOKE_OK.
+- **Отложено (acceptance, не фичи):** POST /api/orders/:id/match (diff факт/план), UI /cart (dnd-kit).
+- **Файлы:** `core/src/orders/{types,group,service,schemas,index,group.test}.ts` (6 новых), `backend/app/api/orders/route.ts` (новый), `core/src/index.ts` (re-export).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 4 / шаг 3: scr-assemble-cart (сборка корзины)
 
 - **Сделано:** сборка корзины из плана недели. Паттерн plan/ (pure + DB-wrapper).

@@ -947,7 +947,7 @@
       "kind": "script",
       "module": "Расчёт",
       "phase": 4,
-      "status": "planned",
+      "status": "done",
       "priority": "P1",
       "needed_now": false,
       "stack": [
@@ -967,7 +967,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
-      "notes": "Решить: интеграция через API магазина (если есть) или экспорт списка для ручного оформления."
+      "notes": "Решить: интеграция через API магазина (если есть) или экспорт списка для ручного оформления. [2026-05-29: core/src/orders/ — pure groupCartIntoOrders (по shop, priceRub=pricePer100g×qtyG/100, totalRub=сумма) + placeOrder (ACTIVE Cart → Order per shop + cart ORDERED, tx) + listOrders. POST/GET /api/orders. 4 unit-теста. Smoke: cart→2 заказа (FIVEKA 200₽, VV 30₽), cart ORDERED. Реальный API магазина (5ka.ru) — backlog. Сверка факт/план (match) — Phase-4-closing.]"
     },
     {
       "id": "scr-write-diary",

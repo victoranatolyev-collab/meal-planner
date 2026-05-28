@@ -95,6 +95,15 @@ export type {
   AssembleCartRequest,
 } from './cart/index.js';
 
+// Orders (scr-order-products: корзина → история заказов)
+export { placeOrder, listOrders, groupCartIntoOrders, placeOrderRequestSchema } from './orders/index.js';
+export type {
+  PlaceOrderResult,
+  CartItemForOrder,
+  OrderDraft,
+  PlaceOrderRequest,
+} from './orders/index.js';
+
 // Health (scr-import-health: импорт anthropometry/lab_tests/training_logs/mood_logs)
 export {
   createAnthropometry,

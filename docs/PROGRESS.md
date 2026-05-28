@@ -133,3 +133,10 @@
 
 - **Сделал:** core/src/cart/ — pure assembleCartLines (план×portionFactor − stock → ceil, shop=source) + assembleCart/getActiveCart + POST /api/cart/assemble + GET /api/cart. 5 unit-тестов. Smoke: 200×2−50=350(FIVEKA), 80×2=160(VV). `scr-assemble-cart` → done. 26/37.
 - **Следующее:** `scr-order-products` (P1, последняя Phase 4) — ACTIVE Cart → order_history (per shop) + cart ORDERED + POST /api/orders/:id/match (diff факт vs план). Затем Phase 4 close → Phase 5 (Tracking) → разблокирует scr-calc-stock.
+
+## Iteration 19 — 2026-05-29 — scr-order-products: Phase 4 фичи ВСЕ done
+
+- **Сделал:** core/src/orders/ — pure groupCartIntoOrders (по shop, цена) + placeOrder (Cart→order_history per shop, cart ORDERED) + listOrders + POST/GET /api/orders. 4 unit-теста. Smoke: cart→2 заказа (200₽/30₽), ORDERED. `scr-order-products` → done. **27/37, все фичи Phase 4 done.**
+- **Осталось 10 фич:** Phase 5 (6: ent-food-diary, scr-write-diary, scr-correct-plan, ent-notification-schedule, scr-notifications, scr-edit-schedule) + Phase 6 (3: telegram) + scr-calc-stock (P3, ждёт ent-food-diary).
+- **Отложено (acceptance, не блок. RALPH_DONE):** match endpoint, UI /cart, /diary, /schedule. Приоритет — фичи.
+- **Следующее:** `ent-food-diary` (P0, Phase 5) — журнал факт-приёмов. Разблокирует scr-calc-stock.

@@ -128,3 +128,8 @@
 
 - **Сделал:** миграция order_history — Order (shop/status/totalRub/dates) + OrderItem (ingredient/qtyG/priceRub факт), unique order+ingredient. Smoke psql OK. `ent-order-history` → done. 25/37. Все entity Phase 4 закрыты.
 - **Следующее:** `scr-assemble-cart` (P0) — агрегация: ингредиенты плана недели (рецепты×portionFactor) − остатки → ACTIVE Cart с CartItem (shop=ingredient.source). Pure aggregation + DB-wrapper. Затем scr-order-products (cart→order_history). scr-calc-stock всё ещё ждёт ent-food-diary (Phase 5).
+
+## Iteration 18 — 2026-05-29 — Phase 4 шаг 3: scr-assemble-cart
+
+- **Сделал:** core/src/cart/ — pure assembleCartLines (план×portionFactor − stock → ceil, shop=source) + assembleCart/getActiveCart + POST /api/cart/assemble + GET /api/cart. 5 unit-тестов. Smoke: 200×2−50=350(FIVEKA), 80×2=160(VV). `scr-assemble-cart` → done. 26/37.
+- **Следующее:** `scr-order-products` (P1, последняя Phase 4) — ACTIVE Cart → order_history (per shop) + cart ORDERED + POST /api/orders/:id/match (diff факт vs план). Затем Phase 4 close → Phase 5 (Tracking) → разблокирует scr-calc-stock.

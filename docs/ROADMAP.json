@@ -877,7 +877,7 @@
       "kind": "script",
       "module": "Расчёт",
       "phase": 4,
-      "status": "planned",
+      "status": "done",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -899,7 +899,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "medium",
       "touch_existing": false,
-      "notes": "Аналог shopping.py + order_match.py в текущем коде."
+      "notes": "Аналог shopping.py + order_match.py в текущем коде. [2026-05-29: core/src/cart/ — pure assembleCartLines (план: рецепт×portionFactor → граммы по ингредиенту − stock → ceil, shop=ingredient.source) + assembleCart DB-wrapper (replace ACTIVE Cart) + getActiveCart. POST /api/cart/assemble + GET /api/cart. 5 unit-тестов. Smoke: 200×2−50=350(FIVEKA), 80×2=160(VV). order_match (сверка факт vs план) — отдельно в scr-order-products/Phase 4 acceptance.]"
     },
     {
       "id": "scr-calc-week-plan",

@@ -78,7 +78,7 @@
 
 **Включает (feature):**
 - [x] `ent-cart` — Корзина (P0) ✅ 2026-05-29 (миграция cart: Cart status + CartItem ingredient/qtyG/shop, unique cart+ingredient+shop)
-- [ ] `scr-assemble-cart` — Сборка корзины (P0)
+- [x] `scr-assemble-cart` — Сборка корзины (P0) ✅ 2026-05-29 (core/cart: pure assembleCartLines план−остатки→shop + assembleCart/getActiveCart; POST /api/cart/assemble, GET /api/cart)
 - [x] `ent-order-history` — История заказов (P0) ✅ 2026-05-29 (миграция order_history: Order shop/status/total + OrderItem ingredient/qtyG/priceRub, unique order+ingredient)
 - [ ] `scr-order-products` — Заказ продуктов (P1)
 
@@ -151,13 +151,10 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 3 — Plan. Phase 2 ✅ DONE 2026-05-28.
-**Сделано:** все entity Phase 3 ✅ + `scr-calc-norms` ✅. `scr-calc-week-plan` подзадача 1/3 ✅ (calc-plan job контракт+fixture в llm-service, stub smoke OK). 21/37.
-**Сделано:** `scr-calc-week-plan` ✅, `scr-import-health` ✅, UI `/plan` ✅ (read-only + GET /api/plans list mode). 23/37. Все actionable фичи + acceptance Phase 3 закрыты.
-**Заблокировано:** `scr-calc-stock` (P0) — deps `ent-order-history` (Phase 4) + `ent-food-diary` (Phase 5). Реализуется после Phase 4/5 (кросс-фазовая зависимость). Phase 3 НЕ переносим в историю пока эта фича не done.
-**Сделано:** Phase 4 — `ent-cart` ✅, `ent-order-history` ✅ (обе миграции + smoke). 25/37. Все entity Phase 4 done.
-**Следующая задача:** `scr-assemble-cart` (P0 script, deps ent-week-plan✅/ent-stock✅/ent-cart✅/ingredients✅) — собрать корзину: суммировать ингредиенты плана недели (рецепты × portionFactor → qty_g по ингредиенту) − остатки (stock) → создать/обновить ACTIVE Cart с CartItem (группировка по shop = ingredient.source). Чистая логика (агрегация) + DB-wrapper, паттерн validation/plan. Затем `scr-order-products` (P1: ACTIVE cart → order_history per shop, cart → ORDERED).
-**Заблокировано:** `scr-calc-stock` (Phase 3) — ent-order-history готов, но нужен ещё ent-food-diary (Phase 5).
+**Фаза:** Phase 4 (Procurement). Phase 0/1/2 ✅; Phase 3 — actionable + acceptance закрыты (кроме заблокированного `scr-calc-stock`). **26/37.**
+**Сделано Phase 4:** `ent-cart` ✅, `ent-order-history` ✅, `scr-assemble-cart` ✅.
+**Следующая задача:** `scr-order-products` (P1, последняя фича Phase 4) — ACTIVE Cart → order_history (группы по shop → Order на магазин + OrderItem с ценами из ingredient.pricePer100g), Cart → ORDERED. + Phase 4 acceptance: `POST /api/orders/:id/match` (сверка факт vs план — diff). После — Phase 4 закрывается (+ опц. UI /cart) → **Phase 5 (Tracking)**: ent-food-diary, scr-write-diary, scr-correct-plan, notifications. Phase 5 разблокирует `scr-calc-stock` (Phase 3, ждёт ent-food-diary).
+**Заблокировано:** `scr-calc-stock` (Phase 3, P0) — ждёт `ent-food-diary` (Phase 5). После Phase 5 доделать + закрыть Phase 3.
 
 ---
 

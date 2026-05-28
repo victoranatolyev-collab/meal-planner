@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-29 — Phase 4 / шаг 3: scr-assemble-cart (сборка корзины)
+
+- **Сделано:** сборка корзины из плана недели. Паттерн plan/ (pure + DB-wrapper).
+  - `core/src/cart/assemble.ts` — pure `assembleCartLines({planItems, recipeIngredients, stockGrams})`: аккумулирует граммы по ингредиенту (recipe_ingredient.qtyG × portionFactor, суммарно по всем позициям плана) − остатки → `ceil(needed)`, shop = ingredient.source. needed≤0 не покупается.
+  - `core/src/cart/service.ts` — `assembleCart(userId, weekIso)` (load план-дерево + recipe_ingredients[+ingredient.source] + stock → pure → replace ACTIVE Cart в tx) + `getActiveCart(userId)`.
+  - `backend`: POST /api/cart/assemble (201 {cartId, lines, byShop}; 422) + GET /api/cart?userId (active cart + ингредиенты; 404).
+- **Решение:** shop = ingredient.source (источник каталога). Регенерация ACTIVE-корзины (deleteMany ACTIVE + create). order_match (сверка факт/план) — в scr-order-products.
+- **Закрыто как done:** `scr-assemble-cart`. 26/37.
+- **Проверки:** vitest core 95/95 (+5 assemble: accumulate ×portionFactor / stock-subtract / 0-при-достатке / ceil / shop-group), tsc core/backend, eslint, next build (routes /api/cart, /api/cart/assemble). **Smoke end-to-end** (docker pg + seed plan+stock): assembleCart('2026-W30') → ingA 200×2−50=350(FIVEKA), ingB 80×2=160(VV), 2 lines byShop{FIVEKA:1,VV:1}, persisted + read-back. SMOKE_OK.
+- **Файлы:** `core/src/cart/{types,assemble,service,schemas,index,assemble.test}.ts` (6 новых), `backend/app/api/cart/route.ts` + `backend/app/api/cart/assemble/route.ts` (новые), `core/src/index.ts` (re-export).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — Phase 4 / шаг 2: ent-order-history (миграция истории заказов)
 
 - **Сделано:** `Order` (table `order_history`, per-user, `shop` IngredientSource, `status` enum PLACED/DELIVERED/CANCELLED, totalRub, orderedAt/deliveredAt) + `OrderItem` (ingredient FK, qtyG, `priceRub` фактическая цена), unique (orderId, ingredientId). onDelete Cascade(order→items, user→orders) / Restrict(ingredient). Enum OrderStatus. Relations User.orders, Ingredient.orderItems.

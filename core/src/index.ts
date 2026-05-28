@@ -85,6 +85,16 @@ export type {
 // Users
 export { listUsers } from './users/index.js';
 
+// Cart (scr-assemble-cart: план − остатки → корзина по магазинам)
+export { assembleCart, getActiveCart, assembleCartLines, assembleCartRequestSchema } from './cart/index.js';
+export type {
+  AssembleCartResult,
+  PlanItemRef,
+  RecipeIngredientRef,
+  CartLine,
+  AssembleCartRequest,
+} from './cart/index.js';
+
 // Health (scr-import-health: импорт anthropometry/lab_tests/training_logs/mood_logs)
 export {
   createAnthropometry,

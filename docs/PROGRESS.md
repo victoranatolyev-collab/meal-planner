@@ -88,3 +88,9 @@
 - **Сделал:** core/src/norms/ — pure calcNorms (Mifflin-St Jeor × activity × goal + макросы) + calcNormsForUser (latest anthropometry) + GET /api/norms. 8 юнит-тестов. Smoke: 86кг male → bmr 1933 / kcal 2995 / P155 F100 C369; 422 без anthropometry. `scr-calc-norms` → done. 21/37.
 - **Решение:** норма = рекомендация, не перезапись NutritionTarget (override через /rules). Стандартная формула, reference для сверки.
 - **Следующее:** `scr-calc-week-plan` (P0, ready, САМАЯ СЛОЖНАЯ — hybrid LLM+greedy). План разбить: (1) calc-plan job в llm-service (сейчас placeholder) + prompt + fixture; (2) core/src/plan/ orchestration (LLM draft → validate каждый рецепт → greedy replacement) + persist в week_plans дерево; (3) endpoint + e2e. По правилу Ralph — закрыть первую подзадачу за итерацию.
+
+## Iteration 11 — 2026-05-28 — scr-calc-week-plan подзадача 1/3 (calc-plan контракт)
+
+- **Сделал:** flesh out calc-plan LLM-job в llm-service: calcPlanInputSchema (targets + days + пул approved recipes) + calcPlanOutputSchema (days→meals→items, зеркало ent-week-plan) + fixture. Stub smoke: enqueue→wait→валидный draft. `scr-calc-week-plan` → in_progress (1/3). 21/37.
+- **NB:** stub фикстура → placeholder recipeId. Orchestration (подзадача 2) маппит на реальные approved-рецепты (round-robin по пулу в stub; реальные id в api-режиме).
+- **Следующее:** подзадача 2/3 — `core/src/plan/` orchestration: build input (NutritionTarget→targets, approved recipes, days) → runLlmJob('calc-plan') → resolve recipeId (stub: round-robin на пул) → validateRecipe каждого → greedy replacement → persist в week_plans дерево (snapshot targets). Затем 3/3: POST /api/plans + e2e.

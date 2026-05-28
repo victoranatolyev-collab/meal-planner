@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-28 — Phase 3 / шаг 5: scr-calc-week-plan подзадача 1/3 (calc-plan LLM-контракт)
+
+- **Сделано:** начал самую сложную фичу (hybrid LLM+greedy), разбив на 3 подзадачи. Эта — контракт LLM-job `calc-plan` в llm-service (был placeholder).
+  - `llm-service/src/jobs/types.ts`: `calcPlanInputSchema` (weekIso, startDate/endDate, targets КБЖУ, days[]{date,dayType?}, recipes[] — пул одобренных {id,name,kcal,proteinG,fatG,carbsG,mealTags}, notes?) + `calcPlanOutputSchema` (days → meals{name,time,mealTags,items} → items{recipeId, portionFactor, fromStock, tail}) — зеркало дерева ent-week-plan. Экспорт CalcPlanInput/CalcPlanOutput.
+  - `llm-service/src/fixtures/calc-plan.json` — валидный draft (2 дня) для stub-режима.
+  - handler уже generic по KIND_SCHEMAS — правок не потребовалось.
+- **Решение:** разбивка на 3 подзадачи (правило Ralph «слишком большая → закрой первую»): (1) контракт+stub [эта]; (2) core/src/plan/ orchestration (LLM→validate→greedy→persist); (3) endpoint+e2e. NB: stub возвращает фикстуру с placeholder recipeId — реальный маппинг на approved-рецепты делает orchestration (подзадача 2); в api-режиме LLM получит реальный пул в input.
+- **Статус:** `scr-calc-week-plan` → **in_progress** (1/3). 21/37 без изменений.
+- **Проверки:** tsc llm-service + eslint llm-service clean. **Stub smoke** (docker pg + llm-service stub): POST /jobs {kind:calc-plan, валидный input} → jobId → /wait → COMPLETED с валидным draft-планом из фикстуры (days→meals→items, defaults применены). ✓
+- **Файлы:** `llm-service/src/jobs/types.ts` (calc-plan schemas), `llm-service/src/fixtures/calc-plan.json` (новый).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — Phase 3 / шаг 4: scr-calc-norms (расчёт целевых КБЖУ)
 
 - **Сделано:** первый расчётный скрипт Phase 3 — целевые КБЖУ из антропометрии. Паттерн validation/: pure-функция + DB-wrapper + endpoint.

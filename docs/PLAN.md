@@ -55,7 +55,7 @@
 - [x] `ent-stock` — Остатки (P0) ✅ 2026-05-28 (миграция `stock`: StockItem, unique user+ingredient, FK cascade/restrict)
 - [x] `ent-week-plan` — План недели (P0) ✅ 2026-05-28 (миграция `week_plan`: WeekPlan→PlanDay→PlanMeal→PlanMealItem, точно как legacy; snapshot targets+budget; meal_tags[]; portionFactor)
 - [ ] `scr-calc-stock` — Расчёт остатков (P0)
-- [ ] `scr-calc-week-plan` — Расчёт плана на неделю (P0, hybrid LLM+greedy)
+- [~] `scr-calc-week-plan` — Расчёт плана на неделю (P0, hybrid LLM+greedy) — подзадача 1/3 ✅ (calc-plan job контракт в llm-service); осталось orchestration + endpoint
 
 **Зависимости:** Phase 2 (нужны рецепты + правила).
 
@@ -152,9 +152,10 @@
 ## Текущий шаг
 
 **Фаза:** Phase 3 — Plan. Phase 2 ✅ DONE 2026-05-28.
-**Сделано:** все entity Phase 3 ✅ + `scr-calc-norms` ✅ (core/norms + GET /api/norms). 21/37.
-**Следующая задача:** `scr-calc-week-plan` (P0, ready — все deps done) — **самая сложная фича**. Hybrid: Claude API (через llm-service calc-plan job — сейчас placeholder, нужна реализация) генерит черновик плана → scr-validate-recipes на каждый рецепт → greedy replacement при провалах под КБЖУ/бюджет/остатки. Вероятно НЕСКОЛЬКО итераций: (1) calc-plan job в llm-service (prompt + fixture stub) + контракт; (2) core/src/plan/ orchestration (LLM → validate → greedy fallback) + persist в week_plans дерево; (3) endpoint + e2e. Разбить по правилу Ralph.
-**Затем:** `scr-import-health` (P1, проще — форма/импорт в health-таблицы); `scr-calc-stock` (P0, частично — ждёт order-history (Phase 4)/food-diary (Phase 5)).
+**Сделано:** все entity Phase 3 ✅ + `scr-calc-norms` ✅. `scr-calc-week-plan` подзадача 1/3 ✅ (calc-plan job контракт+fixture в llm-service, stub smoke OK). 21/37.
+**Следующая задача:** `scr-calc-week-plan` подзадача **2/3** — `core/src/plan/` orchestration:
+  собрать input (NutritionTarget snapshot → targets; approved recipes пул; days с dayType) → runLlmJob('calc-plan') → для каждого item resolve recipeId на реальный approved-рецепт (в stub-режиме фикстура даёт placeholder id → маппить round-robin/по индексу на пул) → validateRecipe каждого → greedy replacement при провале (следующий best approved) → persist в week_plans/plan_days/plan_meals/plan_meal_items дерево (snapshot targets). Затем подзадача 3: endpoint POST /api/plans + e2e.
+**Затем:** `scr-import-health` (P1); `scr-calc-stock` (P0, частично — ждёт order-history/food-diary).
 
 ---
 

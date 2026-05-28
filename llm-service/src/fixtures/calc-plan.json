@@ -1,0 +1,52 @@
+{
+  "days": [
+    {
+      "date": "2026-05-25",
+      "dayType": "training",
+      "meals": [
+        {
+          "name": "Завтрак",
+          "time": "08:30",
+          "mealTags": ["sweet_breakfast"],
+          "items": [{ "recipeId": "approved-recipe-1", "portionFactor": 1 }]
+        },
+        {
+          "name": "Обед",
+          "time": "14:00",
+          "mealTags": ["post_workout"],
+          "items": [{ "recipeId": "approved-recipe-2", "portionFactor": 1.5 }]
+        },
+        {
+          "name": "Ужин",
+          "time": "18:30",
+          "mealTags": [],
+          "items": [{ "recipeId": "approved-recipe-2", "portionFactor": 1 }]
+        }
+      ]
+    },
+    {
+      "date": "2026-05-26",
+      "dayType": "office",
+      "meals": [
+        {
+          "name": "Завтрак",
+          "time": "08:30",
+          "mealTags": [],
+          "items": [{ "recipeId": "approved-recipe-1", "portionFactor": 1 }]
+        },
+        {
+          "name": "Обед",
+          "time": "13:00",
+          "mealTags": ["iron_meal"],
+          "items": [{ "recipeId": "approved-recipe-3", "portionFactor": 1 }]
+        },
+        {
+          "name": "Ужин",
+          "time": "19:00",
+          "mealTags": [],
+          "items": [{ "recipeId": "approved-recipe-2", "portionFactor": 1 }]
+        }
+      ]
+    }
+  ]
+}

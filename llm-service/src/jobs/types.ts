@@ -47,15 +47,63 @@ export const searchRecipesOutputSchema = z.object({
 export type SearchRecipesOutput = z.infer<typeof searchRecipesOutputSchema>;
 
 // ============================================================
-// calc-plan (Phase 3 — placeholder)
+// calc-plan (Phase 3 — scr-calc-week-plan, hybrid LLM draft)
+// LLM получает targets + пул одобренных рецептов и собирает черновик недели.
+// Output зеркалит дерево ent-week-plan (days → meals → items).
 // ============================================================
+
+/** Кандидат-рецепт в пуле (LLM выбирает по id). */
+export const calcPlanRecipeSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  kcal: z.number().nonnegative(),
+  proteinG: z.number().nonnegative(),
+  fatG: z.number().nonnegative(),
+  carbsG: z.number().nonnegative(),
+  mealTags: z.array(z.string()).default([]),
+});
 
 export const calcPlanInputSchema = z.object({
   weekIso: z.string().regex(/^\d{4}-W\d{2}$/),
+  startDate: z.string(), // ISO date
+  endDate: z.string(),
+  targets: z.object({
+    kcalPerDay: z.number().positive(),
+    proteinGPerDay: z.number().positive(),
+    fatGPerDay: z.number().positive(),
+    carbsGPerDay: z.number().positive(),
+  }),
+  days: z
+    .array(z.object({ date: z.string(), dayType: z.string().optional() }))
+    .min(1)
+    .max(7),
+  recipes: z.array(calcPlanRecipeSchema).min(1),
+  notes: z.string().max(2000).optional(),
 });
+export type CalcPlanInput = z.infer<typeof calcPlanInputSchema>;
+
+const calcPlanItemSchema = z.object({
+  recipeId: z.string(),
+  portionFactor: z.number().positive().max(10).default(1),
+  fromStock: z.boolean().default(false),
+  tail: z.boolean().default(false),
+});
+const calcPlanMealSchema = z.object({
+  name: z.string().min(1),
+  time: z.string().optional(),
+  mealTags: z.array(z.string()).default([]),
+  items: z.array(calcPlanItemSchema).min(1).max(10),
+});
+const calcPlanDaySchema = z.object({
+  date: z.string(),
+  dayType: z.string().optional(),
+  meals: z.array(calcPlanMealSchema).min(1).max(10),
+});
+
 export const calcPlanOutputSchema = z.object({
-  plan: z.unknown(), // TODO Phase 3
+  days: z.array(calcPlanDaySchema).min(1).max(7),
 });
+export type CalcPlanOutput = z.infer<typeof calcPlanOutputSchema>;
 
 // ============================================================
 // agent-reply (Phase 6 — placeholder)

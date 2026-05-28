@@ -908,7 +908,7 @@
       "kind": "script",
       "module": "Расчёт",
       "phase": 3,
-      "status": "planned",
+      "status": "in_progress",
       "priority": "P0",
       "needed_now": false,
       "stack": [
@@ -938,7 +938,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "high",
       "touch_existing": false,
-      "notes": "Самая сложная фича. Стоимость токенов Claude API — учесть в стоимости эксплуатации."
+      "notes": "Самая сложная фича. Стоимость токенов Claude API — учесть в стоимости эксплуатации. [2026-05-28: in_progress, разбита на 3 подзадачи. ✅ Подзадача 1: контракт LLM-job calc-plan в llm-service — calcPlanInputSchema (weekIso/dates/targets/days[]/recipes[] пул) + calcPlanOutputSchema (days→meals→items{recipeId,portionFactor,fromStock,tail}, зеркало ent-week-plan) + fixture. Stub smoke: enqueue→wait→валидный draft. Осталось: (2) core/src/plan/ orchestration (LLM→validate каждый рецепт→greedy fallback→persist в week_plans); (3) endpoint + e2e.]"
     },
     {
       "id": "scr-order-products",

@@ -22,6 +22,22 @@
 
 ---
 
+## 2026-05-25 — Ralph Loop подготовка (документы + промпт)
+
+- **Сделано:** подготовил 4 документа для запуска Ralph Loop:
+  - `AGENTS.md` — паттерны/gotchas проекта (knowledge base для AI). Включает архитектуру в 1 строке, 4 источника правды, жёсткие правила, технический стек, workspace мапу, tag-based концепцию, LLM policy, mechanical verification команды, 10 gotchas из опыта.
+  - `docs/PROGRESS.md` — append-only journal (Ralph пишет здесь учения между итерациями).
+  - `docs/RALPH_PROMPT.md` — главный промпт цикла. Включает алгоритм одной итерации (12 шагов), критерии завершения (status="done" у всех 37 features → вывод `<promise>RALPH_DONE</promise>`), жёсткие запреты, протокол вопросов, стратегия выбора next task.
+  - `docs/RALPH_GUIDE.md` — инструкции пользователю: 2 способа запуска (Anthropic plugin `/ralph-loop` + внешний bash скрипт), pre-flight чек-лист, остановка, troubleshooting, FAQ.
+- **Исследование:** изучил 5 источников Ralph Loop — Anthropic plugin ralph-wiggum, snarktank/ralph, agenticloops-ai/ralph-loop scaffold, knightli.com explainer, blog.logrocket.com. Применил best practices: mechanical verification обязательна, AGENTS.md обновляется по ходу, items должны помещаться в один context, max-iterations для safety.
+- **Адаптация под наш проект:** ROADMAP.json уже служит PRD (features со status≠"done" = stories to pass). HISTORY.md уже есть. Добавил отсутствующие компоненты: PROGRESS.md (Ralph journal), AGENTS.md (project patterns), RALPH_PROMPT.md (цикл-промпт), RALPH_GUIDE.md (инструкция).
+- **Что НЕ делал:** не устанавливал плагин (это команда `/plugin install ralph-wiggum` от пользователя в Claude Code сессии). Не запускал цикл — это решает пользователь.
+- **Файлы:** `AGENTS.md` (новый), `docs/PROGRESS.md` (новый), `docs/RALPH_PROMPT.md` (новый), `docs/RALPH_GUIDE.md` (новый), `docs/HISTORY.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-25 — Phase 2 шаг 4: llm-service skeleton + llm_jobs migration
 
 - **Сделано:** реализовал llm-service workspace по контракту ARCHITECTURE §10:

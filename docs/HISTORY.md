@@ -22,6 +22,21 @@
 
 ---
 
+## 2026-05-29 — Phase 3 / шаг 6: scr-calc-week-plan подзадача 2/3 (orchestration)
+
+- **Сделано:** оркестрация генерации плана в `core/src/plan/` (паттерн pure + DB-wrapper).
+  - `schemas.ts` — `calcPlanOutputSchema` (Zod, зеркало llm-service calc-plan output) + типы DraftPlan/DraftDay.
+  - `resolve.ts` — pure `resolveDraftToApproved(days, pool)`: greedy fallback — каждый item с recipeId не из approved-пула заменяется на рецепт из пула (round-robin). Покрывает (1) stub placeholder id, (2) LLM-галлюцинации. Возвращает substitutions count.
+  - `service.ts` — `generateWeekPlan({userId, weekIso, startDate, dayCount?, dayTypes?})`: NutritionTarget → targets snapshot; approved+normalized recipes → пул; buildDays (Date-арифметика, доступна в core); runLlmJob('calc-plan'); resolveDraftToApproved; persist в дерево week_plans (tx: deleteMany существующий + nested create через 4 уровня). Регенерация по (userId, weekIso).
+- **Решение:** greedy = подстановка из approved-пула (рецепты уже прошли scr-validate-recipes, значит recipe-level валидны). Week-level правила (MIN/MAX_PER_WEEK) — отдельный проход (refinement, не блокирует). NutritionTarget обязателен (иначе нет targets для snapshot); пул approved обязателен.
+- **Проверки:** vitest core 80/80 (+4 resolve: keep/substitute/round-robin/empty-throws), tsc core, eslint core. **Smoke end-to-end** (docker pg + llm-service stub + seed user/target/approved recipe): generateWeekPlan → 2 дня/6 приёмов/6 позиций, 6 substitutions (placeholder→approved), snapshot kcalTarget=2455, status DRAFT, все items с валидным recipeId FK; повторный вызов → planCount=1 (регенерация). SMOKE_OK.
+- **Статус:** `scr-calc-week-plan` остаётся **in_progress** (2/3). Осталось: 3/3 — endpoint POST /api/plans + e2e. 21/37.
+- **Файлы:** `core/src/plan/{schemas,resolve,resolve.test,service,index}.ts` (5 новых), `core/src/index.ts` (re-export).
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-28 — Phase 3 / шаг 5: scr-calc-week-plan подзадача 1/3 (calc-plan LLM-контракт)
 
 - **Сделано:** начал самую сложную фичу (hybrid LLM+greedy), разбив на 3 подзадачи. Эта — контракт LLM-job `calc-plan` в llm-service (был placeholder).

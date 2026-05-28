@@ -88,3 +88,14 @@ export { listUsers } from './users/index.js';
 // Norms (scr-calc-norms: расчёт целевых КБЖУ из anthropometry)
 export { calcNorms, calcNormsForUser } from './norms/index.js';
 export type { NormsInput, NormsResult, CalcNormsForUserResult } from './norms/index.js';
+
+// Plan (scr-calc-week-plan: генерация плана недели через llm-service + greedy)
+export { generateWeekPlan, resolveDraftToApproved, calcPlanOutputSchema } from './plan/index.js';
+export type {
+  GenerateWeekPlanArgs,
+  GenerateWeekPlanResult,
+  ApprovedRecipe,
+  ResolvedPlan,
+  DraftPlan,
+  DraftDay,
+} from './plan/index.js';

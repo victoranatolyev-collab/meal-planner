@@ -552,7 +552,7 @@
       "kind": "entity",
       "module": "Сопровождение",
       "phase": 6,
-      "status": "planned",
+      "status": "done",
       "priority": "P2",
       "needed_now": false,
       "stack": [
@@ -570,7 +570,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Линковка через /start <token> или другой механизм authenticated linking при первом запуске бота."
+      "notes": "Линковка через /start <token> или другой механизм authenticated linking при первом запуске бота. [2026-05-29: миграция telegram_agent. TelegramAccount (1:1 user, chatId? unique, username, firstName, linkToken? unique, isActive, linkedAt). Smoke: токен → chatId линковка.]"
     },
     {
       "id": "ent-agent-conversations",
@@ -579,7 +579,7 @@
       "kind": "entity",
       "module": "Сопровождение",
       "phase": 6,
-      "status": "planned",
+      "status": "done",
       "priority": "P2",
       "needed_now": false,
       "stack": [
@@ -598,7 +598,7 @@
       "acceptance_criteria": [],
       "estimated_complexity": "low",
       "touch_existing": false,
-      "notes": "Контекст агента = последние N сообщений (N = 10-20). Старые остаются в БД для аналитики/дебага, но не подгружаются в каждом запросе."
+      "notes": "Контекст агента = последние N сообщений (N = 10-20). Старые остаются в БД для аналитики/дебага, но не подгружаются в каждом запросе. [2026-05-29: миграция telegram_agent. AgentConversation (role enum USER/ASSISTANT, message, intent?, actionTaken?, success?) + enum AgentRole. index (userId, createdAt DESC) для last-N. Smoke OK.]"
     },
     {
       "id": "scr-calc-norms",

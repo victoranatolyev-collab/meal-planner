@@ -37,6 +37,8 @@ model User {
   orders          Order[]
   diaryEntries    FoodDiaryEntry[]
   notifSchedules  NotificationSchedule[]
+  telegramAccount TelegramAccount?
+  agentMessages   AgentConversation[]
 
   @@map("users")
 }
@@ -755,4 +757,53 @@ model NotificationSchedule {
 
   @@index([userId, isActive])
   @@map("notification_schedules")
+}
+
+// ============================================================
+// Phase 6 — Agent (Telegram LLM-агент)
+// ============================================================
+
+/// Связь user ↔ Telegram. Phase 6 / ent-telegram-account. 1:1 с User.
+/// Линковка: пользователь генерит linkToken → /start <token> в боте → chatId привязывается.
+/// chatId/linkToken nullable+unique (несколько NULL в Postgres допустимо).
+model TelegramAccount {
+  id        String    @id @default(uuid())
+  userId    String    @unique @map("user_id")
+  chatId    String?   @unique @map("chat_id")
+  username  String?
+  firstName String?   @map("first_name")
+  linkToken String?   @unique @map("link_token")
+  isActive  Boolean   @default(true) @map("is_active")
+  linkedAt  DateTime? @map("linked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("telegram_accounts")
+}
+
+/// Роль сообщения в диалоге с агентом.
+enum AgentRole {
+  USER
+  ASSISTANT
+}
+
+/// История чатов user ↔ агент. Phase 6 / ent-agent-conversations.
+/// Одна строка на сообщение. Контекст агента = последние N по created_at DESC.
+/// intent/actionTaken/success — что агент распознал и сделал (для аналитики/дебага).
+model AgentConversation {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  role        AgentRole
+  message     String
+  intent      String?
+  actionTaken String?   @map("action_taken")
+  success     Boolean?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("agent_conversations")
 }

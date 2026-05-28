@@ -22,6 +22,20 @@
 
 ---
 
+## 2026-05-29 — Phase 6 / шаг 1: ent-telegram-account + ent-agent-conversations (2 сущности)
+
+- **Сделано:** старт Phase 6 (Agent). Две связанные сущности агента в одной миграции (обе trivial, нужны до scr-telegram-agent).
+  - `TelegramAccount` (table telegram_accounts, 1:1 user): chatId? unique, username, firstName, **linkToken? unique** (одноразовый для /start linking), isActive, linkedAt. chatId/linkToken nullable+unique (несколько NULL в Postgres OK).
+  - `AgentConversation` (table agent_conversations): **role enum AgentRole (USER/ASSISTANT)**, message, intent?, actionTaken?, success?. index (userId, createdAt DESC) — для контекста last-N.
+- **Решение:** обе сущности одной миграцией (Phase 6 schema) — tightly coupled (агенту нужны и линк, и память). Линковка: token → /start <token> → chatId привязывается, token очищается.
+- **Закрыто как done:** `ent-telegram-account` + `ent-agent-conversations`. **36/37.** Осталась 1 фича — scr-telegram-agent.
+- **Проверки:** prisma format/validate/migrate/generate; core vitest 122/122, tsc core/backend/worker OK. **Smoke (psql):** линковка token→chatId (linkedAt) → 1 account; 2 agent-сообщения (USER/ASSISTANT).
+- **Файлы:** `core/prisma/schema.prisma` (+enum AgentRole, +TelegramAccount/AgentConversation, +relations User), `core/prisma/migrations/*_telegram_agent/migration.sql`, `docs/ROADMAP.json`, `docs/PLAN.md`.
+- **Коммит:** _будет после этой записи_
+- **Ветка:** `rework/nextjs-postgres`
+
+---
+
 ## 2026-05-29 — ✅ Phase 5 закрыта: scr-edit-schedule (CRUD расписания)
 
 - **Сделано:** последняя фича Phase 5 — backend CRUD расписания уведомлений. Паттерн scr-edit-rules.

@@ -177,3 +177,9 @@
 
 - **Сделал:** core/src/notifications/ schedule CRUD (schemas + service) + REST /api/notification-schedules[/:id]. 5 unit-тестов. Smoke HTTP: create→list→PATCH→400→204→404. `scr-edit-schedule` → done. **34/37. Phase 5 ✅ 6/6** → «История фаз».
 - **Следующее: Phase 6 (Agent) — ПОСЛЕДНЯЯ.** `ent-telegram-account` (P2) → `ent-agent-conversations` (P2) → `scr-telegram-agent` (P2, самая сложная: grammY webhook + Claude tool-use через llm-service agent-reply). После 3 фич → RALPH_DONE (37/37).
+
+## Iteration 27 — 2026-05-29 — Phase 6 шаг 1: ent-telegram-account + ent-agent-conversations
+
+- **Сделал:** миграция telegram_agent — TelegramAccount (1:1 user, chatId?/linkToken? unique, linking flow) + AgentConversation (role enum, message, intent/actionTaken/success, index last-N) + enum AgentRole. Smoke psql: token→chatId линковка, 2 сообщения. Обе сущности → done. **36/37.**
+- **Решение:** обе trivial-сущности одной миграцией (Phase 6 schema, tightly coupled).
+- **Следующее (ПОСЛЕДНЯЯ фича):** `scr-telegram-agent` — grammY webhook + Claude tool-use через llm-service agent-reply + tool registry из scr-* core. Разбить на 2-3 подзадачи. После → **RALPH_DONE 37/37**.

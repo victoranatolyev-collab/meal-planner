@@ -85,8 +85,8 @@
 **Цель:** Telegram-бот с LLM-агентом (Claude API + tool-use) с полным CRUD-доступом ко всей системе.
 
 **Включает (feature):**
-- [ ] `ent-telegram-account` — Telegram-аккаунт пользователя (P2)
-- [ ] `ent-agent-conversations` — История чатов с агентом (P2)
+- [x] `ent-telegram-account` — Telegram-аккаунт пользователя (P2) ✅ 2026-05-29 (миграция telegram_agent: TelegramAccount 1:1 + linking token)
+- [x] `ent-agent-conversations` — История чатов с агентом (P2) ✅ 2026-05-29 (миграция telegram_agent: AgentConversation + enum AgentRole, index last-N)
 - [ ] `scr-telegram-agent` — Telegram-агент (LLM) (P2)
 
 **Зависимости:** Все предыдущие фазы (агент должен уметь дёргать любой `scr-*`).
@@ -107,9 +107,9 @@
 
 ## Текущий шаг
 
-**Фаза:** Phase 6 (Agent) — последняя. Phase 0/1/2/3/5 ✅ DONE; Phase 4 фичи ✅. **34/37.**
-**Следующая задача:** `ent-telegram-account` (P2 entity, deps ent-users✅) — связь user ↔ telegram_chat_id (username, first_name, is_active, linking token). Затем `ent-agent-conversations` (P2, история чатов), `scr-telegram-agent` (P2, самая сложная — grammY webhook + Claude API tool-use через llm-service agent-reply; tool definitions из существующих scr-* core-сервисов).
-**Осталось фич (3):** Phase 6 — ent-telegram-account, ent-agent-conversations, scr-telegram-agent. После них — **RALPH_DONE (37/37)**.
+**Фаза:** Phase 6 (Agent) — последняя. Phase 0/1/2/3/5 ✅ DONE; Phase 4 фичи ✅. **36/37.**
+**Сделано Phase 6:** `ent-telegram-account` ✅, `ent-agent-conversations` ✅ (миграция telegram_agent).
+**Следующая (ПОСЛЕДНЯЯ) задача:** `scr-telegram-agent` (P2, самая сложная) — grammY-бот: webhook → identify user по chatId (telegram_accounts) → load last-N (agent_conversations) → Claude API tool-use через llm-service `agent-reply` job → выполнить выбранный scr-* core-сервис → ответ + запись в agent_conversations. Tool definitions из существующих scr-* (Zod-схемы). Разбить (правило Ralph): (1) agent-reply контракт в llm-service + tool registry; (2) grammY webhook + linking + conversation loop в backend; (3) e2e. После — **RALPH_DONE (37/37)**.
 **Отложенная acceptance-полировка (не ROADMAP-фичи, не блок. RALPH_DONE):** UI /cart, /diary, /schedule + order-match endpoint. Можно добить после 37 фич.
 
 ---

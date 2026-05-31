@@ -9,6 +9,8 @@ import {
   putNutritionTarget,
   type NutritionTargetUpsertBody,
 } from '@/api/nutrition-targets';
+import { fetchNorms } from '@/api/norms';
+import { ApiError } from '@/api/client';
 import { nutritionTargetFormSchema, type NutritionTargetFormValues } from './form-schema';
 
 const EMPTY: NutritionTargetFormValues = {
@@ -84,6 +86,32 @@ export function NutritionTargetForm({ userId }: { userId: string }) {
     onSuccess: (data) => qc.setQueryData(['nutrition-target', userId], data),
   });
 
+  // «Пересчитать по профилю»: формула calcNorms на текущей антропометрии → заполнить поля + сохранить.
+  // Бюджеты НЕ трогаем (не передаём в теле → Prisma сохраняет прежние). Обновление query →
+  // эффект prefill перезальёт поля формы новыми значениями.
+  const recalc = useMutation({
+    mutationFn: async () => {
+      const n = await fetchNorms(userId);
+      const body: NutritionTargetUpsertBody = {
+        userId,
+        kcalPerDay: n.kcalPerDay,
+        proteinGPerDay: n.proteinGPerDay,
+        fatGPerDay: n.fatGPerDay,
+        carbsGPerDay: n.carbsGPerDay,
+        proteinGPerKgMin: n.breakdown.proteinGPerKg,
+      };
+      return putNutritionTarget(body);
+    },
+    onSuccess: (data) => qc.setQueryData(['nutrition-target', userId], data),
+  });
+
+  const recalcErrorText =
+    recalc.error instanceof ApiError && recalc.error.status === 422
+      ? 'Нет антропометрии — заполните профиль (рост/вес/возраст/активность)'
+      : recalc.isError
+        ? 'Не удалось пересчитать'
+        : null;
+
   const onSubmit = (values: NutritionTargetFormValues) => {
     const body: NutritionTargetUpsertBody = {
       userId,
@@ -116,15 +144,33 @@ export function NutritionTargetForm({ userId }: { userId: string }) {
         <NumberField control={control} name="budgetSoftCapRubPerWeek" label="Бюджет ₽/нед (макс)" />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" size="md" color="primary" isLoading={mutation.isPending}>
           Сохранить
+        </Button>
+        <Button
+          type="button"
+          size="md"
+          color="secondary"
+          isLoading={recalc.isPending}
+          isDisabled={mutation.isPending}
+          onClick={() => recalc.mutate()}
+        >
+          Пересчитать по профилю
         </Button>
         {mutation.isSuccess && <span className="text-sm text-success-primary">Сохранено</span>}
         {mutation.isError && (
           <span className="text-sm text-error-primary">Ошибка сохранения</span>
         )}
+        {recalc.isSuccess && (
+          <span className="text-sm text-success-primary">Пересчитано и сохранено</span>
+        )}
+        {recalcErrorText && <span className="text-sm text-error-primary">{recalcErrorText}</span>}
       </div>
+      <p className="text-xs text-tertiary">
+        «Пересчитать по профилю» применяет формулу к текущей антропометрии (шаги, силовые/кардио,
+        вес) и заполняет цели: белок 1.8 г/кг, жир 0.8 г/кг, углеводы — остаток. Бюджет не меняется.
+      </p>
     </form>
   );
 }

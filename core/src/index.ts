@@ -78,6 +78,7 @@ export {
   createTagRule,
   updateTagRule,
   deleteTagRule,
+  listTags,
   userIdQuerySchema,
   nutritionTargetUpsertSchema,
   tagRuleCreateSchema,
@@ -132,6 +133,13 @@ export type { Macros, DiaryEntryCreate } from './diary/index.js';
 // Stock calc (scr-calc-stock: проекция остатков baseline + заказы − дневник)
 export { calcStock, projectStock } from './stock/index.js';
 export type { CalcStockResult, StockProjectionLine } from './stock/index.js';
+export {
+  listStockBaseline,
+  upsertStockItem,
+  deleteStockItem,
+  stockItemUpsertSchema,
+} from './stock/index.js';
+export type { StockItemUpsert } from './stock/index.js';
 
 // Correction (scr-correct-plan: сверка факт vs план, остаток КБЖУ)
 // NB: correction.Macros НЕ ре-экспортируем (коллизия с diary.Macros) — он внутренний.

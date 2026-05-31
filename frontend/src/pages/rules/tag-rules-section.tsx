@@ -14,6 +14,7 @@ import {
   type RuleKind,
   type TagRuleCreateBody,
 } from '@/api/tag-rules';
+import { fetchTags } from '@/api/tags';
 import {
   RULE_KINDS,
   RULE_KIND_LABELS,
@@ -38,6 +39,9 @@ export function TagRulesSection({ userId }: { userId: string }) {
     queryKey: ['tag-rules', userId],
     queryFn: () => listTagRules(userId),
   });
+  // Все известные теги для выпадающих списков (tag_dictionary + ингредиенты + рецепты).
+  const tagsQuery = useQuery({ queryKey: ['tags'], queryFn: fetchTags });
+  const tagItems = (tagsQuery.data?.tags ?? []).map((t) => ({ id: t, label: t }));
 
   const { control, handleSubmit, watch, reset } = useForm<TagRuleFormValues>({
     resolver: zodResolver(tagRuleFormSchema),
@@ -143,15 +147,17 @@ export function TagRulesSection({ userId }: { userId: string }) {
             control={control}
             name="tagName"
             render={({ field, fieldState }) => (
-              <Input
+              <Select
                 label="Тег"
-                placeholder="garlic"
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
+                placeholder={tagsQuery.isLoading ? 'Загрузка тегов…' : 'Выберите тег'}
+                items={tagItems}
+                selectedKey={field.value || null}
+                onSelectionChange={(k) => field.onChange(k === null ? '' : String(k))}
                 isInvalid={Boolean(fieldState.error)}
                 hint={fieldState.error?.message}
-              />
+              >
+                {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+              </Select>
             )}
           />
           {showMealTag && (
@@ -159,15 +165,17 @@ export function TagRulesSection({ userId }: { userId: string }) {
               control={control}
               name="mealTag"
               render={({ field, fieldState }) => (
-                <Input
+                <Select
                   label="Meal-тег"
-                  placeholder="iron_meal"
-                  value={field.value ?? ''}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
+                  placeholder={tagsQuery.isLoading ? 'Загрузка тегов…' : 'Выберите meal-тег'}
+                  items={tagItems}
+                  selectedKey={field.value || null}
+                  onSelectionChange={(k) => field.onChange(k === null ? '' : String(k))}
                   isInvalid={Boolean(fieldState.error)}
                   hint={fieldState.error?.message}
-                />
+                >
+                  {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+                </Select>
               )}
             />
           )}

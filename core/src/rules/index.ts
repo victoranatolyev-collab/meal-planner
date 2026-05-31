@@ -10,6 +10,7 @@ export {
   updateTagRule,
   deleteTagRule,
 } from './tag-rule-service.js';
+export { listTags } from './tags-service.js';
 export {
   userIdQuerySchema,
   nutritionTargetUpsertSchema,

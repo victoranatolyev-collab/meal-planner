@@ -22,6 +22,16 @@
 
 ---
 
+## 2026-05-31 — Rules UI: кнопка «Пересчитать по профилю» + теги выпадающим списком
+- **Сделано:** (1) форма целей КБЖУ (`nutrition-target-form.tsx`) — кнопка «Пересчитать по профилю»: GET /api/norms → заполнить поля + PUT (бюджет не трогаем); 422 → подсказка. (2) Секция тег-правил (`tag-rules-section.tsx`) — поля «Тег» и «Meal-тег» из `Input` в `Select`; источник — новый `GET /api/tags` (`core` `listTags`: union tag_dictionary + ingredients.tags + recipe_tags, дедуп+сортировка; 35 тегов в демо).
+- **Файлы:** core/src/rules/tags-service.ts, core/src/rules/index.ts, core/src/index.ts, backend/app/api/tags/route.ts, frontend/src/api/norms.ts, frontend/src/api/tags.ts, frontend/src/pages/rules/nutrition-target-form.tsx, frontend/src/pages/rules/tag-rules-section.tsx
+- **Проверка:** typecheck core/backend/frontend ✅, core:test 134, frontend 17; /api/tags → 35 тегов, /api/norms → PUT сохраняет, бюджет цел.
+
+## 2026-05-31 — Stock: редактор базового запаса (инвентаризация) в /stock
+- **Сделано:** (1) core `stock/baseline-service.ts` — listStockBaseline / upsertStockItem (по uniq_user_ingredient; qtyG=0 → удаление) / deleteStockItem + zod-схемы; экспорт в barrel. (2) backend `/api/stock-items` GET(baseline)/POST(upsert)/DELETE. (3) frontend: `/stock` получил секцию «Запас дома (инвентаризация)» — поисковый пикер ингредиента из каталога + список позиций с правкой граммов (onBlur upsert) и удалением; правка инвалидирует и baseline, и проекцию остатков.
+- **Файлы:** core/src/stock/baseline-service.ts, core/src/stock/index.ts, core/src/index.ts, backend/app/api/stock-items/route.ts, frontend/src/api/stock.ts, frontend/src/pages/stock/stock-page.tsx
+- **Проверка:** `core:typecheck` ✅, `frontend typecheck` ✅; e2e: GET baseline (5) → POST upsert (300г) → list 6 → DELETE → ок.
+
 ## 2026-05-31 — Catalog: импорт всего каталога Пятёрочки + поисковый пикер ингредиента
 - **Сделано:** (1) `core/prisma/import-fiveka-catalog.ts` — массовый идемпотентный импорт всех продуктов из `data/ingredients_spb.json` в ingredients (source=FIVEKA, externalCode=plu:N, КБЖУ/100г, pricePer100g, weightG). Вставлено 5779, всего в БД 5849. (2) Пикер ингредиента в форме блюда переведён с `<select>` (cap 200) на поиск по подстроке: `searchIngredients(q)` → `/api/ingredients?q=&limit=20`, dropdown с КБЖУ; list-service + DTO состава расширены КБЖУ/100г для корректного live-предпросмотра.
 - **Столкнулся:** после импорта `<select>` на 5849 поз. нежизнеспособен; отдельно — backend webpack падал на `Identifier 'fatGPerDay' has already been declared` из устаревшего `.next`-кэша → `rm -rf backend/.next` + рестарт.

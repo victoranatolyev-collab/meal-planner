@@ -21,9 +21,16 @@ export async function calcNormsForUser(userId: string): Promise<CalcNormsForUser
   if (!anthro) {
     throw new Error(`Нет anthropometry для пользователя ${userId} — нечего считать`);
   }
-  if (anthro.activityLevel === null || anthro.goal === null) {
+  if (anthro.goal === null) {
+    throw new Error(`Anthropometry ${anthro.id}: не задана goal — обязательна для расчёта норм`);
+  }
+  const hasGranular =
+    anthro.stepsPerDay !== null ||
+    anthro.strengthMinutesPerWeek !== null ||
+    anthro.cardioMinutesPerWeek !== null;
+  if (!hasGranular && anthro.activityLevel === null) {
     throw new Error(
-      `Anthropometry ${anthro.id}: не заданы activityLevel/goal — обязательны для расчёта норм`,
+      `Anthropometry ${anthro.id}: задайте шаги/силовые/кардио (модель активности) или activityLevel`,
     );
   }
 
@@ -36,8 +43,15 @@ export async function calcNormsForUser(userId: string): Promise<CalcNormsForUser
     ageYears: anthro.ageYears,
     heightCm: Number(anthro.heightCm),
     weightKg: Number(anthro.weightKg),
-    activityLevel: anthro.activityLevel,
     goal: anthro.goal,
+    ...(anthro.activityLevel !== null ? { activityLevel: anthro.activityLevel } : {}),
+    ...(anthro.stepsPerDay !== null ? { stepsPerDay: anthro.stepsPerDay } : {}),
+    ...(anthro.strengthMinutesPerWeek !== null
+      ? { strengthMinutesPerWeek: anthro.strengthMinutesPerWeek }
+      : {}),
+    ...(anthro.cardioMinutesPerWeek !== null
+      ? { cardioMinutesPerWeek: anthro.cardioMinutesPerWeek }
+      : {}),
     proteinGPerKg,
   });
 

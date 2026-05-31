@@ -38,7 +38,9 @@ export interface RunLlmJobArgs<S extends ZodTypeAny> {
  */
 export async function runLlmJob<S extends ZodTypeAny>(args: RunLlmJobArgs<S>): Promise<z.infer<S>> {
   const url = args.serviceUrl ?? baseUrl();
-  const timeoutSec = args.timeoutSec ?? 60;
+  // Default 270с: CLI-адаптер (LLM_MODE=cli) делает реальный вызов Claude из node-spawn (~100с
+  // на план недели; под нагрузкой больше). Server long-poll клампит до 280с.
+  const timeoutSec = args.timeoutSec ?? 270;
 
   // 1. Enqueue.
   const enqueueResp = await fetch(`${url}/jobs`, {

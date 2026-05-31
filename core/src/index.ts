@@ -45,6 +45,12 @@ export type {
 // Recipes (scr-search-recipes: генерация через llm-service + persist)
 export {
   searchRecipes,
+  listRecipes,
+  createRecipe,
+  updateRecipe,
+  deleteRecipe,
+  recipeCreateSchema,
+  recipeUpdateSchema,
   buildRecipeCreateInput,
   runLlmJob,
   searchRecipesInputSchema,
@@ -60,6 +66,8 @@ export type {
   SearchRecipesRequest,
   LlmRecipe,
   LlmRecipeIngredient,
+  RecipeCreate,
+  RecipeUpdate,
 } from './recipes/index.js';
 
 // Rules (scr-edit-rules: CRUD данных правил — tag_rules + nutrition_targets)
@@ -193,6 +201,7 @@ export type {
 // Agent (scr-telegram-agent: LLM-агент с tool-use через llm-service agent-reply)
 export {
   handleAgentMessage,
+  listAgentHistory,
   AGENT_TOOLS,
   toolList,
   agentReplyOutputSchema,

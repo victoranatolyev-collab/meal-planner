@@ -1,4 +1,4 @@
-import { ApiError, apiGet } from './client';
+import { ApiError, apiGet, apiPost } from './client';
 
 export interface PlanListItem {
   id: string;
@@ -14,7 +14,14 @@ export interface PlanItemDto {
   fromStock: boolean;
   tail: boolean;
   sortOrder: number;
-  recipe: { id: string; name: string; totalKcal: string | null } | null;
+  recipe: {
+    id: string;
+    name: string;
+    totalKcal: string | null;
+    totalProteinG: string | null;
+    totalFatG: string | null;
+    totalCarbsG: string | null;
+  } | null;
 }
 
 export interface PlanMealDto {
@@ -59,3 +66,26 @@ export async function fetchPlan(userId: string, weekIso: string): Promise<WeekPl
     throw err;
   }
 }
+
+export interface GeneratePlanResult {
+  weekPlanId: string;
+  weekIso: string;
+  days: number;
+  meals: number;
+  items: number;
+  substitutions: number;
+}
+
+/** POST /api/plans — сгенерировать/перегенерировать план недели (LLM-черновик + greedy resolve). */
+export const generatePlan = (
+  userId: string,
+  weekIso: string,
+  startDate: string,
+  dayCount?: number,
+) =>
+  apiPost<GeneratePlanResult>('/plans', {
+    userId,
+    weekIso,
+    startDate,
+    ...(dayCount ? { dayCount } : {}),
+  });

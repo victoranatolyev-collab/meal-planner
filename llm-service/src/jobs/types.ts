@@ -90,13 +90,13 @@ const calcPlanItemSchema = z.object({
 });
 const calcPlanMealSchema = z.object({
   name: z.string().min(1),
-  time: z.string().optional(),
+  time: z.string().nullish(), // LLM может вернуть null вместо отсутствия
   mealTags: z.array(z.string()).default([]),
   items: z.array(calcPlanItemSchema).min(1).max(10),
 });
 const calcPlanDaySchema = z.object({
   date: z.string(),
-  dayType: z.string().optional(),
+  dayType: z.string().nullish(), // LLM может вернуть null для дня без типа
   meals: z.array(calcPlanMealSchema).min(1).max(10),
 });
 

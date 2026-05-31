@@ -1,5 +1,5 @@
 // Barrel домена agent (scr-telegram-agent): мозг LLM-агента с tool-use.
-export { handleAgentMessage } from './service.js';
+export { handleAgentMessage, listAgentHistory } from './service.js';
 export type { HandleAgentMessageResult, AgentToolResult } from './service.js';
 export { AGENT_TOOLS, toolList } from './tools.js';
 export type { AgentTool } from './tools.js';

@@ -93,11 +93,13 @@ export async function handleJob(args: {
     const systemPrompt = systemPromptFor(kind);
     const userPrompt = `kind:${kind}\nINPUT: ${JSON.stringify(validInput)}`;
 
-    // 4. Call adapter.
+    // 4. Call adapter. Для agent-reply разрешаем мягкий фоллбэк: если модель ответила прозой,
+    // обернуть её как { reply: text } (обычный текст — валидный ответ чат-агента).
     const result = await adapter.generateStructured({
       systemPrompt,
       userPrompt,
       responseSchema: outputSchema,
+      ...(kind === 'agent-reply' ? { lenientTextField: 'reply' } : {}),
     });
 
     // 5. Update audit (COMPLETED).

@@ -4,7 +4,7 @@ import { AGENT_TOOLS, toolList } from './tools.js';
 describe('AGENT_TOOLS registry', () => {
   it('содержит ожидаемый набор scr-* инструментов', () => {
     expect(Object.keys(AGENT_TOOLS).sort()).toEqual(
-      ['calc_norms', 'correct_plan', 'get_stock', 'get_week_plan', 'write_diary'].sort(),
+      ['calc_norms', 'correct_plan', 'get_anthropometry', 'get_stock', 'get_week_plan', 'write_diary'].sort(),
     );
   });
 

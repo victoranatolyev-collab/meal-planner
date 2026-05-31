@@ -23,6 +23,8 @@ export const anthropometryCreateSchema = z.object({
   waistCm: z.number().positive().max(300).optional(),
   activityLevel: z.nativeEnum(ActivityLevel).optional(),
   stepsPerDay: z.number().int().nonnegative().max(100000).optional(),
+  strengthMinutesPerWeek: z.number().int().nonnegative().max(10080).optional(),
+  cardioMinutesPerWeek: z.number().int().nonnegative().max(10080).optional(),
   goal: z.nativeEnum(Goal).optional(),
   note: z.string().max(1000).optional(),
 });

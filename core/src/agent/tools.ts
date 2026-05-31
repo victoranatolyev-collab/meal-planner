@@ -4,6 +4,7 @@ import { calcStock } from '../stock/index.js';
 import { correctPlan } from '../correction/index.js';
 import { writeDiaryEntry } from '../diary/index.js';
 import { diaryEntryCreateSchema } from '../diary/schemas.js';
+import { listAnthropometry } from '../health/index.js';
 
 /**
  * Реестр инструментов агента (scr-telegram-agent). Каждый tool = существующий scr-* core-сервис.
@@ -26,6 +27,11 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
     name: 'calc_norms',
     description: 'Рассчитать целевые КБЖУ из последней антропометрии. input: {}',
     execute: (userId) => calcNormsForUser(userId),
+  },
+  get_anthropometry: {
+    name: 'get_anthropometry',
+    description: 'Показать антропометрию пользователя: пол, возраст, рост, вес, % жира, активность, цель. input: {}',
+    execute: async (userId) => (await listAnthropometry(userId, 1))[0] ?? null,
   },
   get_stock: {
     name: 'get_stock',

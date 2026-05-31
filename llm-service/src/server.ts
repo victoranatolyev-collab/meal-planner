@@ -73,7 +73,8 @@ export function createApp(): Hono {
   app.post('/jobs/:id/wait', async (c) => {
     const id = c.req.param('id');
     const timeoutSec = Number(c.req.query('timeout') ?? '60');
-    const deadline = Date.now() + Math.min(Math.max(timeoutSec, 1), 120) * 1000;
+    // Верхний кламп 280с: CLI-адаптер делает реальный вызов Claude (план недели ~50-90с).
+    const deadline = Date.now() + Math.min(Math.max(timeoutSec, 1), 280) * 1000;
 
     while (Date.now() < deadline) {
       const audit = await prisma.llmJob.findFirst({ where: { pgBossJobId: id } });

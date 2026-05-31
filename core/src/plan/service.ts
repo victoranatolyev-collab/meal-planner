@@ -1,8 +1,9 @@
 import pino from 'pino';
 import { prisma } from '../db.js';
 import { runLlmJob } from '../recipes/llm-client.js';
-import { calcPlanOutputSchema } from './schemas.js';
+import { calcPlanOutputSchema, type DraftPlan } from './schemas.js';
 import { resolveDraftToApproved, type ApprovedRecipe } from './resolve.js';
+import { composePlanGreedy } from './greedy.js';
 
 const logger = pino({ name: 'plan:generate' });
 
@@ -65,33 +66,37 @@ export async function generateWeekPlan(args: GenerateWeekPlanArgs): Promise<Gene
   const last = days.at(-1);
   const endDate = last ? last.date : args.startDate;
 
-  // 4. LLM-черновик.
-  const draft = await runLlmJob({
-    kind: 'calc-plan',
-    userId: args.userId,
-    responseSchema: calcPlanOutputSchema,
-    input: {
-      weekIso: args.weekIso,
-      startDate: args.startDate,
-      endDate,
-      targets: {
-        kcalPerDay: Number(target.kcalPerDay),
-        proteinGPerDay: Number(target.proteinGPerDay),
-        fatGPerDay: Number(target.fatGPerDay),
-        carbsGPerDay: Number(target.carbsGPerDay),
-      },
-      days,
-      recipes: recipes.map((r) => ({
-        id: r.id,
-        name: r.name,
-        kcal: Number(r.totalKcal ?? 0),
-        proteinG: Number(r.totalProteinG ?? 0),
-        fatG: Number(r.totalFatG ?? 0),
-        carbsG: Number(r.totalCarbsG ?? 0),
-        mealTags: r.tags.map((t) => t.tagName),
-      })),
-    },
-  });
+  // 4. Черновик плана. Движок:
+  //   PLAN_ENGINE=greedy (default) — детерминированный композер по КБЖУ (мгновенно, без LLM);
+  //   PLAN_ENGINE=llm             — черновик от llm-service (stub-фикстура или реальный Claude).
+  const targetsForPlan = {
+    kcalPerDay: Number(target.kcalPerDay),
+    proteinGPerDay: Number(target.proteinGPerDay),
+    fatGPerDay: Number(target.fatGPerDay),
+    carbsGPerDay: Number(target.carbsGPerDay),
+  };
+  const poolRecipes = recipes.map((r) => ({
+    id: r.id,
+    name: r.name,
+    kcal: Number(r.totalKcal ?? 0),
+    proteinG: Number(r.totalProteinG ?? 0),
+    fatG: Number(r.totalFatG ?? 0),
+    carbsG: Number(r.totalCarbsG ?? 0),
+    mealTags: r.tags.map((t) => t.tagName),
+  }));
+
+  const engine = process.env['PLAN_ENGINE'] ?? 'greedy';
+  let draft: DraftPlan;
+  if (engine === 'llm') {
+    draft = await runLlmJob({
+      kind: 'calc-plan',
+      userId: args.userId,
+      responseSchema: calcPlanOutputSchema,
+      input: { weekIso: args.weekIso, startDate: args.startDate, endDate, targets: targetsForPlan, days, recipes: poolRecipes },
+    });
+  } else {
+    draft = composePlanGreedy(targetsForPlan, days, poolRecipes);
+  }
 
   // 5. Greedy resolve неизвестных recipeId.
   const resolved = resolveDraftToApproved(draft.days, pool);

@@ -1,215 +1,146 @@
-# 🍽 Meal Planner
+# 🍽 Meal Planner — Rework (Next.js + Vite + Postgres)
 
-Самодостаточное приложение для еженедельного планирования питания с:
-- генерацией markdown/CSV/HTML отчётов
-- проверкой правил (КБЖУ, бюджет, железо при анемии, C1-исключение для сладких завтраков)
-- интерактивным CLI создания и редактирования
-- сверкой фактического заказа с планом
+Персональный подбор питания: план недели, дневник, остатки, заказы, правила КБЖУ и
+LLM-агент (web-чат + Telegram) с доступом ко всем функциям.
 
-## 📁 Структура
+> Ветка `rework/nextjs-postgres` — полный рерайт. Старое Python/CLI-приложение — в ветке `main`.
+> Контракт системы — `docs/ARCHITECTURE.md`; дорожная карта — `docs/ROADMAP.json`.
 
-```
-app/
-├── README.md                # этот файл
-├── CLAUDE.md                # инструкции для Claude-агента
-├── requirements.txt         # Python зависимости (pip)
-├── pyproject.toml           # установка как пакет
-├── setup.sh                 # автосетап
-├── Makefile                 # удобные команды
-│
-├── meal_planner/            # 🐍 Python пакет (источник кода)
-│   ├── schema.py            # Pydantic-модели
-│   ├── catalog.py           # загрузчик ингредиентов
-│   ├── resolver.py          # резолв план → ResolvedWeek
-│   ├── render_md.py         # markdown-рендер
-│   ├── shopping.py          # генератор shopping list
-│   ├── validate.py          # rule-based валидатор
-│   ├── report.py            # rich-сводка
-│   ├── order_match.py       # diff факт-заказа vs план
-│   ├── html_viewer.py       # самодостаточный HTML
-│   ├── create.py            # интерактивное создание
-│   ├── edit.py              # интерактивный редактор
-│   ├── config.py            # пути (env-overrideable)
-│   └── __main__.py          # CLI entry point
-│
-├── data/                    # 📚 Источники данных
-│   ├── ingredients_spb.json     # 5794 PLU Пятёрочки СПб
-│   ├── dishes_library.json      # шаблоны блюд (Main A/B/C, шаурма, ...)
-│   ├── custom_ingredients.json  # Цех 85, ЛЛ, дом, Маркетплейс
-│   ├── user_profile.json        # профиль пользователя
-│   ├── nutrition_norms.json     # нормы и правила
-│   └── menu_rules.md            # текстовые правила
-│
-├── plans/                   # 📅 Источники правды (один JSON на неделю)
-│   └── week_2026-W21.json
-│
-├── output/                  # 📤 Генерируемые артефакты (gitignored)
-│   ├── weekly_plan.md
-│   ├── weekly_plan.html
-│   ├── shopping_list.csv
-│   └── validation_report.md
-│
-├── tests/                   # 🧪 pytest сьют (37 тестов)
-│
-└── .claude/
-    └── skills/
-        └── meal-planner/
-            ├── SKILL.md
-            └── prompts/
-                ├── create-new-week.md
-                ├── update-from-order.md
-                └── validate-current.md
-```
+---
 
-## 🚀 Установка на новой машине
+## Стек
 
-Требования: **Python 3.10+**, **macOS / Linux** (Windows тоже должен работать но не тестировался).
+| Слой | Технология |
+|---|---|
+| Backend | Next.js (App Router) — REST API |
+| Frontend | React + Vite + TypeScript + Tailwind v4 (Untitled UI) — SPA |
+| Shared core | `core/` — Prisma + бизнес-логика (переиспользуется backend/worker/llm-service) |
+| DB | PostgreSQL 16 + Prisma |
+| LLM | микросервис `llm-service` (pg-boss + adapter); **stub** по умолчанию, реальный Anthropic — opt-in |
+| Telegram | grammY (webhook в проде / polling в dev) |
+
+Monorepo (npm workspaces): `core` · `backend` · `frontend` · `worker` · `llm-service`.
+
+---
+
+## 🚀 Быстрый старт (локально)
 
 ```bash
-# 1. Клонировать или скопировать папку app/
-cd app/
+export DATABASE_URL="postgresql://meal:meal@localhost:5432/meal_planner"
 
-# 2. Запустить setup (создаст .venv, установит deps, прогонит тесты)
-./setup.sh
+# 1. Postgres
+docker compose up -d postgres
+
+# 2. Миграции + демо-данные (демо-пользователь, ингредиенты, рецепты, остатки, дневник)
+npm run core:prisma:migrate:deploy
+npm run seed --workspace core
+
+# 3. LLM-сервис (stub: фикстуры вместо реального Claude)
+LLM_MODE=stub npm run llm:start          # → :3001
+
+# 4. Backend (REST API)
+npm run build --workspace backend && npm run start --workspace backend   # → :3000
+#   или для разработки: npm run backend:dev
+
+# 5. Frontend (SPA)
+npm run dev --workspace frontend         # → http://localhost:5173
+
+# 6. (опционально) План недели — генерируется отдельно (нужен llm-service):
+curl -X POST localhost:3000/api/plans -H 'content-type: application/json' \
+  -d '{"userId":"<id>","weekIso":"2026-W22","startDate":"2026-05-25"}'
 ```
 
-Или вручную:
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[test]"
-pytest tests/ -q
-```
+Открой **http://localhost:5173**. «Текущий» пользователь — самый ранний в БД (auth отложена);
+сид создаёт `demo@meal.local` с backdated датой, поэтому он выбирается автоматически.
 
-## 🛠 Использование
-
-После `source .venv/bin/activate`:
-
-```bash
-# Полный пайплайн (md + csv + html + validate + report):
-python -m meal_planner all plans/week_2026-W21.json
-# Или через Makefile:
-make all PLAN=plans/week_2026-W21.json
-
-# Отдельные команды:
-python -m meal_planner render plans/week_2026-W21.json
-python -m meal_planner shopping plans/week_2026-W21.json
-python -m meal_planner validate plans/week_2026-W21.json
-python -m meal_planner report plans/week_2026-W21.json
-python -m meal_planner html plans/week_2026-W21.json
-python -m meal_planner order-match plans/week_2026-W21.json
-
-# Интерактивно создать новый план:
-python -m meal_planner create --week-id 2026-W22
-
-# Интерактивно править существующий:
-python -m meal_planner edit plans/week_2026-W21.json
-```
-
-Короткие алиасы после установки: `mp ...` или `meal-planner ...`
-
-## 📐 Концепты
-
-### Источник правды: один JSON-файл
-
-`plans/week_*.json` хранит ВСЁ для одной недели: цели КБЖУ, бюджет, домашние запасы, расписание приёмов, фактические заказы.
-
-Из него генерируется markdown / CSV / HTML.
-
-### Ссылки на ингредиенты
-
-В рецептах используются `ref` строки:
-- `"plu:3191298"` → товар из `data/ingredients_spb.json` (Пятёрочка СПб)
-- `"local:mw_mini"` → товар из `data/custom_ingredients.json`
-
-Резолвер вычисляет имя, КБЖУ, цену через эти каталоги.
-
-### Блюда (`data/dishes_library.json`)
-
-Шаблоны рецептов: `main_a`, `main_b`, `main_c`, `spring_shawarma`, `shawarma_bowl_sat`, и т.д.
-
-Каждое блюдо — массив ингредиентов с `qty_g` и метаданными (`fresh_addon`, `note`).
-
-В плане недели ссылаешься через `dish_id` + опционально `portion: 1.5` (множитель).
-
-### Теги для правил
-
-На приёмы (meals) ставятся теги, которые валидатор использует:
-- `pre_workout`, `post_workout` — тренировочные приёмы
-- `iron_meal`, `no_dairy` — Вс приёмы с печенью
-- `iron_window_start`, `iron_window_end` — маркеры окна без кофе
-- `sweet_breakfast` — для C1-правила
-- `c1_exclusion` — намеренное нарушение C1
-- `frozen_thaw` — нужна разморозка
-
-### Каталог Пятёрочки
-
-`data/ingredients_spb.json` = 5794 PLU из магазина СПб 5590 (выгрузка от 14 мая 2026). Имя, KBJU, цена, вес упаковки, штрих-категории.
-
-Если нужного товара нет — добавь в `data/custom_ingredients.json`.
-
-## 🧪 Тесты
+### Telegram-бот (опционально)
 
 ```bash
-make test
-# или: pytest tests/ -v
+# webhook нужен публичный HTTPS; для локали проще polling:
+TELEGRAM_BOT_TOKEN=... npx tsx backend/scripts/telegram-polling.ts
 ```
 
-37 тестов покрывают:
-- Pydantic-валидацию схем
-- Catalog (PLU/local resolve, KBJU, поиск)
-- Resolver (день КБЖУ, cumulative)
-- Shopping aggregation
-- Валидатор (iron rule, протеин, курица 4 дня)
-- Order matcher
+В регионах, где `api.telegram.org` заблокирован, бот ходит через прокси из `HTTPS_PROXY`
+(node-fetch `agent`). Токен — в `@BotFather`; после демо не забудь `/revoke`.
 
-## ⚙ Конфигурация путей
+---
 
-По умолчанию пути относительно `app/` (там где `meal_planner/`).
+## ✨ Фичи (краткая инструкция)
 
-Можно переопределить через env:
+Верхняя навигация ведёт по всем разделам. Все страницы работают с REST API (`/api/*`).
+
+### 🗓 План недели — `/plan`
+Генерация и просмотр плана питания на неделю.
+- Укажи **неделю (ISO)** и **дату старта** (понедельник) → «Сгенерировать». Повторный запуск
+  пересоздаёт план.
+- Селектор недели переключает сохранённые планы; карточки дней показывают приёмы, время,
+  теги и рецепты с коэффициентом порции.
+- API: `POST /api/plans` (генерация), `GET /api/plans?userId[&weekIso]` (список/план).
+- Внутри: LLM-черновик (`llm-service` `calc-plan`) → greedy-resolve в пул одобренных рецептов.
+
+### 📓 Дневник — `/diary`
+Учёт съеденного и суммарные КБЖУ.
+- Заполни «Что съели» (+ опц. приём, порции, КБЖУ) → «Записать». Если задан рецепт, КБЖУ
+  считаются из него × порции; для ad-hoc — вводятся вручную.
+- Журнал показывает записи и сумму КБЖУ.
+- API: `POST /api/diary`, `GET /api/diary?userId`.
+
+### 📦 Остатки — `/stock`
+Проекция остатков продуктов: `запас + закупки − съедено (по дневнику)`.
+- Таблица по ингредиентам; отрицательный прогноз (дефицит) подсвечен красным ⚠.
+- API: `GET /api/stock?userId` (+ `/api/ingredients` для имён).
+
+### 🛒 Корзина и заказы — `/cart`
+Сборка корзины из плана и оформление заказа.
+- Укажи неделю → «Собрать корзину»: позиции группируются по магазинам с оценкой цены.
+- «Оформить заказ» → заказы по магазинам, корзина закрывается; ниже — история заказов.
+- API: `POST /api/cart/assemble`, `GET /api/cart?userId`, `POST /api/orders`, `GET /api/orders`.
+
+### ⚖️ Правила питания — `/rules`
+Целевые КБЖУ, недельный бюджет и тег-правила.
+- Форма целей (ккал/Б/Ж/У, бюджет) → «Сохранить».
+- Тег-правила: запрет тега, мин/макс приёмов в неделю, обязательный тег в приёме.
+- API: `GET/PUT /api/nutrition-targets`, `GET/POST/PATCH/DELETE /api/tag-rules`.
+
+### 🤖 Чат с агентом — `/agent`
+LLM-агент с tool-use поверх всех `scr-*` сервисов (та же логика, что и в Telegram).
+- Пиши на естественном языке; агент выбирает инструмент (`get_week_plan`, `get_stock`,
+  `calc_norms`, `correct_plan`, `write_diary`), выполняет его и отвечает. Чипы показывают,
+  какой инструмент сработал. История диалога восстанавливается при загрузке.
+- API: `POST /api/agent/message`, `GET /api/agent/history?userId`.
+- ⚠️ По умолчанию LLM — **stub** (фикстуры): ответ канонический, инструмент `get_stock`.
+  Реальный Claude — `LLM_MODE=api` + `ANTHROPIC_API_KEY` (backlog).
+
+---
+
+## 🧪 Тесты и проверки
+
 ```bash
-export MEAL_PLANNER_ROOT=/path/to/my/data
-python -m meal_planner report plans/week_2026-W21.json
+npm run core:test                 # unit (core, vitest) — 126 тестов
+npm run test --workspace frontend # frontend (vitest + jsdom + testing-library)
+npm run core:typecheck && npm run backend:typecheck && npm run typecheck --workspace frontend
+npm run core:lint && npm run backend:lint && npm run lint --workspace frontend
+npm run build --workspace frontend && npm run build --workspace backend
 ```
 
-Это удобно если данные/планы хранятся отдельно от кода.
+---
 
-Проверить разрешённые пути:
-```bash
-make debug-paths
-```
+## 📌 Что на заглушках (нужны ключи/доступы — backlog)
 
-## 🔄 Воркфлоу
+- **LLM**: реальный Anthropic-адаптер (сейчас `StubAdapter`). Переключение — `LLM_MODE=api`.
+- **Telegram**: реальный бот по `TELEGRAM_BOT_TOKEN` + `setWebhook` (в dev — polling).
+- **Apple Reminders (CalDAV)**: нужны `APPLE_*` креды.
+- **Парсеры магазинов**: stub-импортеры (реальные API источников — позже).
 
-### Создание новой недели
-1. `cp plans/week_2026-W21.json plans/week_2026-W22.json`
-2. Открыть редактором, обновить `week_id`, даты, `stock_at_home`, расписание
-3. `make all PLAN=plans/week_2026-W22.json`
-4. Открыть `output/weekly_plan.html` в браузере
+Демо-данные создаются `npm run seed --workspace core` (идемпотентно).
 
-### После доставки заказа
-1. Открыть приложение 5ka.ru → заказ → переписать товары/веса/цены
-2. Добавить в `actual_orders[]` в `plans/week_*.json`
-3. `make order-match PLAN=plans/week_*.json`
-4. Решить как использовать запасы/убрать недостающие позиции
+---
 
-## 📖 Дополнительно
+## 📚 Документация
 
-- **`CLAUDE.md`** — инструкции для AI-агента, который работает с этим репо
-- **`.claude/skills/meal-planner/`** — Claude Code скилл с готовыми воркфлоу
-- **`data/menu_rules.md`** — все текстовые правила питания
-- **`data/user_profile.json`** — антропометрия и личные ограничения
+- `docs/ARCHITECTURE.md` — контракт системы
+- `docs/ROADMAP.json` — фичи и статусы (37/37 done)
+- `docs/PLAN.md` · `docs/HISTORY.md` · `docs/PROGRESS.md` — план/история
+- `AGENTS.md` — паттерны и gotchas для разработки
 
-## 🚧 Roadmap
-
-- [ ] Парсинг скриншотов заказа Пятёрочки (через OCR/Vision) → автозаполнение `actual_orders[]`
-- [ ] Stock tracker (учёт остатков после каждой недели → `stock_at_home` авто)
-- [ ] Diff между неделями (что изменилось)
-- [ ] История цен (тренды)
-- [ ] Substitution engine (если перец нет → жёлтый)
-- [ ] Iron intake tracker (накопительное железо)
-
-## 📝 Лицензия
-
-MIT
+> Legacy Python/CLI-приложение (markdown/CSV/HTML отчёты, интерактивный CLI) — в ветке `main`.

@@ -15,14 +15,14 @@ export const draftItemSchema = z.object({
 
 export const draftMealSchema = z.object({
   name: z.string().min(1),
-  time: z.string().optional(),
+  time: z.string().nullish(), // LLM может вернуть null вместо отсутствия
   mealTags: z.array(z.string()).default([]),
   items: z.array(draftItemSchema).min(1).max(10),
 });
 
 export const draftDaySchema = z.object({
   date: z.string(),
-  dayType: z.string().optional(),
+  dayType: z.string().nullish(), // LLM может вернуть null для дня без типа
   meals: z.array(draftMealSchema).min(1).max(10),
 });
 

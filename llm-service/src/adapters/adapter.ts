@@ -21,6 +21,13 @@ export interface GenerateArgs<T> {
   responseSchema: ZodSchema<T>;
   maxRetries?: number;
   enablePromptCache?: boolean;
+  /**
+   * Имя текстового поля схемы для «мягкого» фоллбэка: если модель вернула прозу вместо JSON,
+   * адаптер оборачивает весь текст как `{ [lenientTextField]: text }` и валидирует схемой
+   * (остальные поля закрываются дефолтами). Для разговорных kind'ов (agent-reply → 'reply'),
+   * где обычная проза — валидный ответ. Сериализуемо (строка) — задаётся в handler по kind.
+   */
+  lenientTextField?: string;
 }
 
 /**

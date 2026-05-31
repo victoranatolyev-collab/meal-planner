@@ -1,5 +1,18 @@
-import { Bot } from 'grammy';
+import { Bot, type BotConfig, type Context } from 'grammy';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { handleAgentMessage, linkTelegramAccount, resolveUserIdByChatId } from 'core';
+
+/**
+ * grammY (node-fetch) клиент-конфиг с прокси, если задан HTTPS_PROXY/HTTP_PROXY.
+ * Нужно в регионах, где api.telegram.org заблокирован напрямую (доступ через локальный прокси,
+ * напр. Clash на :7897). node-fetch принимает прокси через опцию `agent`.
+ */
+export function botClientConfig(): BotConfig<Context> | undefined {
+  const proxy = process.env['HTTPS_PROXY'] ?? process.env['HTTP_PROXY'];
+  if (!proxy) return undefined;
+  const agent = new HttpsProxyAgent(proxy);
+  return { client: { baseFetchConfig: { agent } as never } };
+}
 
 /**
  * grammY-бот (scr-telegram-agent, ARCHITECTURE §9). Транспорт поверх transport-agnostic
@@ -33,19 +46,13 @@ export function isRealBot(): boolean {
   return Boolean(process.env['TELEGRAM_BOT_TOKEN']);
 }
 
-/** Ленивая инициализация бота-синглтона с зарегистрированными хендлерами. */
-export function getBot(): Bot {
-  if (botSingleton) return botSingleton;
-
-  const realToken = process.env['TELEGRAM_BOT_TOKEN'];
-  const bot = new Bot(realToken ?? '0:OFFLINE_STUB_TOKEN', { botInfo: STUB_BOT_INFO });
-
-  if (!realToken) {
-    // Stub: проглатываем исходящие API-вызовы (результат не используется).
-    bot.api.config.use(async () => ({ ok: true, result: undefined as never }));
-  }
-
-  // /start <token> — привязка чата к пользователю (одноразовый токен).
+/**
+ * Регистрирует хендлеры агента на боте. Общий код для webhook (getBot) и polling-раннера
+ * (scripts/telegram-polling.ts) — оба используют одну логику.
+ *  - `/start <token>` — привязка чата к пользователю (одноразовый токен).
+ *  - `message:text` — авторизация по chatId → handleAgentMessage → ответ.
+ */
+export function registerAgentHandlers(bot: Bot): void {
   bot.command('start', async (ctx) => {
     const chatId = ctx.chatId;
     if (chatId === undefined) return;
@@ -67,7 +74,6 @@ export function getBot(): Bot {
     );
   });
 
-  // Обычное текстовое сообщение → агент.
   bot.on('message:text', async (ctx) => {
     const chatId = ctx.chatId;
     if (chatId === undefined) return;
@@ -79,7 +85,24 @@ export function getBot(): Bot {
     const result = await handleAgentMessage({ userId, message: ctx.message.text });
     await ctx.reply(result.reply);
   });
+}
 
+/** Ленивая инициализация бота-синглтона (webhook-режим) с зарегистрированными хендлерами. */
+export function getBot(): Bot {
+  if (botSingleton) return botSingleton;
+
+  const realToken = process.env['TELEGRAM_BOT_TOKEN'];
+  const bot = new Bot(realToken ?? '0:OFFLINE_STUB_TOKEN', {
+    botInfo: STUB_BOT_INFO,
+    ...botClientConfig(),
+  });
+
+  if (!realToken) {
+    // Stub: проглатываем исходящие API-вызовы (результат не используется).
+    bot.api.config.use(async () => ({ ok: true, result: undefined as never }));
+  }
+
+  registerAgentHandlers(bot);
   botSingleton = bot;
   return bot;
 }

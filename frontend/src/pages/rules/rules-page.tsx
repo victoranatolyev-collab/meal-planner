@@ -9,7 +9,7 @@ export default function RulesPage() {
   const { userId, hasUser, isLoading, error } = useCurrentUser();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-8 p-6">
+    <main className="mx-auto flex max-w-3xl flex-col gap-8 p-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-display-xs font-semibold text-primary">Правила питания</h1>
         <p className="text-sm text-tertiary">Целевые КБЖУ и бюджет на неделю.</p>

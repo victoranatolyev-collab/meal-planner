@@ -3,6 +3,7 @@ import { prisma } from '../db.js';
 import { runLlmJob } from '../recipes/llm-client.js';
 import { AGENT_TOOLS, toolList } from './tools.js';
 import { agentReplyOutputSchema } from './schemas.js';
+import { summarizeToolResult } from './format.js';
 
 const logger = pino({ name: 'agent-service' });
 
@@ -76,6 +77,14 @@ export async function handleAgentMessage(args: {
     }
   }
 
+  // 3b. Финальный ответ = вступление LLM + детерминированная сводка данных из инструментов.
+  // Так пользователь видит КОНКРЕТНЫЕ числа, а не только «сейчас рассчитаю…» (нет второго LLM-вызова).
+  const summaries = toolResults
+    .filter((tr) => tr.ok)
+    .map((tr) => summarizeToolResult(tr.tool, tr.result))
+    .filter((s): s is string => Boolean(s));
+  const reply = summaries.length > 0 ? `${out.reply}\n\n${summaries.join('\n')}` : out.reply;
+
   // 4. Append-only снимок диалога (USER-вопрос + ASSISTANT-ответ).
   const actionTaken = out.toolCalls.map((t) => t.tool).join(',') || null;
   const success = toolResults.length === 0 ? null : toolResults.every((r) => r.ok);
@@ -85,7 +94,7 @@ export async function handleAgentMessage(args: {
       {
         userId: args.userId,
         role: 'ASSISTANT',
-        message: out.reply,
+        message: reply,
         intent: out.intent ?? null,
         actionTaken,
         success,
@@ -97,5 +106,25 @@ export async function handleAgentMessage(args: {
     { userId: args.userId, intent: out.intent, tools: actionTaken },
     'agent message handled',
   );
-  return { reply: out.reply, intent: out.intent ?? null, toolResults };
+  return { reply, intent: out.intent ?? null, toolResults };
+}
+
+/** Последние реплики диалога (chronological) — для восстановления чата в UI. */
+export async function listAgentHistory(userId: string, limit = 50) {
+  const rows = await prisma.agentConversation.findMany({
+    where: { userId },
+    // role desc как tiebreaker: при равном createdAt (USER+ASSISTANT в одном createMany)
+    // USER идёт раньше ASSISTANT после reverse.
+    orderBy: [{ createdAt: 'desc' }, { role: 'desc' }],
+    take: limit,
+    select: {
+      id: true,
+      role: true,
+      message: true,
+      intent: true,
+      actionTaken: true,
+      createdAt: true,
+    },
+  });
+  return rows.reverse();
 }

@@ -536,6 +536,8 @@ model Anthropometry {
   waistCm        Decimal?       @map("waist_cm") @db.Decimal(5, 1)
   activityLevel  ActivityLevel? @map("activity_level")
   stepsPerDay    Int?           @map("steps_per_day")
+  strengthMinutesPerWeek Int?   @map("strength_minutes_per_week")
+  cardioMinutesPerWeek   Int?   @map("cardio_minutes_per_week")
   goal           Goal?
   note           String?
   createdAt      DateTime       @default(now()) @map("created_at")

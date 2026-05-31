@@ -19,9 +19,11 @@ export async function startQueue(): Promise<PgBoss> {
   const boss = new PgBoss({
     connectionString,
     // Retention: дефолт 7 дней completed jobs, 30 дней archived. Не меняем сейчас.
-    retryLimit: 2, // ретраи job-уровня (поверх per-adapter retries)
-    retryDelay: 5,
-    retryBackoff: true,
+    // retryLimit=0: ретраи LLM-job'ов вредны — дорого, а при таймауте повтор просто
+    // воспроизведёт то же зависание. Ретраи живут per-adapter (см. adapters/*).
+    // Это дефолт для всех очередей: они создаются без своего retry_limit, а pg-boss
+    // при постановке job делает COALESCE(send, queue, default, 2) → берёт этот 0.
+    retryLimit: 0,
   });
   boss.on('error', (err) => logger.error({ err }, 'pg-boss error'));
   await boss.start();

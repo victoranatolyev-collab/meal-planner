@@ -22,6 +22,20 @@
 
 ---
 
+## 2026-05-31 — Fix: идемпотентность audit-записи LLM-job + отключение pg-boss ретраев
+- **Сделано:** (1) `llm-service/src/jobs/queue.ts` — `retryLimit: 2` → `0` в конструкторе PgBoss (убраны бессмысленные при 0 ретраях `retryDelay`/`retryBackoff`). (2) `llm-service/src/jobs/handler.ts` — `prisma.llmJob.create()` → `upsert()` по уникальному `pgBossJobId`: ветка `update` сбрасывает строку в `RUNNING` и чистит результаты прошлой попытки (output/error/токены/cost/duration/completedAt).
+- **Столкнулся:** при падении job'а (напр. таймаут claude-cli) pg-boss ретраил его, `handleJob` повторно звал `create()` с тем же `pgBossJobId` → `Unique constraint failed (pg_boss_job_id)`, спам в логе, ретрай не писал audit.
+- **Решение:** ретраи LLM-job'ов вредны (дорого; при таймауте повтор воспроизводит то же зависание) → `retryLimit=0`. Это глобальный дефолт: очереди создаются без своего `retry_limit` (createQueue = `ON CONFLICT DO NOTHING`), а pg-boss при постановке job делает `COALESCE(send, queue, default, 2)` → берёт 0. Миграция не нужна: `@unique` на `pg_boss_job_id` уже есть в schema.prisma. Дополнительно `upsert` для надёжности — закрывает прочие пути повторной активации (ручной replay, реактивация после краша воркера, истечение expireInSeconds).
+- **Файлы:** llm-service/src/jobs/queue.ts, llm-service/src/jobs/handler.ts
+- **Проверка:** `llm-service typecheck` ✅.
+
+## 2026-05-31 — Planner: greedy-движок по умолчанию + CLI-адаптер Claude (LLM_MODE=cli)
+- **Сделано:** (1) `core/src/plan/greedy.ts` — детерминированный композер плана по КБЖУ (3 приёма/день, portionFactor под долю дневной калорийности, ротация рецептов, белок на тренировочный обед); подключён в `generateWeekPlan` как движок по умолчанию (`PLAN_ENGINE=greedy`; `=llm` → старый путь через llm-service). (2) `llm-service/src/adapters/cli.ts` — `ClaudeCliAdapter`: `claude -p --output-format json --strict-mcp-config` в `cwd=tmpdir()`, без API-ключа (OAuth локального CLI). (3) `llm-service/src/jobs/prompts.ts` — осмысленные per-kind системные промпты вместо заглушечного `kind:<kind>` (первая строка userPrompt сохранена для StubAdapter.pickFixture).
+- **Столкнулся:** реальный план через stub не считался (фикстура игнорит цели); claude CLI, запущенный из сервиса при активной родительской Claude-сессии, висит >180с (standalone-пробник ~53с) → клиентский таймаут. pg-boss ретраит упавший job → unique-constraint на `pg_boss_job_id` в audit-create (спам в лог).
+- **Решение:** greedy сделан движком по умолчанию (мгновенный, детерминированный, точно держит дневной ккал ≈ цель) — реальная основа планировщика; CLI/LLM оставлен опцией через `PLAN_ENGINE=llm`. Греди заодно чинит прежний баг дат (stub лепил даты фикстуры вместо startDate). Таймауты ожидания подняты 60→180с (client) / 120→280с (server long-poll).
+- **Файлы:** core/src/plan/greedy.ts, core/src/plan/service.ts, core/src/recipes/llm-client.ts, llm-service/src/adapters/cli.ts, llm-service/src/jobs/prompts.ts, llm-service/src/jobs/handler.ts, llm-service/src/server.ts
+- **Проверка:** `core:typecheck` ✅, `llm-service typecheck` ✅; реальный прогон: POST /api/plans (greedy) 201 за 0.12с, 7 дней ≈2200 ккал/день (цель 2200), корзина 13 позиций ~2515 ₽.
+
 ## 2026-05-31 — Fix: рассинхрон валидации diary recipeId vs формат id рецептов
 
 - **Сделано:** ослабил `recipeId` в `diaryEntryCreateSchema` (`core/src/diary/schemas.ts`) с `z.string().uuid()` до `z.string().min(1)`.

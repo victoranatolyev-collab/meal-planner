@@ -4,7 +4,9 @@ import { prisma } from 'core/db';
 import { Prisma } from '@prisma/client';
 import type { LLMAdapter } from '../adapters/adapter.js';
 import { StubAdapter } from '../adapters/stub.js';
+import { ClaudeCliAdapter } from '../adapters/cli.js';
 import { KIND_SCHEMAS, type JobKind } from './types.js';
+import { systemPromptFor } from './prompts.js';
 
 const logger = pino({ name: 'handler' });
 
@@ -17,7 +19,7 @@ export function createAdapter(): LLMAdapter {
     case 'stub':
       return new StubAdapter();
     case 'cli':
-      throw new Error('LLM_MODE=cli not implemented in this iteration');
+      return new ClaudeCliAdapter();
     case 'api':
       throw new Error('LLM_MODE=api not implemented in this iteration');
     default:
@@ -41,10 +43,16 @@ export async function handleJob(args: {
   const schemas = KIND_SCHEMAS[kind];
   if (!schemas) throw new Error(`Unknown kind: ${kind}`);
 
-  // 1. Создаём audit-запись (RUNNING).
+  // 1. Создаём/обновляем audit-запись (RUNNING).
+  // upsert по уникальному pgBossJobId — идемпотентно: если job был повторно активирован
+  // (ручной replay, реактивация после краша воркера, истечение expireInSeconds), мы
+  // переиспользуем ту же строку вместо падения на Unique constraint и сбрасываем её в
+  // RUNNING как новую попытку. retryLimit=0 (см. queue.ts) убирает штатные pg-boss ретраи,
+  // upsert закрывает остальные пути повторного запуска.
   const adapter = createAdapter();
-  const audit = await prisma.llmJob.create({
-    data: {
+  const audit = await prisma.llmJob.upsert({
+    where: { pgBossJobId },
+    create: {
       pgBossJobId,
       jobKind: kind,
       userId,
@@ -52,6 +60,24 @@ export async function handleJob(args: {
       model: adapter.defaultModel,
       status: 'RUNNING',
       input: data as Prisma.InputJsonValue,
+    },
+    update: {
+      jobKind: kind,
+      userId,
+      provider: adapter.provider,
+      model: adapter.defaultModel,
+      status: 'RUNNING',
+      input: data as Prisma.InputJsonValue,
+      // Сбрасываем результаты предыдущей попытки.
+      output: Prisma.DbNull,
+      error: null,
+      inputTokens: null,
+      outputTokens: null,
+      cacheReadTokens: null,
+      cacheWriteTokens: null,
+      costUsd: null,
+      durationMs: null,
+      completedAt: null,
     },
   });
 
@@ -62,8 +88,9 @@ export async function handleJob(args: {
     const outputSchema = schemas.output as ZodTypeAny;
     const validInput = inputSchema.parse(data);
 
-    // 3. Compose prompts (минимальный variant — в проде это будет per-kind prompt module).
-    const systemPrompt = `kind:${kind}`;
+    // 3. Compose prompts. systemPrompt — доменная инструкция per-kind (для CLI/API адаптеров).
+    // Первая строка userPrompt остаётся `kind:<kind>` ради StubAdapter.pickFixture().
+    const systemPrompt = systemPromptFor(kind);
     const userPrompt = `kind:${kind}\nINPUT: ${JSON.stringify(validInput)}`;
 
     // 4. Call adapter.

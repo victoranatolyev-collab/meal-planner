@@ -22,6 +22,16 @@
 
 ---
 
+## 2026-05-31 — Fix: рассинхрон валидации diary recipeId vs формат id рецептов
+
+- **Сделано:** ослабил `recipeId` в `diaryEntryCreateSchema` (`core/src/diary/schemas.ts`) с `z.string().uuid()` до `z.string().min(1)`.
+- **Столкнулся:** `Recipe.id` в Prisma — обычная `String` (`@default(uuid())`), но сид кладёт демо-рецепты с id вида `dec0re01-…` (буква `r` не hex → не валидный UUID). POST `/api/diary` с таким recipeId падал на 400 `invalid_body`, хотя записи живут в БД (сид кладёт напрямую). LLM-рецепты с валидным UUID работали — демо-флоу был сломан.
+- **Решение:** не навязывать формат UUID — согласовано с `plan/schemas.ts` (`recipeId: z.string()`); `cart`/`correction` recipeId на уровне схемы вообще не валидируют. Существование рецепта уже проверяет сервис-слой `writeDiaryEntry` (`findUnique` → throw). Варианты «привести сид к UUID» / «проверка существования в схеме» отклонены: первый оставил бы схему строже остального кода и сломался бы на любом не-UUID id, второй дублировал бы сервисную проверку.
+- **Проверка:** `core:test` 128 unit (macros.test.ts 6→8: +демо-id не-UUID → ok, +пустой recipeId → fail), `core:typecheck` ✅.
+- **Файлы:** core/src/diary/schemas.ts, core/src/diary/macros.test.ts
+
+---
+
 ## 2026-05-29 — ✅ Phase 6 ЗАКРЫТА: scr-telegram-agent — grammY webhook + linking (подзадача 2/2). **37/37 → RALPH_DONE**
 
 - **Сделано:** Telegram-транспорт поверх «мозга» из подзадачи 1 — **последняя фича проекта**.

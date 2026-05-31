@@ -31,6 +31,20 @@ describe('diaryEntryCreateSchema', () => {
     expect(p.portionFactor).toBe(1);
   });
 
+  it('демо-recipeId (не-UUID, как в сиде) → ok', () => {
+    // Сид кладёт рецепты с id `dec0re01-…` (буква `r` не hex → не валидный UUID).
+    // Схема не должна навязывать UUID — согласовано с plan/schemas.ts.
+    const r = diaryEntryCreateSchema.safeParse({
+      userId: UID,
+      recipeId: 'dec0re01-0000-0000-0000-000000000001',
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it('пустой recipeId → fail (min(1))', () => {
+    expect(diaryEntryCreateSchema.safeParse({ userId: UID, recipeId: '' }).success).toBe(false);
+  });
+
   it('customName (ad-hoc) → ok', () => {
     expect(diaryEntryCreateSchema.safeParse({ userId: UID, customName: 'Snickers' }).success).toBe(true);
   });

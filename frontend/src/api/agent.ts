@@ -14,8 +14,8 @@ export interface AgentResponse {
 }
 
 /** POST /api/agent/message — отправить сообщение LLM-агенту, получить ответ + результаты tool-calls. */
-export const postAgentMessage = (userId: string, message: string) =>
-  apiPost<AgentResponse>('/agent/message', { userId, message });
+export const postAgentMessage = (userId: string, message: string, signal?: AbortSignal) =>
+  apiPost<AgentResponse>('/agent/message', { userId, message }, signal);
 
 export interface AgentHistoryMessage {
   id: string;

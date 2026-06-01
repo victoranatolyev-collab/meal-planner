@@ -49,18 +49,40 @@ export default function AgentPage() {
     setMessages((m) => [...m, { role: 'user', text: msg }]);
     setText('');
     setPending(true);
+    // LLM-агент через CLI отвечает ~10с (дольше под нагрузкой). Таймаут, чтобы не висеть вечно.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 180_000);
     try {
-      const res = await postAgentMessage(userId, msg);
+      const res = await postAgentMessage(userId, msg, controller.signal);
       setMessages((m) => [
         ...m,
         { role: 'assistant', text: res.reply, tools: res.toolResults, intent: res.intent },
       ]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const aborted = controller.signal.aborted || (e instanceof DOMException && e.name === 'AbortError');
+      setError(
+        aborted
+          ? 'Агент слишком долго отвечает (возможно, занят генерацией плана/рецептов). Сообщение сохранено — попробуйте ещё раз.'
+          : e instanceof Error
+            ? e.message
+            : String(e),
+      );
     } finally {
+      clearTimeout(timer);
       setPending(false);
     }
   }
+
+  // Счётчик секунд ожидания ответа — чтобы ~10с не выглядели как «зависло».
+  const [waitSec, setWaitSec] = useState(0);
+  useEffect(() => {
+    if (!pending) {
+      setWaitSec(0);
+      return;
+    }
+    const id = setInterval(() => setWaitSec((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, [pending]);
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 p-6">
@@ -123,7 +145,12 @@ export default function AgentPage() {
               </div>
             ))}
 
-            {pending && <p className="self-start text-sm text-tertiary">Агент думает…</p>}
+            {pending && (
+              <p className="self-start text-sm text-tertiary">
+                Агент думает… {waitSec > 0 ? `${waitSec}с` : ''}
+                {waitSec >= 15 ? ' (CLI-ответ под нагрузкой может занять до минуты)' : ''}
+              </p>
+            )}
           </div>
 
           {error && <p className="text-sm text-error-primary">Ошибка: {error}</p>}

@@ -22,6 +22,13 @@
 
 ---
 
+## 2026-06-25 — Workspace: подготовка проекта для работы с Antigravity + фикс lint
+- **Сделано:** настроена директория `.agents/` для автоматического обнаружения правил и скиллов агентом Antigravity (Google Antigravity SDK). Скопированы `AGENTS.md` (в `.agents/AGENTS.md`) и скиллы из `.claude/skills/` (в `.agents/skills/`). Также исправлена ошибка линтинга `prefer-const` в `core/prisma/plan-report.ts`.
+- **Файлы:** .agents/AGENTS.md, .agents/skills/meal-planner/SKILL.md, .agents/skills/session-log/SKILL.md, core/prisma/plan-report.ts.
+- **Коммит:** 2b12c56, 60e3f52
+
+---
+
 ## 2026-06-02 — Docs: синхронизация с текущим состоянием + хендофф
 
 - **Сделано:** привёл документацию в актуальное состояние после пост-RALPH работы. `PLAN.md` — статус-блок и «Текущий шаг»: web UI всех разделов построен (было в backlog как acceptance-UI /cart /diary). `PROGRESS.md` — добавлен раздел «Пост-RALPH полировка» (был заморожен на Iteration 29 / RALPH_DONE). `ARCHITECTURE.md` — §4.3 список реальных endpoints, §5.1 структура с реальными страницами + vitest, §5.2/§5.3 тесты и «текущее состояние UI», §13 запись об арх-дельте (агент/telegram endpoints, planner-движок, ban-keywords). `AGENTS.md` — гочи #23–28 (telegram-прокси через node-fetch agent; `/api/ingredients` limit≤200; frontend vitest-config; React Aria value/onChange + onClick; single-user earliest-createdAt + Decimal→строка; §13a BAN_TAG по имени). Создан `SESSION_CONTEXT.md` (корень) — хендофф для свежей сессии.

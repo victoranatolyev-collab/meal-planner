@@ -38,7 +38,7 @@ async function main() {
   console.log(`цель/день: ${r0(Number(plan.kcalTarget))} ккал · Б${r0(Number(plan.proteinGTarget))} Ж${r0(Number(plan.fatGTarget))} У${r0(Number(plan.carbsGTarget))}\n`);
 
   const usage = new Map<string, number>();
-  let q = { iron: 0, beef: 0, liver: 0, fish: 0 };
+  const q = { iron: 0, beef: 0, liver: 0, fish: 0 };
 
   for (const d of plan.days) {
     const wd = WD[new Date(d.date).getUTCDay()]!;

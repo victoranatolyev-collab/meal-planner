@@ -143,4 +143,17 @@ npm run build --workspace frontend && npm run build --workspace backend
 - `docs/PLAN.md` · `docs/HISTORY.md` · `docs/PROGRESS.md` — план/история
 - `AGENTS.md` — паттерны и gotchas для разработки
 
+### Session log skill
+
+В репозитории есть локальный Claude Code skill:
+
+```text
+.claude/skills/session-log/SKILL.md
+```
+
+После clone отдельная установка не нужна: запускай Claude Code из корня репозитория и вызывай
+`/session-log` или попроси агента записать сессионный лог. Записи создаются в
+`Conversation history/` относительно текущей директории. В лог нельзя вставлять секреты,
+токены и значения `.env`.
+
 > Legacy Python/CLI-приложение (markdown/CSV/HTML отчёты, интерактивный CLI) — в ветке `main`.

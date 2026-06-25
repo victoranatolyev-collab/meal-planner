@@ -138,6 +138,82 @@ describe('evaluateRules', () => {
     expect(result.rejectionReasons).toEqual([]);
   });
 
+  // --- §13a defense-in-depth: BAN_TAG ловит даже нетегированные ингредиенты ---
+
+  it('BAN_TAG(чеснок): нетегированный ингредиент пойман по названию', () => {
+    const result = evaluateRules({
+      ...baseInput,
+      // как приходит из FIVEKA-импорта — без тегов
+      ingredients: [ingr('Приправа Рестория Томаты и Базилик с чесноком 15г', [])],
+      rules: [rule({ ruleKind: 'BAN_TAG', tagName: 'чеснок', reason: '§13a' })],
+    });
+    expect(result.isApproved).toBe(false);
+    expect(result.rejectionReasons[0]).toContain('BAN_TAG(чеснок)');
+    expect(result.rejectionReasons[0]).toContain('§13a');
+  });
+
+  it('BAN_TAG(гречка): пойман по названию, но «грецкий орех» НЕ ловится', () => {
+    const buckwheat = evaluateRules({
+      ...baseInput,
+      ingredients: [ingr('Гречка ядрица 900г', [])],
+      rules: [rule({ ruleKind: 'BAN_TAG', tagName: 'гречка' })],
+    });
+    expect(buckwheat.isApproved).toBe(false);
+
+    const walnut = evaluateRules({
+      ...baseInput,
+      ingredients: [ingr('Грецкий орех', [])],
+      rules: [rule({ ruleKind: 'BAN_TAG', tagName: 'гречка' })],
+    });
+    expect(walnut.isApproved).toBe(true);
+  });
+
+  it('BAN_TAG(чеснок): пойман по тегу-синониму garlic', () => {
+    const result = evaluateRules({
+      ...baseInput,
+      ingredients: [ingr('Чеснок свежий', ['garlic', 'vegetable'])],
+      rules: [rule({ ruleKind: 'BAN_TAG', tagName: 'чеснок' })],
+    });
+    expect(result.isApproved).toBe(false);
+  });
+
+  it('BAN_TAG(майонез): майонезный соус пойман по названию', () => {
+    const result = evaluateRules({
+      ...baseInput,
+      ingredients: [ingr('Соус Махеевъ Салатный майонезный 370мл', [])],
+      rules: [rule({ ruleKind: 'BAN_TAG', tagName: 'майонез' })],
+    });
+    expect(result.isApproved).toBe(false);
+  });
+
+  it('BAN_TAG(гречка): имя рекламирует гречку, но в составе её нет → всё равно rejected', () => {
+    const result = evaluateRules({
+      ...baseInput,
+      recipeName: 'Куриная котлета с гречкой',
+      ingredients: [ingr('Куриное филе', ['protein']), ingr('Сухари панировочные', [])],
+      rules: [rule({ ruleKind: 'BAN_TAG', tagName: 'гречка' })],
+    });
+    expect(result.isApproved).toBe(false);
+    expect(result.rejectionReasons[0]).toContain('название рецепта');
+  });
+
+  it('BAN_TAG с неизвестным тегом (свинина): поведение прежнее — только точный тег', () => {
+    // имя содержит «свинина», но без keyword-карты name-match не применяется
+    const byName = evaluateRules({
+      ...baseInput,
+      ingredients: [ingr('Шпик соленый со свининой', [])],
+      rules: [rule({ ruleKind: 'BAN_TAG', tagName: 'свинина' })],
+    });
+    expect(byName.isApproved).toBe(true);
+
+    const byTag = evaluateRules({
+      ...baseInput,
+      ingredients: [ingr('Шпик', ['свинина'])],
+      rules: [rule({ ruleKind: 'BAN_TAG', tagName: 'свинина' })],
+    });
+    expect(byTag.isApproved).toBe(false);
+  });
+
   it('множественные нарушения: collects all reasons', () => {
     const result = evaluateRules({
       ...baseInput,

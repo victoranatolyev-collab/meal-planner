@@ -4,14 +4,18 @@ import { DEFAULT_MATCH_CONFIG, type MatchConfig } from './types.js';
 
 /**
  * Возвращает best match для rawName из catalog ingredients используя pg_trgm.
- * Если similarity < threshold — возвращает null.
  *
- * SQL: `SELECT *, similarity(name, $1) FROM ingredients
- *       WHERE similarity(name, $1) > $threshold
- *       ORDER BY similarity DESC LIMIT 1`.
+ * Скоринг: GREATEST(word_similarity(raw, name), similarity(name, raw)).
+ * word_similarity ловит короткий запрос внутри многословного ритейл-названия
+ * («Яйцо» → «Яйцо куриное Красная Цена С2 10шт.»), где обычный similarity проваливается
+ * из-за разницы длины. similarity оставлен как доп. сигнал (точное короткое имя).
+ * Фильтр: word_similarity > 0.5 ИЛИ similarity > threshold. Тай-брейк — короче имя
+ * (запрос = бо́льшая доля названия = вероятнее искомый продукт).
  *
- * Использует GIN trigram-индекс (см. миграцию pg_trgm_and_units).
+ * Использует GIN trigram-индекс (gin_trgm_ops поддерживает и similarity, и word_similarity).
  */
+const WORD_SIM_THRESHOLD = 0.5;
+
 export async function findBestIngredientMatch(
   rawName: string,
   config: MatchConfig = DEFAULT_MATCH_CONFIG,
@@ -24,10 +28,12 @@ export async function findBestIngredientMatch(
       price_per_100g AS "pricePer100g", weight_g AS "weightG",
       pack_size AS "packSize", unit, tags,
       created_at AS "createdAt", updated_at AS "updatedAt",
-      similarity(name, ${rawName}) AS similarity
+      GREATEST(word_similarity(${rawName}, name), similarity(name, ${rawName})) AS similarity
     FROM ingredients
-    WHERE similarity(name, ${rawName}) > ${config.threshold}
-    ORDER BY similarity DESC
+    WHERE (word_similarity(${rawName}, name) > ${WORD_SIM_THRESHOLD}
+           OR similarity(name, ${rawName}) > ${config.threshold})
+      AND name NOT LIKE 'ZZ_TEST_%'
+    ORDER BY similarity DESC, length(name) ASC
     LIMIT 1
   `;
 

@@ -52,6 +52,16 @@ export type SearchRecipesOutput = z.infer<typeof searchRecipesOutputSchema>;
 // Output зеркалит дерево ent-week-plan (days → meals → items).
 // ============================================================
 
+/** Категорийные флаги рецепта (предрассчитаны в core/rules.ts — единый источник с greedy). */
+export const calcPlanRecipeFlagsSchema = z.object({
+  iron: z.boolean(),
+  fish: z.boolean(),
+  beef: z.boolean(),
+  liver: z.boolean(),
+  breakfast: z.boolean(),
+  dessert: z.boolean(),
+});
+
 /** Кандидат-рецепт в пуле (LLM выбирает по id). */
 export const calcPlanRecipeSchema = z.object({
   id: z.string(),
@@ -61,6 +71,20 @@ export const calcPlanRecipeSchema = z.object({
   fatG: z.number().nonnegative(),
   carbsG: z.number().nonnegative(),
   mealTags: z.array(z.string()).default([]),
+  flags: calcPlanRecipeFlagsSchema.optional(),
+});
+
+/** Целевой приём с пер-приёмными КБЖУ (из core/rules.ts distributionFor). */
+export const calcPlanSlotSchema = z.object({
+  name: z.string(),
+  time: z.string(),
+  kcal: z.number(),
+  proteinG: z.number(),
+  fatG: z.number(),
+  carbsG: z.number(),
+  slotTags: z.array(z.string()),
+  dessert: z.boolean(),
+  maxPF: z.number(),
 });
 
 export const calcPlanInputSchema = z.object({
@@ -78,6 +102,16 @@ export const calcPlanInputSchema = z.object({
     .min(1)
     .max(7),
   recipes: z.array(calcPlanRecipeSchema).min(1),
+  // Раскладка приёмов (форма распределения из norms): шаблон обычного и тренировочного дня.
+  distribution: z
+    .object({ restDay: z.array(calcPlanSlotSchema), trainingDay: z.array(calcPlanSlotSchema) })
+    .optional(),
+  // Даты-тренировки (Пн/Чт) — для них берётся trainingDay-шаблон.
+  trainingDates: z.array(z.string()).optional(),
+  // Недельные квоты подбора (железо/говядина/печень/рыба).
+  quotas: z
+    .object({ iron: z.number(), beef: z.number(), liver: z.number(), fish: z.number() })
+    .optional(),
   notes: z.string().max(2000).optional(),
 });
 export type CalcPlanInput = z.infer<typeof calcPlanInputSchema>;

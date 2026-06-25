@@ -198,6 +198,8 @@ backend/
 
 Тело и ответ — JSON. Auth (deferred): Bearer token (Auth.js).
 
+**Текущие endpoints (реализованы):** `/users` · `/ingredients` · `/recipes` · `/recipes/:id` · `/recipes/search` · `/tags` · `/tag-rules`(`/:id`) · `/nutrition-targets` · `/norms` · `/plans` · `/cart` · `/cart/assemble` · `/orders` · `/stock` · `/stock-items` · `/diary` · `/correction` · `/health`(`/:kind`) · `/notification-schedules`(`/:id`) · `/notifications/run` · `/agent/message` · `/agent/history` · `/telegram/link` · `/telegram/webhook`.
+
 ---
 
 ## 5. Frontend (Vite + React)
@@ -213,15 +215,19 @@ frontend/
 │   ├── utils/                        # VENDORED: cx (tailwind-merge), is-react-component…
 │   ├── hooks/                        # VENDORED: use-breakpoint, use-clipboard…
 │   ├── providers/                    # VENDORED: theme-provider, router-provider
-│   ├── pages/                        # НАШИ route-компоненты (kebab-case)
-│   ├── api/                          # НАШ типизированный REST-клиент к backend
-│   ├── lib/                          # НАШИ хелперы (useCurrentUser и т.п.)
+│   ├── pages/                        # НАШИ route-компоненты (kebab-case):
+│   │                                 #   plan/ recipes/ diary/ stock/ cart/ rules/ agent/
+│   ├── api/                          # НАШ типизированный REST-клиент к backend (по разделу)
+│   ├── lib/                          # НАШИ хелперы (useCurrentUser, query-client)
+│   ├── test/setup.ts                 # jest-dom matchers для vitest
 │   ├── styles/
-│   │   ├── globals.css               # @import "tailwindcss" + плагины + @custom-variant
+│   │   ├── globals.css               # @import "tailwindcss" + плагины; фон/цвет body из токенов
 │   │   ├── theme.css                 # дизайн-токены Untitled UI (CSS custom properties)
 │   │   └── typography.css
-│   ├── App.tsx
-│   └── main.tsx
+│   ├── app-layout.tsx                # общий layout: верхняя навигация (NavLink) + <Outlet/>
+│   ├── App.tsx                       # лендинг-дашборд (карточки разделов)
+│   └── main.tsx                      # createBrowserRouter: layout-route + дочерние страницы
+├── vitest.config.ts                  # тесты: jsdom + react plugin (отдельно от vite.config.ts)
 ├── public/
 ├── vite.config.ts                    # @tailwindcss/vite plugin + alias '@' → ./src + /api proxy
 ├── tsconfig.json
@@ -241,7 +247,8 @@ frontend/
 - **Имена файлов — kebab-case** (`.tsx`/`.ts`/`.css`), включая наши страницы (`rules-page.tsx`). Это конвенция Untitled UI (переопределяет прежнее PascalCase для frontend, см. §11.1).
 - **TanStack Query** для всех данных с API — никогда не используй ручной `useState` для серверных данных.
 - **Zustand** только для UI state (модалы, фильтры, активный шаг wizard).
-- **Формы** — React Hook Form + Zod (resolver), поверх Untitled UI инпутов.
+- **Формы** — React Hook Form + Zod (resolver) для сложных форм; для простых — Untitled UI инпуты в controlled-режиме (`value`/`onChange(value)`).
+- **Тесты** — Vitest + jsdom + Testing Library (`vitest.config.ts`, `src/test/setup.ts`): юнит API-клиентов (fetch-mock) + компонентные/интеграционные (рендер через QueryClient/MemoryRouter). Запуск: `npm run test --workspace frontend`.
 
 ### 5.3 Стратегия разработки UI: backend-first
 
@@ -255,6 +262,8 @@ frontend/
 **Антипаттерн:** «начать UI и потом доделать сервис» — приводит к моку API на фронте, который дрейфует.
 
 **Telegram-агент vs web UI:** некоторые `scr-edit-*` фичи (Phase 2/5) — это CRUD-формы; они доступны и через web UI, и через агента (Phase 6) одной service-функцией.
+
+**Текущее состояние (пост-RALPH):** web UI построен для всех разделов — `/plan` `/recipes` `/diary` `/stock`(+инвентаризация) `/cart`(+заказы) `/rules` `/agent`(+история) под общим `app-layout` с навигацией. Не построено: `/schedule` (редактор расписания уведомлений). Демо-данные — `core/prisma/seed.ts`.
 
 ---
 
@@ -766,6 +775,18 @@ App/                          # репозиторий на ветке rework/ne
 ## 13. История изменений архитектуры
 
 (Append-only, кратко. Большие изменения дублируем в `HISTORY.md` с обоснованием.)
+
+### 2026-06-02 — Пост-RALPH: полный web UI + агент-endpoints + планировщик-движок
+
+**Обоснование:** после 37/37 (RALPH_DONE) — довести разделы до рабочего UI, оживить агента и план. Не контракт-ломающее: новые endpoints/модули в рамках существующих принципов (§4.2 pure-func + DB-wrapper + thin-route, §10 Adapter pattern).
+
+**Что добавилось:**
+- **Frontend (§5):** построены все страницы (`/plan` `/recipes` `/diary` `/stock` `/cart` `/rules` `/agent`) + общий `app-layout` (навигация). Фронтенд-тесты: Vitest + jsdom + Testing Library.
+- **Endpoints (§4.3):** `/agent/{message,history}`, `/telegram/{link,webhook}`, `/stock-items`, `/recipes`(`/:id`), `/tags`.
+- **core-модули:** `core/src/agent/` (реестр инструментов + `handleAgentMessage`), `core/src/telegram/` (linking), `core/src/plan/rules.ts` (распределение/квоты) + greedy-движок, `core/src/validation/ban-keywords.ts` (§13a). Двойной движок плана: greedy и LLM (`PLAN_ENGINE`).
+- **Telegram (§8.2):** бот вживую — grammY polling/webhook; в регионах с блокировкой исходящие через прокси (`HTTPS_PROXY`, node-fetch `agent`).
+- **Демо-данные:** идемпотентный `core/prisma/seed.ts` + вспом. prisma-скрипты (recipe-pipeline и др.).
+- LLM по-прежнему через `llm-service` (stub/CLI; реальный Anthropic-адаптер — backlog).
 
 ### 2026-05-28 — Frontend: SCSS modules → Tailwind v4 + Untitled UI React
 

@@ -1,4 +1,5 @@
 import type { ValidationInput, ValidationResult } from './types.js';
+import { ingredientMatchesBan, recipeNameMatchesBan } from './ban-keywords.js';
 
 /**
  * Pure-функция: оценивает все активные правила пользователя против одного рецепта.
@@ -7,7 +8,8 @@ import type { ValidationInput, ValidationResult } from './types.js';
  * Контракт см. в docs/ARCHITECTURE.md §7.3 — Валидатор правил.
  *
  * **Recipe-level правила** (проверяются здесь):
- *  - BAN_TAG             — ни один ингредиент не должен иметь этот тег
+ *  - BAN_TAG             — ни один ингредиент не должен иметь этот тег (для §13a-банов —
+ *                          также теги-синонимы и ключевые слова в названии, см. ban-keywords.ts)
  *  - BAN_TAG_IN_MEAL     — если рецепт помечен meal_tag, ни один ингредиент с tag_name
  *  - REQUIRE_TAG_IN_MEAL — если рецепт помечен meal_tag, хотя бы один ингредиент с tag_name
  *
@@ -17,7 +19,7 @@ import type { ValidationInput, ValidationResult } from './types.js';
  * **Exception tag:** если рецепт имеет тег из `rule.exceptionTag` — правило пропускается.
  */
 export function evaluateRules(input: ValidationInput): ValidationResult {
-  const { ingredients, recipeMealTags, rules } = input;
+  const { recipeName, ingredients, recipeMealTags, rules } = input;
   const reasons: string[] = [];
 
   for (const rule of rules) {
@@ -28,12 +30,21 @@ export function evaluateRules(input: ValidationInput): ValidationResult {
 
     switch (rule.ruleKind) {
       case 'BAN_TAG': {
-        const offender = ingredients.find((i) => i.tags.includes(rule.tagName));
+        const offender = ingredients.find((i) => ingredientMatchesBan(i, rule.tagName));
         if (offender) {
           reasons.push(
             formatReason(
               `BAN_TAG(${rule.tagName})`,
-              `ингредиент «${offender.name}» имеет этот тег`,
+              `ингредиент «${offender.name}» подпадает под бан`,
+              rule.reason,
+            ),
+          );
+        } else if (recipeNameMatchesBan(recipeName, rule.tagName)) {
+          // Имя рекламирует запрещённый продукт, даже если в составе его не нашлось.
+          reasons.push(
+            formatReason(
+              `BAN_TAG(${rule.tagName})`,
+              `название рецепта «${recipeName}» содержит запрещённый продукт`,
               rule.reason,
             ),
           );

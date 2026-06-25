@@ -180,6 +180,25 @@ Telegram-агент (scr-telegram-agent) — stub-first, без реальног
 - Next.js App Router (Route Handler) → адаптер `webhookCallback(bot, 'std/http', {secretToken})` (один arg `Request`→`Promise<Response>`). НЕ `next-js` (тот для Pages API `(req,res)`). Secret-проверка (`X-Telegram-Bot-Api-Secret-Token`) встроена в webhookCallback.
 - Linking: токен генерим `createLinkToken` (upsert TelegramAccount, isActive=false), `/start <token>` → `linkTelegramAccount` (token→chatId, гасит токен, isActive=true). Авторизация каждого сообщения — `resolveUserIdByChatId`. chatId/linkToken nullable+unique (несколько NULL в PG OK).
 
+### 23. Telegram заблокирован напрямую (РФ) → grammY через прокси
+В регионах с блокировкой `api.telegram.org` Node-процесс бота не достучится (curl достучится — он чтит `HTTPS_PROXY`). grammY на Node использует **node-fetch**, а не undici → `NODE_USE_ENV_PROXY=1` и undici `ProxyAgent`/`dispatcher` **не работают**. Решение: `new Bot(token, { client: { baseFetchConfig: { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } as never } })` (пакет `https-proxy-agent`). См. `backend/lib/telegram-bot.ts botClientConfig()` (общий для webhook и `scripts/telegram-polling.ts`). Локально проще polling, чем webhook (не нужен публичный HTTPS).
+
+### 24. `/api/ingredients` limit максимум 200
+`listIngredientsQuerySchema.limit` — `max(200)`. `?limit=500` → 400. Фронтовый `fetchIngredients` использует `limit=200`. Для маппинга ingredientId→имя (страница `/stock`) этого хватает; при >200 ингредиентах нужна пагинация/поиск (`searchIngredients`).
+
+### 25. Frontend-тесты: отдельный vitest.config.ts
+`frontend/vitest.config.ts` — отдельно от `vite.config.ts` (без tailwind-плагина, `environment: 'jsdom'`, `setupFiles: ['./src/test/setup.ts']`, `css: false`). Setup: `import '@testing-library/jest-dom/vitest'`. В тестах символы vitest (`describe/it/vi/expect`) **импортируй явно** — иначе `tsc -b` (входит в `build`) падает на необъявленных глобалах. Запуск: `npm run test --workspace frontend`.
+
+### 26. React Aria инпуты/кнопки (Untitled UI) — контролируемый API
+- `TextField`/`TextArea`/`Input`: `value` + `onChange: (value: string) => void` (НЕ event). Числа держим строкой в state, `Number()` на submit.
+- `Button` (Untitled UI) принимает `onClick` (тип extends `ButtonHTMLAttributes`, не `onPress`); для навигации — `href` (рендерит `AriaLink`). В preview/тестах программный `node.click()` триггерит обработчик.
+
+### 27. Single-user dev + Decimal-сериализация
+Auth отложена: «текущий» юзер = самый ранний по `createdAt` (`listUsers` ORDER BY asc, `useCurrentUser` → `items[0]`). Сид бэкдейтит `demo@meal.local` (2020-01-01) → он выбирается автоматически. Prisma `Decimal` приходит в JSON **строкой** (`"2200"`, `pricePer100g:"60"`) — на фронте `Number(...)`.
+
+### 28. §13a BAN_TAG: тег + синоним + ключевое слово в имени
+`core/src/validation/ban-keywords.ts` — единый каталог банов. `evaluateRules` (BAN_TAG) ловит нарушителя по тегу ингредиента, синониму тега И ключевому слову в имени ингредиента/рецепта (защита от рассинхрона имя↔состав; `греч`≠`грец`). Рецепты-нарушители демотируются (`isApproved=false` + `rejectionReasons`); **сид сразу сидит их demoted**, иначе reseed вернёт запрещённый продукт в одобренный пул. Прочие теги (свинина) — поведение не изменено.
+
 ## Стратегия фаз
 
 - **Phase 0** Foundation ✅

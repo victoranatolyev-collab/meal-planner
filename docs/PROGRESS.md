@@ -197,3 +197,17 @@
 - **Smoke (5 кейсов) ✅:** link→{token,deepLink}; /start<token>+secret → telegram_accounts (chat_id set, token cleared, active); text от привязанного → agent_conversations +2 (action_taken=get_stock); text от непривязанного → 200 без записей (scope); неверный secret → 401.
 - **Решение:** stub-first = проектный «done» для LLM-фич (как scr-search-recipes/scr-calc-week-plan). Реальные Anthropic-адаптер + TELEGRAM_BOT_TOKEN + setWebhook + CalDAV — backlog (нужны ключи).
 - **ИТОГ: 37/37 фич `done`. Все 7 фаз закрыты. RALPH_DONE.** Backlog (вне ROADMAP-фич): реальные адаптеры, acceptance-UI /cart /diary /schedule, order-match endpoint.
+
+---
+
+## Пост-RALPH полировка (2026-05-29 … 06-02) — не ROADMAP-фичи
+
+После 37/37 проект продолжил развиваться (детальные записи — в `HISTORY.md`):
+
+- **Полный web UI.** Все разделы доведены до рабочего состояния: `/plan` (генерация+просмотр+КБЖУ), `/recipes` («Блюда» — пул рецептов), `/diary` (дневник), `/stock` (проекция остатков + редактор инвентаризации), `/cart` (корзина по магазинам + заказы), `/rules` (КБЖУ+бюджет+тег-правила, «Пересчитать по профилю»), `/agent` (чат + история). Общий `app-layout` с верхней навигацией; фикс темы (фон body).
+- **Новые endpoints/сервисы:** `/api/agent/{message,history}`, `/api/telegram/{link,webhook}`, `/api/stock-items` (CRUD инвентаризации), `/api/recipes[/:id]`, `/api/tags`.
+- **Фронтенд-тесты с нуля:** Vitest + jsdom + Testing Library (`frontend/vitest.config.ts`, `src/test/setup.ts`) — тесты API-клиентов + компонентов.
+- **Демо-сид** `core/prisma/seed.ts` (идемпотентный): демо-юзер `demo@meal.local`, ингредиенты с ценами, рецепты с составом, остатки, дневник. Вспом. prisma-скрипты: `recipe-pipeline.ts`, `fill-recipes.ts`, `fix-excluded-products.ts`, `normalize-portions.ts`, `plan-report.ts`.
+- **Планировщик:** greedy-подбор по правилам распределения/квот (`core/src/plan/rules.ts` + `greedy.ts`), §13a-баны продуктов (`core/src/validation/ban-keywords.ts`), макро-aware скоринг (выравнивание суточного белка). Двойной движок: greedy и LLM (`PLAN_ENGINE`).
+- **Telegram вживую:** бот `@ayyyyaaaa_bot` (polling), прокси для регионов с блокировкой (node-fetch `agent` из `HTTPS_PROXY`). ⚠️ токен бота светился в чате — перевыпустить.
+- **Документация:** `README.md` переписан под рерайт (быстрый старт + гайд по фичам); `SESSION_CONTEXT.md` (корень) — хендофф для свежей сессии.

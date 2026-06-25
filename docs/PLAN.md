@@ -5,7 +5,9 @@
 > История уже завершённых фаз — в конце документа в разделе «История фаз».
 
 **Текущая ветка:** `rework/nextjs-postgres`
-**Статус:** 🎉 **ВСЕ ФАЗЫ ✅ DONE. 37/37 фич. RALPH_DONE.** Phase 0/1/2/3/4/5/6 закрыты (все — «История фаз»). Backlog (не ROADMAP-фичи, нужны ключи/credentials): реальные адаптеры Anthropic (LLM_MODE=api), Telegram bot token + setWebhook, CalDAV (Apple Reminders); acceptance-UI /cart /diary /schedule; order-match endpoint.
+**Статус:** 🎉 **ВСЕ ФАЗЫ ✅ DONE. 37/37 фич. RALPH_DONE.** Phase 0/1/2/3/4/5/6 закрыты (все — «История фаз»).
+**Пост-RALPH (после 37/37):** построен полный web UI (разделы `/plan` `/recipes` `/diary` `/stock`+инвентаризация `/cart`+заказы `/rules` `/agent`+история, общий `app-layout` с навигацией), фронтенд-тесты (vitest+jsdom+testing-library), идемпотентный демо-сид (`core/prisma/seed.ts`), Telegram-бот вживую (polling + прокси для РФ), движок плана greedy + правила распределения/квоты (`core/src/plan/rules.ts`) и §13a-баны (`core/src/validation/ban-keywords.ts`).
+**Backlog (не ROADMAP-фичи, нужны ключи/credentials):** реальные адаптеры Anthropic (`LLM_MODE=api`), Telegram `setWebhook` (вместо polling), CalDAV (Apple Reminders); UI расписания `/schedule`; order-match endpoint.
 
 ---
 
@@ -84,9 +86,13 @@
 
 🎉 **ПРОЕКТ-RERWORK ЗАВЕРШЁН ПО ROADMAP: 37/37 фич `done` → RALPH_DONE.**
 
-Все 7 фаз (0–6) закрыты — см. «История фаз». Дальнейшая работа — **backlog вне ROADMAP-фич** (требует ключей/credentials или это отложенная UI-полировка):
-- Реальные адаптеры: Anthropic (`LLM_MODE=api`, нужен `ANTHROPIC_API_KEY`), Telegram (`TELEGRAM_BOT_TOKEN` + `setWebhook`), Apple Reminders/CalDAV (`APPLE_*`). Сейчас всё на stub-адаптерах (архитектура §10 — Adapter pattern, swap = смена env).
-- Acceptance-UI: страницы /cart, /diary, /schedule (фронт), order-match endpoint.
+Все 7 фаз (0–6) закрыты — см. «История фаз».
+
+**Пост-RALPH полировка (сделано после 37/37):** полный web UI всех разделов (`/plan` `/recipes` `/diary` `/stock`+инвентаризация `/cart`+заказы `/rules` `/agent`+история) + `app-layout`-навигация; фронтенд-тесты (vitest+jsdom+testing-library); демо-сид (`npm run seed --workspace core`); Telegram-бот вживую (polling + прокси); greedy-планировщик + правила распределения/квот + §13a-баны. Детали — в `HISTORY.md` (записи 2026-05-31).
+
+**Backlog вне ROADMAP-фич** (требует ключей/credentials или отложено):
+- Реальные адаптеры: Anthropic (`LLM_MODE=api`, нужен `ANTHROPIC_API_KEY`), Telegram (`setWebhook` вместо polling), Apple Reminders/CalDAV (`APPLE_*`). Сейчас на stub/CLI-адаптерах (архитектура §10 — Adapter pattern, swap = смена env).
+- UI: страница `/schedule` (редактор расписания), order-match endpoint.
 
 ---
 

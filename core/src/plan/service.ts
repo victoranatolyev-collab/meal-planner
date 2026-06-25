@@ -4,6 +4,17 @@ import { runLlmJob } from '../recipes/llm-client.js';
 import { calcPlanOutputSchema, type DraftPlan } from './schemas.js';
 import { resolveDraftToApproved, type ApprovedRecipe } from './resolve.js';
 import { composePlanGreedy } from './greedy.js';
+import {
+  distributionFor,
+  isTrainingDay,
+  isIron,
+  isBeef,
+  isLiver,
+  isFish,
+  isBreakfast,
+  isDessert,
+  DEFAULT_QUOTAS,
+} from './rules.js';
 
 const logger = pino({ name: 'plan:generate' });
 
@@ -85,17 +96,61 @@ export async function generateWeekPlan(args: GenerateWeekPlanArgs): Promise<Gene
     mealTags: r.tags.map((t) => t.tagName),
   }));
 
+  // Недельные квоты подбора: из активных tag_rules MIN_PER_WEEK (например, железо≥3).
+  const minRules = await prisma.tagRule.findMany({
+    where: { userId: args.userId, ruleKind: 'MIN_PER_WEEK', isActive: true },
+    select: { tagName: true, quantity: true },
+  });
+  const quotas: Partial<{ iron: number; beef: number; liver: number; fish: number }> = {};
+  for (const rule of minRules) {
+    if (rule.quantity == null) continue;
+    const tag = rule.tagName.toLowerCase();
+    if (tag === 'железо' || tag === 'iron') quotas.iron = rule.quantity;
+    else if (tag === 'рыба' || tag === 'fish') quotas.fish = rule.quantity;
+    else if (tag === 'говядина' || tag === 'beef') quotas.beef = rule.quantity;
+    else if (tag === 'печень' || tag === 'liver') quotas.liver = rule.quantity;
+  }
+
   const engine = process.env['PLAN_ENGINE'] ?? 'greedy';
   let draft: DraftPlan;
   if (engine === 'llm') {
+    // Подаём Claude те же правила, что и greedy (единый источник — rules.ts):
+    // пер-приёмное распределение (завтрак — крупнейший приём), тренировочные дни Пн/Чт
+    // с post-workout обедом, недельные квоты и категорийные флаги на рецептах.
+    const fullQuotas = { ...DEFAULT_QUOTAS, ...quotas };
+    const llmRecipes = poolRecipes.map((r) => ({
+      ...r,
+      flags: {
+        iron: isIron(r),
+        fish: isFish(r),
+        beef: isBeef(r),
+        liver: isLiver(r),
+        breakfast: isBreakfast(r),
+        dessert: isDessert(r),
+      },
+    }));
+    const trainingDates = days.filter((d) => isTrainingDay(d.date, d.dayType)).map((d) => d.date);
     draft = await runLlmJob({
       kind: 'calc-plan',
       userId: args.userId,
       responseSchema: calcPlanOutputSchema,
-      input: { weekIso: args.weekIso, startDate: args.startDate, endDate, targets: targetsForPlan, days, recipes: poolRecipes },
+      input: {
+        weekIso: args.weekIso,
+        startDate: args.startDate,
+        endDate,
+        targets: targetsForPlan,
+        days,
+        recipes: llmRecipes,
+        distribution: {
+          restDay: distributionFor(false, targetsForPlan),
+          trainingDay: distributionFor(true, targetsForPlan),
+        },
+        trainingDates,
+        quotas: fullQuotas,
+      },
     });
   } else {
-    draft = composePlanGreedy(targetsForPlan, days, poolRecipes);
+    draft = composePlanGreedy(targetsForPlan, days, poolRecipes, { quotas });
   }
 
   // 5. Greedy resolve неизвестных recipeId.

@@ -21,6 +21,7 @@ interface IngSeed {
   f: number;
   c: number;
   price: number; // ₽ / 100 г
+  tags?: string[]; // бан-теги §13a и пр. (см. ban-keywords.ts)
 }
 
 const INGREDIENTS: IngSeed[] = [
@@ -28,7 +29,7 @@ const INGREDIENTS: IngSeed[] = [
   { id: 'ing00000-0000-0000-0000-000000000002', name: 'Банан', source: 'FIVEKA', kcal: 95, p: 1.5, f: 0.2, c: 21, price: 12 },
   { id: 'ing00000-0000-0000-0000-000000000003', name: 'Арахисовая паста', source: 'LL', kcal: 600, p: 25, f: 50, c: 20, price: 60 },
   { id: 'ing00000-0000-0000-0000-000000000004', name: 'Куриная грудка', source: 'FIVEKA', kcal: 165, p: 31, f: 3.6, c: 0, price: 45 },
-  { id: 'ing00000-0000-0000-0000-000000000005', name: 'Гречка', source: 'FIVEKA', kcal: 343, p: 13, f: 3.4, c: 72, price: 12 },
+  { id: 'ing00000-0000-0000-0000-000000000005', name: 'Гречка', source: 'FIVEKA', kcal: 343, p: 13, f: 3.4, c: 72, price: 12, tags: ['гречка'] },
   { id: 'ing00000-0000-0000-0000-000000000006', name: 'Лосось', source: 'VV', kcal: 208, p: 20, f: 13, c: 0, price: 120 },
   { id: 'ing00000-0000-0000-0000-000000000007', name: 'Киноа', source: 'LL', kcal: 368, p: 14, f: 6, c: 64, price: 70 },
   { id: 'ing00000-0000-0000-0000-000000000008', name: 'Брокколи', source: 'FIVEKA', kcal: 34, p: 2.8, f: 0.4, c: 7, price: 30 },
@@ -101,20 +102,37 @@ async function main() {
         carbs100g: ing.c,
         pricePer100g: ing.price,
         unit: 'g',
+        tags: ing.tags ?? [],
       },
-      update: { pricePer100g: ing.price, source: ing.source },
+      update: { pricePer100g: ing.price, source: ing.source, tags: ing.tags ?? [] },
     });
   }
 
-  // 3. Рецепты (уже одобренные + нормализованные) + состав.
-  const recipes: Array<{ id: string; name: string; instr: string; kcal: number; p: number; f: number; c: number }> = [
+  // 3. Рецепты (уже нормализованные) + состав.
+  // dec0re02 содержит гречку → §13a-нарушитель: сидим его сразу демотированным,
+  // иначе reseed возвращал бы запрещённый продукт в одобренный пул. См. ban-keywords.ts.
+  const GRECHKA_REASON =
+    'BAN_TAG(гречка): ингредиент «Гречка» подпадает под бан — §13a: гречка исключена (замена рис/макароны/картофель)';
+  const recipes: Array<{
+    id: string;
+    name: string;
+    instr: string;
+    kcal: number;
+    p: number;
+    f: number;
+    c: number;
+    approved?: boolean;
+    rejectionReasons?: string[];
+  }> = [
     { id: 'dec0re01-0000-0000-0000-000000000001', name: 'Овсянка с бананом и арахисовой пастой', instr: 'Сварить овсянку, добавить банан и арахисовую пасту.', kcal: 520, p: 18, f: 16, c: 78 },
-    { id: 'dec0re02-0000-0000-0000-000000000002', name: 'Куриная грудка с гречкой и овощами', instr: 'Отварить гречку, обжарить грудку, подать с овощами.', kcal: 610, p: 52, f: 14, c: 62 },
+    { id: 'dec0re02-0000-0000-0000-000000000002', name: 'Куриная грудка с гречкой и овощами', instr: 'Отварить гречку, обжарить грудку, подать с овощами.', kcal: 610, p: 52, f: 14, c: 62, approved: false, rejectionReasons: [GRECHKA_REASON] },
     { id: 'dec0re03-0000-0000-0000-000000000003', name: 'Лосось с киноа и брокколи', instr: 'Запечь лосось, отварить киноа и брокколи.', kcal: 580, p: 42, f: 24, c: 45 },
     { id: 'dec0re04-0000-0000-0000-000000000004', name: 'Творог с орехами и мёдом', instr: 'Смешать творог с орехами и мёдом.', kcal: 340, p: 30, f: 14, c: 22 },
     { id: 'dec0re05-0000-0000-0000-000000000005', name: 'Греческий салат с фетой', instr: 'Нарезать овощи, добавить фету и оливковое масло.', kcal: 280, p: 11, f: 22, c: 12 },
   ];
   for (const r of recipes) {
+    const approved = r.approved ?? true;
+    const rejectionReasons = r.rejectionReasons ?? [];
     await prisma.recipe.upsert({
       where: { id: r.id },
       create: {
@@ -124,14 +142,15 @@ async function main() {
         instructions: r.instr,
         isRelevant: true,
         isNormalized: true,
-        isApproved: true,
+        isApproved: approved,
+        rejectionReasons,
         totalKcal: r.kcal,
         totalProteinG: r.p,
         totalFatG: r.f,
         totalCarbsG: r.c,
         source: 'MANUAL',
       },
-      update: { isApproved: true, isNormalized: true },
+      update: { isApproved: approved, isNormalized: true, rejectionReasons },
     });
     // Состав — пересоздаём идемпотентно.
     await prisma.recipeIngredient.deleteMany({ where: { recipeId: r.id } });
@@ -172,6 +191,12 @@ async function main() {
   await prisma.tagRule.createMany({
     data: [
       { userId: USER_ID, ruleKind: 'BAN_TAG', tagName: 'свинина', reason: 'Не употребляю свинину' },
+      // §13a (menu_rules.md): жёстко исключённые продукты. Ловятся через ban-keywords.ts
+      // (тег + синонимы + ключевые слова в названии ингредиента и рецепта).
+      { userId: USER_ID, ruleKind: 'BAN_TAG', tagName: 'чеснок', reason: '§13a: чеснок исключён из домашних рецептов' },
+      { userId: USER_ID, ruleKind: 'BAN_TAG', tagName: 'гречка', reason: '§13a: гречка исключена (замена рис/макароны/картофель)' },
+      { userId: USER_ID, ruleKind: 'BAN_TAG', tagName: 'майонез', reason: '§13a/§8: майонез исключён' },
+      { userId: USER_ID, ruleKind: 'BAN_TAG', tagName: 'whey', reason: '§13a: whey-протеин исключён' },
       { userId: USER_ID, ruleKind: 'MIN_PER_WEEK', tagName: 'железо', quantity: 3, reason: 'Профилактика анемии' },
       { userId: USER_ID, ruleKind: 'REQUIRE_TAG_IN_MEAL', tagName: 'белок', mealTag: 'post_workout', reason: 'Белок после тренировки' },
     ],
